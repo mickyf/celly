@@ -16,7 +16,7 @@ interface TastingNoteFormProps {
 export interface TastingNoteFormValues {
   rating: number
   notes: string
-  tasted_at: Date
+  tasted_at: string
 }
 
 export function TastingNoteForm({
@@ -29,13 +29,14 @@ export function TastingNoteForm({
     initialValues: {
       rating: note?.rating || 3,
       notes: note?.notes || '',
-      tasted_at: note?.tasted_at ? new Date(note.tasted_at) : new Date(),
+      tasted_at: note?.tasted_at ? note.tasted_at : new Date().toISOString(),
     },
     validate: {
       rating: (value) =>
         value >= 1 && value <= 5 ? null : 'Rating must be between 1 and 5',
       notes: (value) => (value.trim().length > 0 ? null : 'Notes are required'),
     },
+
   })
 
   return (

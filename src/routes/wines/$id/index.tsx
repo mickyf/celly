@@ -78,9 +78,10 @@ function WineDetail() {
   const handleAddNote = async (values: TastingNoteFormValues) => {
     await addNote.mutateAsync({
       wine_id: id,
+      user_id: '', // will be replaced later
       rating: values.rating,
       notes: values.notes,
-      tasted_at: values.tasted_at.toISOString().split('T')[0],
+      tasted_at: values.tasted_at,
     })
     closeNoteModal()
     setEditingNote(null)
@@ -93,7 +94,7 @@ function WineDetail() {
       id: editingNote.id,
       rating: values.rating,
       notes: values.notes,
-      tasted_at: values.tasted_at.toISOString().split('T')[0],
+      tasted_at: values.tasted_at,
     })
     closeNoteModal()
     setEditingNote(null)
