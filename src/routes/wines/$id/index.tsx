@@ -21,23 +21,23 @@ import {
   IconPlus,
   IconBottle,
 } from '@tabler/icons-react'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
-import { useWine, useDeleteWine } from '../../hooks/useWines'
+import { useWine, useDeleteWine } from '../../../hooks/useWines'
 import {
   useTastingNotes,
   useAddTastingNote,
   useUpdateTastingNote,
   useDeleteTastingNote,
-} from '../../hooks/useTastingNotes'
+} from '../../../hooks/useTastingNotes'
 import { useDisclosure } from '@mantine/hooks'
-import { TastingNoteForm, type TastingNoteFormValues } from '../../components/TastingNoteForm'
-import { TastingNoteCard } from '../../components/TastingNoteCard'
-import type { Database } from '../../types/database'
+import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
+import { TastingNoteCard } from '../../../components/TastingNoteCard'
+import type { Database } from '../../../types/database'
 
 type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
 
-export const Route = createFileRoute('/wines/$id')({
+export const Route = createFileRoute('/wines/$id/')({
   component: WineDetail,
 })
 

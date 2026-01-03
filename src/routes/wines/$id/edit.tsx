@@ -1,9 +1,9 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
-import { WineForm, type WineFormValues } from '../../components/WineForm'
-import { useWine, useUpdateWine, useUploadWinePhoto } from '../../hooks/useWines'
+import { WineForm, type WineFormValues } from '../../../components/WineForm'
+import { useWine, useUpdateWine, useUploadWinePhoto } from '../../../hooks/useWines'
 
 export const Route = createFileRoute('/wines/$id/edit')({
   component: EditWine,
