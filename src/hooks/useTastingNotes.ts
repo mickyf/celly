@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
-import type { Database } from '../types/database'
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database'
 
-type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
-type NewTastingNote = Database['public']['Tables']['tasting_notes']['Insert']
-type UpdateTastingNote = Database['public']['Tables']['tasting_notes']['Update']
+type TastingNote = Tables<'tasting_notes'>
+type NewTastingNote = TablesInsert<'tasting_notes'>
+type UpdateTastingNote = TablesUpdate<'tasting_notes'>
 
 export const useTastingNotes = (wineId?: string) => {
   return useQuery({
