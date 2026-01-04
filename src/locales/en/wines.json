@@ -87,7 +87,9 @@
   "filters": {
     "title": "Search & Filter",
     "activeCount": "{{count}} active",
-    "searchPlaceholder": "Search by wine name...",
+    "searchPlaceholder": "Search by wine or winery name...",
+    "winery": "Winery",
+    "winerySelect": "Select winery",
     "grapeVarieties": "Grape Varieties",
     "grapeSelect": "Select grapes",
     "vintageRange": "Vintage Range",

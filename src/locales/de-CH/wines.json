@@ -87,7 +87,9 @@
   "filters": {
     "title": "Suchen & Filtern",
     "activeCount": "{{count}} aktiv",
-    "searchPlaceholder": "Nach Weinname suchen...",
+    "searchPlaceholder": "Nach Wein- oder Weingut suchen...",
+    "winery": "Weingut",
+    "winerySelect": "Weingut auswählen",
     "grapeVarieties": "Rebsorten",
     "grapeSelect": "Rebsorten auswählen",
     "vintageRange": "Jahrgangsbereich",

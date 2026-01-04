@@ -7,7 +7,7 @@
 - ~~add translation to all strings~~
 - ~~translate to Swiss-German~~
 - ~~analyse the changes since creation of CLAUDE.md and update CLAUDE.md accordingly~~
-- add Winery
+- ~~add Winery~~
 - add camera capability to add wine image ad-hoc with camera besides the image upload
 - add AI data update to fill in missing values like Grapes, Price, or Drinking Window
 - add stock inventory to track in and out of wines
