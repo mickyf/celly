@@ -14,12 +14,14 @@ import {
 import { IconSearch, IconFilter, IconX, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useWineries } from '../hooks/useWineries'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
 export interface WineFilterValues {
   search: string
+  winery: string | null
   grapes: string[]
   vintageMin: number | null
   vintageMax: number | null
@@ -37,6 +39,7 @@ interface WineFiltersProps {
 
 export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount }: WineFiltersProps) {
   const { t } = useTranslation(['wines', 'common'])
+  const { data: wineries } = useWineries()
   const [opened, setOpened] = useState(false)
 
   // Extract unique grape varieties from all wines
@@ -49,9 +52,15 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
     label: grape,
   }))
 
+  const wineryOptions = wineries?.map((winery) => ({
+    value: winery.id,
+    label: winery.name,
+  })) || []
+
   const handleReset = () => {
     onFiltersChange({
       search: '',
+      winery: null,
       grapes: [],
       vintageMin: null,
       vintageMax: null,
@@ -109,6 +118,16 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
 
         <Collapse in={opened}>
           <Stack gap="md" mt="md">
+            <Select
+              label={t('wines:filters.winery')}
+              placeholder={t('wines:filters.winerySelect')}
+              data={wineryOptions}
+              value={filters.winery}
+              onChange={(value) => onFiltersChange({ ...filters, winery: value })}
+              searchable
+              clearable
+            />
+
             <MultiSelect
               label={t('wines:filters.grapeVarieties')}
               placeholder={t('wines:filters.grapeSelect')}

@@ -4,6 +4,7 @@ import { IconPlus } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWines, useDeleteWine } from '../../hooks/useWines'
+import { useWineries } from '../../hooks/useWineries'
 import { WineCard } from '../../components/WineCard'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
 import { useDisclosure } from '@mantine/hooks'
@@ -19,12 +20,14 @@ function WineList() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wines, isLoading } = useWines()
+  const { data: wineries } = useWineries()
   const deleteWine = useDeleteWine()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [opened, { open, close }] = useDisclosure(false)
 
   const [filters, setFilters] = useState<WineFilterValues>({
     search: '',
+    winery: null,
     grapes: [],
     vintageMin: null,
     vintageMax: null,
@@ -47,8 +50,23 @@ function WineList() {
     const currentYear = new Date().getFullYear()
 
     return wines.filter((wine) => {
-      // Search filter
-      if (filters.search && !wine.name.toLowerCase().includes(filters.search.toLowerCase())) {
+      // Search filter - search by wine name OR winery name
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase()
+        const wineNameMatch = wine.name.toLowerCase().includes(searchLower)
+
+        // Get winery name if wine has a winery
+        const winery = wineries?.find((w) => w.id === wine.winery_id)
+        const wineryNameMatch = winery?.name.toLowerCase().includes(searchLower)
+
+        // Return false if neither wine name nor winery name match
+        if (!wineNameMatch && !wineryNameMatch) {
+          return false
+        }
+      }
+
+      // Winery filter
+      if (filters.winery && wine.winery_id !== filters.winery) {
         return false
       }
 
@@ -94,12 +112,13 @@ function WineList() {
 
       return true
     })
-  }, [wines, filters])
+  }, [wines, wineries, filters])
 
   // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0
     if (filters.search) count++
+    if (filters.winery) count++
     if (filters.grapes.length > 0) count++
     if (filters.vintageMin !== null || filters.vintageMax !== null) count++
     if (filters.priceMin !== null || filters.priceMax !== null) count++
