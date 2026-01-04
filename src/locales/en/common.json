@@ -50,5 +50,9 @@
     "title": "Confirm Delete",
     "cancel": "Cancel",
     "delete": "Delete"
+  },
+  "camera": {
+    "photoSize": "Photo should not exceed 5MB",
+    "photoDrop": "Drag image here or click to select"
   }
 }

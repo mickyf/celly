@@ -227,10 +227,10 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
 
                   <div>
                     <Text size="xl" inline>
-                      {t('wines:form.descriptions.photoDrop')}
+                      {t('common:camera.photoDrop')}
                     </Text>
                     <Text size="sm" c="dimmed" inline mt={7}>
-                      {t('wines:form.descriptions.photoSize')}
+                      {t('common:camera.photoSize')}
                     </Text>
                   </div>
                 </Group>

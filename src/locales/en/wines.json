@@ -60,9 +60,7 @@
     },
     "descriptions": {
       "grapeVarieties": "Add multiple grape varieties",
-      "drinkingWindow": "When is this wine expected to be at its best?",
-      "photoSize": "Photo should not exceed 5MB",
-      "photoDrop": "Drag image here or click to select"
+      "drinkingWindow": "When is this wine expected to be at its best?"
     },
     "buttons": {
       "removePhoto": "Remove Photo",

@@ -50,5 +50,9 @@
     "title": "Löschen bestätigen",
     "cancel": "Abbrechen",
     "delete": "Löschen"
+  },
+  "camera": {
+    "photoSize": "Foto sollte 5 MB nicht überschreiten",
+    "photoDrop": "Bild hierher ziehen oder klicken zum Auswählen"
   }
 }

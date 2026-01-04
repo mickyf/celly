@@ -60,9 +60,7 @@
     },
     "descriptions": {
       "grapeVarieties": "Mehrere Rebsorten hinzufügen",
-      "drinkingWindow": "Wann wird dieser Wein voraussichtlich am besten sein?",
-      "photoSize": "Foto sollte 5 MB nicht überschreiten",
-      "photoDrop": "Bild hierher ziehen oder klicken zum Auswählen"
+      "drinkingWindow": "Wann wird dieser Wein voraussichtlich am besten sein?"
     },
     "buttons": {
       "removePhoto": "Foto entfernen",
