@@ -21,6 +21,9 @@ npm run lint
 # Preview production build
 npm run preview
 
+# Generate TypeScript types from Supabase schema
+npm run gen-types
+
 # Supabase commands
 npx supabase start          # Start local Supabase (Docker required)
 npx supabase stop           # Stop local Supabase
@@ -38,6 +41,36 @@ npx supabase migration new <name>  # Create new migration
 - **UI Framework**: Mantine UI v8 with custom grape theme
 - **Backend**: Supabase (PostgreSQL + Auth + Storage)
 - **AI Integration**: Anthropic Claude Sonnet 4.5 API
+- **Internationalization**: react-i18next with English and German (Swiss) translations
+
+### Internationalization (i18n)
+
+**Implementation** (`src/i18n/config.ts`):
+- Uses `react-i18next` with `i18next-browser-languagedetector`
+- Supports English (`en`) and Swiss German (`de-CH`)
+- Translation files organized by namespace in `src/locales/{lang}/{namespace}.json`
+- Namespaces: `common`, `dashboard`, `wines`, `pairing`, `auth`
+- Language detection with localStorage persistence
+- Fallback language: English
+
+**Usage Pattern**:
+```typescript
+import { useTranslation } from 'react-i18next'
+
+// Single namespace
+const { t } = useTranslation('common')
+t('common:buttons.save')
+
+// Multiple namespaces
+const { t } = useTranslation(['dashboard', 'common'])
+t('dashboard:title')
+t('common:buttons.cancel')
+```
+
+**LanguageSelector Component** (`src/components/LanguageSelector.tsx`):
+- Dropdown in app header for language switching
+- Persists selection to localStorage
+- Available in `__root.tsx` navigation
 
 ### Data Flow Architecture
 
@@ -56,10 +89,13 @@ All server state is managed through custom hooks in `src/hooks/`:
 - Environment variables: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
 
 **Database Schema** (see `supabase/migrations/`):
-- `wines` table: Core wine data with RLS policies
+- `wineries` table: Winery information (name, country_code) with RLS policies
+- `wines` table: Core wine data with optional `winery_id` foreign key (ON DELETE RESTRICT), includes grapes[], vintage, quantity, price, drinking window
 - `tasting_notes` table: Rating (1-5 stars) + notes + date, cascades on wine deletion
 - Row Level Security (RLS): All tables filtered by `auth.uid() = user_id`
 - Storage bucket: `wine-images` with user-scoped folders
+- Indexes on user_id, drink_window, vintage for query performance
+- Automatic `updated_at` triggers on wineries and wines tables
 
 **Photo Upload Pattern**:
 1. Upload to `wine-images/{user_id}/{wineId}.{ext}` via `useUploadWinePhoto()`
@@ -88,8 +124,12 @@ File-based routes in `src/routes/`:
 - `WineFilters.tsx` - Collapsible search/filter panel with multi-select grapes, vintage/price ranges, drinking window status
 - `TastingNoteForm.tsx` - Rating widget + date picker + textarea using `@mantine/form`
 - `TastingNoteCard.tsx` - Display note with rating stars and formatted date
+- `LanguageSelector.tsx` - Language switcher dropdown (English/Swiss German) in app header
 
 **Forms**: Use `@mantine/form` (not react-hook-form). Form validation in `validate` object, no external schema libraries.
+
+**Translation Pattern in Components**:
+All user-facing text uses translation keys. Components import `useTranslation` and reference keys like `t('wines:form.fields.name.label')`. Never hardcode English strings in components.
 
 ### AI Food Pairing Flow
 
@@ -108,8 +148,11 @@ File-based routes in `src/routes/`:
 ### TypeScript Type Safety
 
 **Database Types** (`src/types/database.ts`):
-- Generated Supabase types (manually created, not auto-generated)
-- Use `Database['public']['Tables']['wines']['Row']` pattern
+- Auto-generated from Supabase schema using `npm run gen-types`
+- Command runs: `npx supabase gen types typescript --local > src/types/database.ts`
+- Regenerate after any schema changes (migrations)
+- Use `Database['public']['Tables']['wines']['Row']` pattern for table types
+- Includes Row, Insert, Update types for each table, plus Relationships
 - Import types with `type` keyword due to `verbatimModuleSyntax` in tsconfig
 
 **Type Import Pattern**:
@@ -121,6 +164,12 @@ import { type WineFormValues } from './WineForm'
 import { WineFormValues } from './WineForm'
 ```
 
+**Type Generation Workflow**:
+1. Create or modify migration in `supabase/migrations/`
+2. Apply migration: `npx supabase db reset`
+3. Regenerate types: `npm run gen-types`
+4. Types in `src/types/database.ts` now match database schema
+
 ### Mantine UI Theme
 
 **Custom Theme** (`src/main.tsx`):
@@ -128,6 +177,7 @@ import { WineFormValues } from './WineForm'
 - Custom color scale defined in `MantineProvider`
 - Default radius: `md`
 - All Mantine CSS imports required in `main.tsx`
+- i18n config imported to initialize translations
 
 **Required CSS Imports**:
 ```typescript
@@ -136,6 +186,11 @@ import '@mantine/notifications/styles.css'
 import '@mantine/dropzone/styles.css'
 import '@mantine/dates/styles.css'
 import '@mantine/charts/styles.css'
+```
+
+**Required Config Imports**:
+```typescript
+import './i18n/config' // Must import to initialize i18next
 ```
 
 ## Environment Setup
@@ -162,24 +217,34 @@ npx supabase migration new <descriptive_name>
 
 **Applying Migrations**:
 ```bash
-npx supabase db reset  # Resets DB and applies all migrations
+npx supabase db reset  # Resets DB and applies all migrations + seed data
 ```
 
-**Schema Changes**:
-- Always update `src/types/database.ts` to match schema changes
-- RLS policies must be included in migration for new tables
-- Storage policies for new buckets must be defined in migrations
+**Schema Changes Workflow**:
+1. Create migration file in `supabase/migrations/`
+2. Apply migration: `npx supabase db reset`
+3. Regenerate types: `npm run gen-types`
+4. RLS policies must be included in migration for new tables
+5. Storage policies for new buckets must be defined in migrations
+
+**Seed Data** (`supabase/seed.sql`):
+- Contains test user creation and sample wine imports
+- Automatically applied during `npx supabase db reset`
+- Uses hardcoded UUID for test user (`87348a9f-513c-463d-82eb-89b883d4ddc6`)
+- Includes auth.users and auth.identities setup for local testing
 
 ## Common Patterns
 
 ### Adding a New Data Entity
 
-1. Create migration in `supabase/migrations/`
-2. Add table types to `src/types/database.ts`
-3. Create custom hooks in `src/hooks/use<Entity>.ts` with query/mutation functions
-4. Create form component in `src/components/<Entity>Form.tsx` using `@mantine/form`
-5. Create display component in `src/components/<Entity>Card.tsx`
-6. Create routes in `src/routes/<entity>/` for list/detail/add/edit
+1. Create migration in `supabase/migrations/` with table definition and RLS policies
+2. Apply migration: `npx supabase db reset`
+3. Generate types: `npm run gen-types` (updates `src/types/database.ts`)
+4. Create custom hooks in `src/hooks/use<Entity>.ts` with query/mutation functions
+5. Create form component in `src/components/<Entity>Form.tsx` using `@mantine/form`
+6. Create display component in `src/components/<Entity>Card.tsx`
+7. Add translation keys to `src/locales/en/{namespace}.json` and `src/locales/de-CH/{namespace}.json`
+8. Create routes in `src/routes/<entity>/` for list/detail/add/edit
 
 ### Search/Filter Implementation
 
@@ -201,6 +266,16 @@ await updateWine.mutateAsync({ id: wineId, photo_url: photoUrl })
 ```
 
 Storage path: `{user_id}/{wineId}.{ext}` for automatic RLS via storage policies.
+
+### Adding New Translations
+
+When adding new features or text:
+1. Add translation keys to both `src/locales/en/{namespace}.json` and `src/locales/de-CH/{namespace}.json`
+2. Use nested keys for organization: `"form": { "fields": { "name": { "label": "Name" } } }`
+3. Import `useTranslation` in component: `const { t } = useTranslation('namespace')`
+4. Reference keys: `t('form.fields.name.label')`
+5. For pluralization: use `t('key', { count: n })` with separate singular/plural keys
+6. Keep namespaces focused: common (buttons, errors), wines (wine-specific), dashboard, etc.
 
 ## Known Constraints
 
