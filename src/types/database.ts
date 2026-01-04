@@ -72,6 +72,33 @@ export type Database = {
           },
         ]
       }
+      wineries: {
+        Row: {
+          country_code: string | null
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       wines: {
         Row: {
           created_at: string | null
@@ -86,6 +113,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           vintage: number | null
+          winery_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -100,6 +128,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           vintage?: number | null
+          winery_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -114,8 +143,17 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           vintage?: number | null
+          winery_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wines_winery_id_fkey"
+            columns: ["winery_id"]
+            isOneToOne: false
+            referencedRelation: "wineries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
