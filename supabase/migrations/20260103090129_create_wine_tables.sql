@@ -1,8 +1,19 @@
+-- Create wineries table
+CREATE TABLE wineries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  name TEXT NOT NULL,
+  country_code TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create wines table
 CREATE TABLE wines (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users NOT NULL,
   name TEXT NOT NULL,
+  winery_id UUID REFERENCES wineries(id) ON DELETE RESTRICT,
   grapes TEXT[] NOT NULL DEFAULT '{}',
   vintage INTEGER,
   quantity INTEGER DEFAULT 1 CHECK (quantity >= 0),
@@ -26,6 +37,7 @@ CREATE TABLE tasting_notes (
 );
 
 -- Create indexes for performance
+CREATE INDEX wineries_user_id_idx ON wineries(user_id);
 CREATE INDEX wines_user_id_idx ON wines(user_id);
 CREATE INDEX wines_drink_window_idx ON wines(drink_window_start, drink_window_end);
 CREATE INDEX wines_vintage_idx ON wines(vintage);
@@ -33,8 +45,26 @@ CREATE INDEX tasting_notes_wine_id_idx ON tasting_notes(wine_id);
 CREATE INDEX tasting_notes_user_id_idx ON tasting_notes(user_id);
 
 -- Enable Row Level Security
+ALTER TABLE wineries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasting_notes ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for wines table
+CREATE POLICY "Users can view their own wineries"
+  ON wineries FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own wineries"
+  ON wineries FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own wineries"
+  ON wineries FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own wineries"
+  ON wineries FOR DELETE
+  USING (auth.uid() = user_id);
 
 -- Create RLS policies for wines table
 CREATE POLICY "Users can view their own wines"
@@ -80,8 +110,20 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to automatically update updated_at
+CREATE TRIGGER update_wineries_updated_at
+  BEFORE UPDATE ON wineries
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Create trigger to automatically update updated_at
 CREATE TRIGGER update_wines_updated_at
   BEFORE UPDATE ON wines
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Create trigger to automatically update updated_at
+CREATE TRIGGER update_tasting_notes_updated_at
+  BEFORE UPDATE ON tasting_notes
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
