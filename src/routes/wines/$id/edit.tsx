@@ -33,6 +33,7 @@ function EditWine() {
       await updateWine.mutateAsync({
         id,
         name: values.name,
+        winery_id: values.winery_id,
         grapes: values.grapes,
         vintage: values.vintage,
         quantity: values.quantity,

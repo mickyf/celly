@@ -42,6 +42,7 @@
     },
     "labels": {
       "wineName": "Weinname",
+      "winery": "Weingut",
       "grapeVarieties": "Rebsorten",
       "vintage": "Jahrgang",
       "quantity": "Anzahl",
@@ -51,6 +52,7 @@
     },
     "placeholders": {
       "wineName": "z.B. Château Margaux",
+      "winery": "Weingut auswählen (optional)",
       "grapeVarieties": "Tippen und Enter drücken",
       "vintage": "z.B. 2015",
       "quantity": "Anzahl Flaschen",
@@ -59,6 +61,7 @@
       "endYear": "z.B. 2035"
     },
     "descriptions": {
+      "winery": "Diesen Wein einem Weingut zuordnen",
       "grapeVarieties": "Mehrere Rebsorten hinzufügen",
       "drinkingWindow": "Wann wird dieser Wein voraussichtlich am besten sein?"
     },

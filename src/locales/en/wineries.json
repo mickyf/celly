@@ -1,0 +1,70 @@
+{
+  "list": {
+    "title": "Wineries",
+    "subtitle": "Manage your wine producers",
+    "addButton": "Add Winery",
+    "emptyState": "No wineries yet. Start by adding your first winery!",
+    "noResults": "No wineries match your search.",
+    "showingCount": "Showing {{filtered}} of {{total}} wineries",
+    "searchPlaceholder": "Search wineries..."
+  },
+  "detail": {
+    "notFound": "Winery not found",
+    "sections": {
+      "basicInfo": "Winery Information",
+      "wines": "Wines from this Winery"
+    },
+    "confirmDelete": "Are you sure you want to delete this winery?",
+    "emptyWines": "No wines from this winery yet.",
+    "viewWine": "View Wine"
+  },
+  "add": {
+    "title": "Add Winery",
+    "subtitle": "Add a new wine producer"
+  },
+  "edit": {
+    "title": "Edit Winery",
+    "subtitle": "Update winery information"
+  },
+  "form": {
+    "labels": {
+      "wineryName": "Winery Name",
+      "country": "Country"
+    },
+    "placeholders": {
+      "wineryName": "e.g., Château Margaux",
+      "country": "Select country"
+    },
+    "buttons": {
+      "addWinery": "Add Winery",
+      "updateWinery": "Update Winery"
+    },
+    "validation": {
+      "nameRequired": "Winery name is required"
+    }
+  },
+  "card": {
+    "wineCount_one": "{{count}} wine",
+    "wineCount_other": "{{count}} wines"
+  },
+  "notifications": {
+    "wineryAdded": {
+      "title": "Winery added",
+      "message": "Winery has been added successfully"
+    },
+    "wineryUpdated": {
+      "title": "Winery updated",
+      "message": "Winery information has been updated"
+    },
+    "wineryDeleted": {
+      "title": "Winery deleted",
+      "message": "Winery has been removed"
+    },
+    "error": {
+      "title": "Error"
+    }
+  },
+  "errors": {
+    "hasWines": "Cannot delete winery with {{count}} associated wine(s). Please remove or reassign wines first."
+  }
+}

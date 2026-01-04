@@ -24,6 +24,7 @@ import {
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useWine, useDeleteWine } from '../../../hooks/useWines'
+import { useWinery } from '../../../hooks/useWineries'
 import {
   useTastingNotes,
   useAddTastingNote,
@@ -34,6 +35,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
 import { TastingNoteCard } from '../../../components/TastingNoteCard'
 import { useTranslation } from 'react-i18next'
+import { getCountryByCode } from '../../../constants/countries'
 import type { Database } from '../../../types/database'
 
 type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
@@ -49,6 +51,7 @@ function WineDetail() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
+  const { data: winery } = useWinery(wine?.winery_id || '')
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
   const deleteWine = useDeleteWine()
   const addNote = useAddTastingNote()
@@ -225,6 +228,22 @@ function WineDetail() {
                     </Text>
                   )}
                 </div>
+
+                {winery && (
+                  <div>
+                    <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                      Winery
+                    </Text>
+                    <Group mt="xs" gap="xs">
+                      <Text size="lg">{winery.name}</Text>
+                      {winery.country_code && (
+                        <Text size="sm" c="dimmed">
+                          {getCountryByCode(winery.country_code)?.flag}
+                        </Text>
+                      )}
+                    </Group>
+                  </div>
+                )}
 
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
