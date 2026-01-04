@@ -20,6 +20,7 @@ type Wine = Database['public']['Tables']['wines']['Row']
 interface WineFormProps {
   wine?: Wine
   onSubmit: (values: WineFormValues, photo?: File) => void
+  onCancel?: () => void
   isLoading?: boolean
 }
 
@@ -33,7 +34,7 @@ export interface WineFormValues {
   drink_window_end: number | null
 }
 
-export function WineForm({ wine, onSubmit, isLoading }: WineFormProps) {
+export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     wine?.photo_url || null
@@ -237,7 +238,12 @@ export function WineForm({ wine, onSubmit, isLoading }: WineFormProps) {
         </Paper>
 
         <Group justify="flex-end">
-          <Button type="submit" size="lg" loading={isLoading}>
+          {onCancel && (
+            <Button variant="default" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" loading={isLoading}>
             {wine ? 'Update Wine' : 'Add Wine'}
           </Button>
         </Group>

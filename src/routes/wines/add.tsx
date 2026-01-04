@@ -80,6 +80,7 @@ function AddWine() {
 
         <WineForm
           onSubmit={handleSubmit}
+          onCancel={() => navigate({ to: '/wines' })}
           isLoading={addWine.isPending || uploadPhoto.isPending}
         />
       </Stack>
