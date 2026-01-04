@@ -1,0 +1,45 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Welcome to your wine cellar",
+  "stats": {
+    "totalBottles": "Total Bottles",
+    "uniqueWines": "Unique Wines",
+    "totalValue": "Total Value",
+    "tastingNotes": "Tasting Notes",
+    "readyToDrink": "Ready to Drink"
+  },
+  "sections": {
+    "readyToDrink": "Ready to Drink",
+    "topGrapes": "Top Grape Varieties",
+    "recentNotes": "Recent Tasting Notes",
+    "quickActions": "Quick Actions"
+  },
+  "readyText": "{{count}} out of {{total}} wines are within their optimal drinking window",
+  "readyCount": "{{count}} wines",
+  "grapeCount": "{{count}} wine",
+  "grapeCount_other": "{{count}} wines",
+  "noGrapes": "No wines with grape varieties yet",
+  "quickActions": {
+    "addWine": {
+      "title": "Add Your First Wine",
+      "description": "Start building your collection",
+      "button": "Add Wine"
+    },
+    "viewReady": {
+      "button": "View Ready Wines"
+    },
+    "getPairing": {
+      "title": "Find Perfect Pairing",
+      "description": "Let AI suggest wines for your menu",
+      "button": "Get Pairing"
+    },
+    "viewAll": {
+      "button": "View All Wines"
+    }
+  },
+  "table": {
+    "wine": "Wine",
+    "rating": "Rating",
+    "date": "Date"
+  }
+}

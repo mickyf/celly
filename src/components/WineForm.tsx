@@ -13,6 +13,7 @@ import {
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -35,6 +36,7 @@ export interface WineFormValues {
 }
 
 export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
+  const { t } = useTranslation(['wines', 'common'])
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     wine?.photo_url || null
@@ -51,25 +53,25 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       drink_window_end: wine?.drink_window_end || null,
     },
     validate: {
-      name: (value) => (value.trim().length > 0 ? null : 'Name is required'),
-      quantity: (value) => (value > 0 ? null : 'Quantity must be at least 1'),
+      name: (value) => (value.trim().length > 0 ? null : t('wines:form.validation.nameRequired')),
+      quantity: (value) => (value > 0 ? null : t('wines:form.validation.quantityMin')),
       vintage: (value) =>
         value === null || (value >= 1900 && value <= new Date().getFullYear() + 10)
           ? null
-          : 'Please enter a valid vintage year',
+          : t('wines:form.validation.invalidVintage'),
       drink_window_start: (value, values) => {
         if (value === null) return null
-        if (value < 1900) return 'Invalid year'
+        if (value < 1900) return t('wines:form.validation.invalidYear')
         if (values.drink_window_end && value > values.drink_window_end) {
-          return 'Start year must be before end year'
+          return t('wines:form.validation.startBeforeEnd')
         }
         return null
       },
       drink_window_end: (value, values) => {
         if (value === null) return null
-        if (value < 1900) return 'Invalid year'
+        if (value < 1900) return t('wines:form.validation.invalidYear')
         if (values.drink_window_start && value < values.drink_window_start) {
-          return 'End year must be after start year'
+          return t('wines:form.validation.endAfterStart')
         }
         return null
       },
@@ -98,35 +100,35 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={700} size="lg">
-              Basic Information
+              {t('wines:form.sections.basicInfo')}
             </Text>
 
             <TextInput
-              label="Wine Name"
-              placeholder="e.g., Château Margaux"
+              label={t('wines:form.labels.wineName')}
+              placeholder={t('wines:form.placeholders.wineName')}
               required
               {...form.getInputProps('name')}
             />
 
             <TagsInput
-              label="Grape Varieties"
-              placeholder="Type and press Enter"
-              description="Add multiple grape varieties"
+              label={t('wines:form.labels.grapeVarieties')}
+              placeholder={t('wines:form.placeholders.grapeVarieties')}
+              description={t('wines:form.descriptions.grapeVarieties')}
               {...form.getInputProps('grapes')}
             />
 
             <Group grow>
               <NumberInput
-                label="Vintage"
-                placeholder="e.g., 2015"
+                label={t('wines:form.labels.vintage')}
+                placeholder={t('wines:form.placeholders.vintage')}
                 min={1900}
                 max={new Date().getFullYear() + 10}
                 {...form.getInputProps('vintage')}
               />
 
               <NumberInput
-                label="Quantity"
-                placeholder="Number of bottles"
+                label={t('wines:form.labels.quantity')}
+                placeholder={t('wines:form.placeholders.quantity')}
                 required
                 min={0}
                 {...form.getInputProps('quantity')}
@@ -134,8 +136,8 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
             </Group>
 
             <NumberInput
-              label="Price (per bottle)"
-              placeholder="0.00"
+              label={t('wines:form.labels.pricePerBottle')}
+              placeholder={t('wines:form.placeholders.price')}
               prefix="$"
               decimalScale={2}
               min={0}
@@ -147,24 +149,24 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={700} size="lg">
-              Drinking Window
+              {t('wines:form.sections.drinkingWindow')}
             </Text>
 
             <Text size="sm" c="dimmed">
-              When is this wine expected to be at its best?
+              {t('wines:form.descriptions.drinkingWindow')}
             </Text>
 
             <Group grow>
               <NumberInput
-                label="Start Year"
-                placeholder="e.g., 2025"
+                label={t('wines:form.labels.startYear')}
+                placeholder={t('wines:form.placeholders.startYear')}
                 min={1900}
                 {...form.getInputProps('drink_window_start')}
               />
 
               <NumberInput
-                label="End Year"
-                placeholder="e.g., 2035"
+                label={t('wines:form.labels.endYear')}
+                placeholder={t('wines:form.placeholders.endYear')}
                 min={1900}
                 {...form.getInputProps('drink_window_end')}
               />
@@ -175,7 +177,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={700} size="lg">
-              Photo
+              {t('wines:form.sections.photo')}
             </Text>
 
             {photoPreview ? (
@@ -197,7 +199,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                     setPhotoPreview(null)
                   }}
                 >
-                  Remove Photo
+                  {t('wines:form.buttons.removePhoto')}
                 </Button>
               </div>
             ) : (
@@ -225,10 +227,10 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
 
                   <div>
                     <Text size="xl" inline>
-                      Drag image here or click to select
+                      {t('wines:form.descriptions.photoDrop')}
                     </Text>
                     <Text size="sm" c="dimmed" inline mt={7}>
-                      Photo should not exceed 5MB
+                      {t('wines:form.descriptions.photoSize')}
                     </Text>
                   </div>
                 </Group>
@@ -240,11 +242,11 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         <Group justify="flex-end">
           {onCancel && (
             <Button variant="default" onClick={onCancel}>
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
           )}
           <Button type="submit" loading={isLoading}>
-            {wine ? 'Update Wine' : 'Add Wine'}
+            {wine ? t('wines:form.buttons.updateWine') : t('wines:form.buttons.addWine')}
           </Button>
         </Group>
       </Stack>

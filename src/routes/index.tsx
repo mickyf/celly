@@ -25,6 +25,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useDashboardStats } from '../hooks/useDashboard'
+import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 
 export const Route = createFileRoute('/')({
@@ -32,6 +33,7 @@ export const Route = createFileRoute('/')({
 })
 
 function Dashboard() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -68,9 +70,9 @@ function Dashboard() {
     <Container size="lg">
       <Stack gap="xl">
         <div>
-          <Title order={1}>Dashboard</Title>
+          <Title order={1}>{t('dashboard:title')}</Title>
           <Text c="dimmed" size="lg">
-            Welcome to your wine cellar
+            {t('dashboard:subtitle')}
           </Text>
         </div>
 
@@ -81,7 +83,7 @@ function Dashboard() {
               <IconBottle size={32} stroke={1.5} />
               <div>
                 <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  Total Bottles
+                  {t('dashboard:stats.totalBottles')}
                 </Text>
                 <Text size="xl" fw={700}>
                   {stats.totalBottles}
@@ -95,7 +97,7 @@ function Dashboard() {
               <IconBottle size={32} stroke={1.5} />
               <div>
                 <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  Unique Wines
+                  {t('dashboard:stats.uniqueWines')}
                 </Text>
                 <Text size="xl" fw={700}>
                   {stats.totalWines}
@@ -109,7 +111,7 @@ function Dashboard() {
               <IconCurrencyDollar size={32} stroke={1.5} />
               <div>
                 <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  Total Value
+                  {t('dashboard:stats.totalValue')}
                 </Text>
                 <Text size="xl" fw={700}>
                   ${stats.totalValue.toFixed(2)}
@@ -123,7 +125,7 @@ function Dashboard() {
               <IconGlass size={32} stroke={1.5} />
               <div>
                 <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  Tasting Notes
+                  {t('dashboard:stats.tastingNotes')}
                 </Text>
                 <Text size="xl" fw={700}>
                   {stats.tastingNotesCount}
@@ -140,10 +142,10 @@ function Dashboard() {
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
-                    Ready to Drink
+                    {t('dashboard:sections.readyToDrink')}
                   </Text>
                   <Text size="xl" fw={700} mt="xs">
-                    {stats.readyToDrink} wines
+                    {t('dashboard:readyCount', { count: stats.readyToDrink })}
                   </Text>
                 </div>
                 <RingProgress
@@ -158,8 +160,7 @@ function Dashboard() {
                 />
               </Group>
               <Text size="sm" c="dimmed">
-                {stats.readyToDrink} out of {stats.totalWines} wines are within their optimal
-                drinking window
+                {t('dashboard:readyText', { count: stats.readyToDrink, total: stats.totalWines })}
               </Text>
               {stats.readyToDrink > 0 && (
                 <Button
@@ -167,7 +168,7 @@ function Dashboard() {
                   rightSection={<IconArrowRight size={16} />}
                   onClick={() => navigate({ to: '/wines' })}
                 >
-                  View Ready Wines
+                  {t('dashboard:quickActions.viewReady.button')}
                 </Button>
               )}
             </Stack>
@@ -177,7 +178,7 @@ function Dashboard() {
           <Paper shadow="sm" p="xl" radius="md" withBorder>
             <Stack gap="md">
               <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
-                Top Grape Varieties
+                {t('dashboard:sections.topGrapes')}
               </Text>
               {stats.topGrapes.length > 0 ? (
                 <Stack gap="xs">
@@ -187,14 +188,14 @@ function Dashboard() {
                         {item.grape}
                       </Badge>
                       <Text size="sm" fw={500}>
-                        {item.count} {item.count === 1 ? 'wine' : 'wines'}
+                        {t('dashboard:grapeCount', { count: item.count })}
                       </Text>
                     </Group>
                   ))}
                 </Stack>
               ) : (
                 <Text size="sm" c="dimmed">
-                  No wines with grape varieties yet
+                  {t('dashboard:noGrapes')}
                 </Text>
               )}
             </Stack>
@@ -207,7 +208,7 @@ function Dashboard() {
             <Stack gap="md">
               <Group justify="space-between">
                 <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
-                  Recent Tasting Notes
+                  {t('dashboard:sections.recentNotes')}
                 </Text>
                 <Button
                   variant="subtle"
@@ -215,15 +216,15 @@ function Dashboard() {
                   rightSection={<IconArrowRight size={14} />}
                   onClick={() => navigate({ to: '/wines' })}
                 >
-                  View All Wines
+                  {t('dashboard:quickActions.viewAll.button')}
                 </Button>
               </Group>
               <Table>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Wine</Table.Th>
-                    <Table.Th>Rating</Table.Th>
-                    <Table.Th>Date</Table.Th>
+                    <Table.Th>{t('dashboard:table.wine')}</Table.Th>
+                    <Table.Th>{t('dashboard:table.rating')}</Table.Th>
+                    <Table.Th>{t('dashboard:table.date')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -248,12 +249,14 @@ function Dashboard() {
             <Stack gap="md" align="center">
               <IconBottle size={48} stroke={1.5} />
               <Text size="lg" fw={700} ta="center">
-                Add Your First Wine
+                {t('dashboard:quickActions.addWine.title')}
               </Text>
               <Text size="sm" c="dimmed" ta="center">
-                Start building your collection
+                {t('dashboard:quickActions.addWine.description')}
               </Text>
-              <Button onClick={() => navigate({ to: '/wines/add' })}>Add Wine</Button>
+              <Button onClick={() => navigate({ to: '/wines/add' })}>
+                {t('dashboard:quickActions.addWine.button')}
+              </Button>
             </Stack>
           </Paper>
 
@@ -261,12 +264,14 @@ function Dashboard() {
             <Stack gap="md" align="center">
               <IconChefHat size={48} stroke={1.5} />
               <Text size="lg" fw={700} ta="center">
-                Find Perfect Pairing
+                {t('dashboard:quickActions.getPairing.title')}
               </Text>
               <Text size="sm" c="dimmed" ta="center">
-                Let AI suggest wines for your menu
+                {t('dashboard:quickActions.getPairing.description')}
               </Text>
-              <Button onClick={() => navigate({ to: '/pairing' })}>Get Pairing</Button>
+              <Button onClick={() => navigate({ to: '/pairing' })}>
+                {t('dashboard:quickActions.getPairing.button')}
+              </Button>
             </Stack>
           </Paper>
         </SimpleGrid>

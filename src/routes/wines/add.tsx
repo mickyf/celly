@@ -4,12 +4,14 @@ import { supabase } from '../../lib/supabase'
 import { useEffect, useState } from 'react'
 import { WineForm, type WineFormValues } from '../../components/WineForm'
 import { useAddWine, useUploadWinePhoto } from '../../hooks/useWines'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/wines/add')({
   component: AddWine,
 })
 
 function AddWine() {
+  const { t } = useTranslation(['wines'])
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -37,6 +39,7 @@ function AddWine() {
         drink_window_start: values.drink_window_start,
         drink_window_end: values.drink_window_end,
         photo_url: photoUrl,
+        user_id: '',
       })
 
       // If there's a photo, upload it and update the wine
@@ -72,9 +75,9 @@ function AddWine() {
     <Container size="md">
       <Stack gap="xl">
         <div>
-          <Title order={1}>Add Wine</Title>
+          <Title order={1}>{t('wines:add.title')}</Title>
           <Text c="dimmed" size="lg">
-            Add a new bottle to your cellar
+            {t('wines:add.subtitle')}
           </Text>
         </div>
 

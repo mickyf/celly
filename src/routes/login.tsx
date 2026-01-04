@@ -14,6 +14,7 @@ import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -24,6 +25,7 @@ function Login() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const { t } = useTranslation('auth')
 
   const loginForm = useForm({
     initialValues: {
@@ -31,8 +33,8 @@ function Login() {
       password: '',
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-      password: (value) => (value.length >= 6 ? null : 'Password must be at least 6 characters'),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : t('validation.invalidEmail')),
+      password: (value) => (value.length >= 6 ? null : t('validation.passwordTooShort')),
     },
   })
 
@@ -43,10 +45,10 @@ function Login() {
       confirmPassword: '',
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-      password: (value) => (value.length >= 6 ? null : 'Password must be at least 6 characters'),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : t('validation.invalidEmail')),
+      password: (value) => (value.length >= 6 ? null : t('validation.passwordTooShort')),
       confirmPassword: (value, values) =>
-        value !== values.password ? 'Passwords do not match' : null,
+        value !== values.password ? t('validation.passwordsDoNotMatch') : null,
     },
   })
 
@@ -66,14 +68,14 @@ function Login() {
 
     if (error) {
       notifications.show({
-        title: 'Login failed',
+        title: t('notifications.loginFailed'),
         message: error.message,
         color: 'red',
       })
     } else {
       notifications.show({
-        title: 'Success',
-        message: 'Logged in successfully',
+        title: t('notifications.success'),
+        message: t('notifications.loggedIn'),
         color: 'green',
       })
       navigate({ to: '/' })
@@ -90,14 +92,14 @@ function Login() {
 
     if (error) {
       notifications.show({
-        title: 'Signup failed',
+        title: t('notifications.signupFailed'),
         message: error.message,
         color: 'red',
       })
     } else {
       notifications.show({
-        title: 'Success',
-        message: 'Account created! Please check your email to confirm.',
+        title: t('notifications.success'),
+        message: t('notifications.accountCreated'),
         color: 'green',
       })
     }
@@ -114,35 +116,35 @@ function Login() {
 
   return (
     <Container size={420} my={40}>
-      <Title ta="center">Welcome to Celly</Title>
+      <Title ta="center">{t('title')}</Title>
       <Text c="dimmed" size="sm" ta="center" mt={5}>
-        Manage your wine cellar with ease
+        {t('subtitle')}
       </Text>
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <Tabs defaultValue="login">
           <Tabs.List grow>
-            <Tabs.Tab value="login">Login</Tabs.Tab>
-            <Tabs.Tab value="signup">Sign Up</Tabs.Tab>
+            <Tabs.Tab value="login">{t('tabs.login')}</Tabs.Tab>
+            <Tabs.Tab value="signup">{t('tabs.signup')}</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="login" pt="xl">
             <form onSubmit={loginForm.onSubmit(handleLogin)}>
               <Stack>
                 <TextInput
-                  label="Email"
-                  placeholder="your@email.com"
+                  label={t('fields.email')}
+                  placeholder={t('placeholders.email')}
                   required
                   {...loginForm.getInputProps('email')}
                 />
                 <PasswordInput
-                  label="Password"
-                  placeholder="Your password"
+                  label={t('fields.password')}
+                  placeholder={t('placeholders.password')}
                   required
                   {...loginForm.getInputProps('password')}
                 />
                 <Button type="submit" fullWidth loading={submitting}>
-                  Sign in
+                  {t('buttons.signIn')}
                 </Button>
               </Stack>
             </form>
@@ -152,25 +154,25 @@ function Login() {
             <form onSubmit={signupForm.onSubmit(handleSignup)}>
               <Stack>
                 <TextInput
-                  label="Email"
-                  placeholder="your@email.com"
+                  label={t('fields.email')}
+                  placeholder={t('placeholders.email')}
                   required
                   {...signupForm.getInputProps('email')}
                 />
                 <PasswordInput
-                  label="Password"
-                  placeholder="Your password"
+                  label={t('fields.password')}
+                  placeholder={t('placeholders.password')}
                   required
                   {...signupForm.getInputProps('password')}
                 />
                 <PasswordInput
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
+                  label={t('fields.confirmPassword')}
+                  placeholder={t('placeholders.confirmPassword')}
                   required
                   {...signupForm.getInputProps('confirmPassword')}
                 />
                 <Button type="submit" fullWidth loading={submitting}>
-                  Create account
+                  {t('buttons.createAccount')}
                 </Button>
               </Stack>
             </form>

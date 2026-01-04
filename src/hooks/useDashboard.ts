@@ -12,7 +12,7 @@ export interface DashboardStats {
     id: string
     wine_name: string
     rating: number
-    tasted_at: string
+    tasted_at: string | null
   }[]
 }
 
@@ -45,9 +45,9 @@ export const useDashboardStats = () => {
       if (notesError) throw notesError
 
       // Calculate statistics
-      const totalBottles = wines?.reduce((sum, wine) => sum + wine.quantity, 0) || 0
+      const totalBottles = wines?.reduce((sum, wine) => sum + (wine.quantity || 0), 0) || 0
       const totalValue =
-        wines?.reduce((sum, wine) => sum + (wine.price || 0) * wine.quantity, 0) || 0
+        wines?.reduce((sum, wine) => sum + (wine.price || 0) * (wine.quantity || 0), 0) || 0
       const totalWines = wines?.length || 0
 
       // Count wines ready to drink

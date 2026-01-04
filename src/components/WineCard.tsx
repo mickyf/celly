@@ -1,5 +1,6 @@
 import { Card, Image, Text, Badge, Group, Button, Stack } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -12,6 +13,7 @@ interface WineCardProps {
 }
 
 export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
+  const { t } = useTranslation(['wines', 'common'])
   const currentYear = new Date().getFullYear()
   const isReadyToDrink =
     wine.drink_window_start &&
@@ -47,13 +49,13 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
             </Text>
             {isReadyToDrink && (
               <Badge color="green" variant="light">
-                Ready
+                {t('common:status.ready')}
               </Badge>
             )}
           </Group>
           {wine.vintage && (
             <Text size="sm" c="dimmed">
-              Vintage: {wine.vintage}
+              {t('wines:card.vintage', { vintage: wine.vintage })}
             </Text>
           )}
         </div>
@@ -70,7 +72,7 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
 
         <Group>
           <Text size="sm" c="dimmed">
-            Quantity: {wine.quantity}
+            {t('wines:card.quantity', { quantity: wine.quantity })}
           </Text>
           {wine.price && (
             <Text size="sm" c="dimmed">
@@ -81,7 +83,7 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
 
         {wine.drink_window_start && wine.drink_window_end && (
           <Text size="sm" c="dimmed">
-            Drink: {wine.drink_window_start}-{wine.drink_window_end}
+            {t('wines:card.drinkWindow', { start: wine.drink_window_start, end: wine.drink_window_end })}
           </Text>
         )}
 
@@ -93,7 +95,7 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
               leftSection={<IconEye size={16} />}
               onClick={onView}
             >
-              View Details
+              {t('common:buttons.viewDetails')}
             </Button>
           )}
           <Group justify="flex-end">
@@ -104,7 +106,7 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
                 leftSection={<IconEdit size={16} />}
                 onClick={onEdit}
               >
-                Edit
+                {t('common:buttons.edit')}
               </Button>
             )}
             {onDelete && (
@@ -115,7 +117,7 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
                 leftSection={<IconTrash size={16} />}
                 onClick={() => onDelete(wine.id)}
               >
-                Delete
+                {t('common:buttons.delete')}
               </Button>
             )}
           </Group>

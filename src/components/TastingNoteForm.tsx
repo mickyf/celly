@@ -1,6 +1,7 @@
 import { useForm } from '@mantine/form'
 import { Textarea, Button, Stack, Rating, Group } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 
 type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
@@ -25,6 +26,7 @@ export function TastingNoteForm({
   onCancel,
   isLoading,
 }: TastingNoteFormProps) {
+  const { t } = useTranslation(['wines', 'common'])
   const form = useForm<TastingNoteFormValues>({
     initialValues: {
       rating: note?.rating || 3,
@@ -33,8 +35,8 @@ export function TastingNoteForm({
     },
     validate: {
       rating: (value) =>
-        value >= 1 && value <= 5 ? null : 'Rating must be between 1 and 5',
-      notes: (value) => (value.trim().length > 0 ? null : 'Notes are required'),
+        value >= 1 && value <= 5 ? null : t('wines:tastingNote.form.validation.ratingRange'),
+      notes: (value) => (value.trim().length > 0 ? null : t('wines:tastingNote.form.validation.notesRequired')),
     },
 
   })
@@ -44,7 +46,7 @@ export function TastingNoteForm({
       <Stack gap="md">
         <div>
           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-            Rating
+            {t('wines:tastingNote.form.rating')}
           </label>
           <Rating size="xl" {...form.getInputProps('rating')} />
           {form.errors.rating && (
@@ -55,16 +57,16 @@ export function TastingNoteForm({
         </div>
 
         <DatePickerInput
-          label="Tasting Date"
-          placeholder="Pick date"
+          label={t('wines:tastingNote.form.date')}
+          placeholder={t('wines:tastingNote.form.datePlaceholder')}
           maxDate={new Date()}
           {...form.getInputProps('tasted_at')}
         />
 
         <Textarea
-          label="Tasting Notes"
-          placeholder="Describe the wine's aroma, taste, body, finish..."
-          description="Share your impressions and observations"
+          label={t('wines:tastingNote.form.notes')}
+          placeholder={t('wines:tastingNote.form.notesPlaceholder')}
+          description={t('wines:tastingNote.form.notesDescription')}
           minRows={4}
           required
           {...form.getInputProps('notes')}
@@ -73,11 +75,11 @@ export function TastingNoteForm({
         <Group justify="flex-end" mt="md">
           {onCancel && (
             <Button variant="default" onClick={onCancel}>
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
           )}
           <Button type="submit" loading={isLoading}>
-            {note ? 'Update Note' : 'Add Note'}
+            {note ? t('wines:tastingNote.form.buttons.updateNote') : t('wines:tastingNote.form.buttons.addNote')}
           </Button>
         </Group>
       </Stack>

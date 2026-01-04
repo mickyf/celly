@@ -1,0 +1,54 @@
+{
+  "buttons": {
+    "add": "Hinzufügen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "viewDetails": "Details anzeigen",
+    "clearAll": "Alle löschen",
+    "showFilters": "Filter anzeigen",
+    "hideFilters": "Filter ausblenden"
+  },
+  "actions": {
+    "search": "Suchen",
+    "filter": "Filtern",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden"
+  },
+  "labels": {
+    "quantity": "Anzahl",
+    "price": "Preis",
+    "rating": "Bewertung",
+    "date": "Datum",
+    "vintage": "Jahrgang"
+  },
+  "status": {
+    "ready": "Bereit",
+    "loading": "Lädt..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myWines": "Meine Weine",
+    "foodPairing": "Food Pairing"
+  },
+  "plurals": {
+    "wine": "Wein",
+    "wine_other": "Weine",
+    "bottle": "Flasche",
+    "bottle_other": "Flaschen",
+    "note": "Notiz",
+    "note_other": "Notizen"
+  },
+  "counts": {
+    "wines": "{{count}} Wein",
+    "wines_other": "{{count}} Weine",
+    "bottles": "{{count}} Flasche",
+    "bottles_other": "{{count}} Flaschen"
+  },
+  "confirmDelete": {
+    "title": "Löschen bestätigen",
+    "cancel": "Abbrechen",
+    "delete": "Löschen"
+  }
+}

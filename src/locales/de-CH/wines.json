@@ -1,0 +1,159 @@
+{
+  "list": {
+    "title": "Meine Weine",
+    "subtitle": "Verwalten Sie Ihre Weinsammlung",
+    "showingCount": "{{filtered}} von {{total}} Weinen angezeigt",
+    "showingCountSingle": "{{filtered}} von {{total}} Wein angezeigt",
+    "addButton": "Wein hinzufügen",
+    "emptyState": "Noch keine Weine vorhanden. Fügen Sie Ihre erste Flasche hinzu!",
+    "noResults": "Keine Weine entsprechen Ihren Filtern. Versuchen Sie, Ihre Suchkriterien anzupassen."
+  },
+  "detail": {
+    "notFound": "Wein nicht gefunden",
+    "sections": {
+      "grapeVarieties": "Rebsorten",
+      "quantity": "Anzahl",
+      "pricePerBottle": "Preis pro Flasche",
+      "drinkingWindow": "Trinkfenster",
+      "tastingNotes": "Degustationsnotizen",
+      "addTastingNote": "Degustationsnotiz hinzufügen"
+    },
+    "notSpecified": "Nicht angegeben",
+    "readyBadge": "Trinkreif",
+    "emptyNotes": "Noch keine Degustationsnotizen vorhanden. Fügen Sie Ihre erste Notiz hinzu!",
+    "confirmDelete": "Möchten Sie diesen Wein wirklich löschen? Dies löscht auch alle zugehörigen Degustationsnotizen.",
+    "confirmDeleteNote": "Möchten Sie diese Degustationsnotiz wirklich löschen?",
+    "modalEdit": "Degustationsnotiz bearbeiten",
+    "modalAdd": "Degustationsnotiz hinzufügen"
+  },
+  "add": {
+    "title": "Wein hinzufügen",
+    "subtitle": "Fügen Sie eine neue Flasche zu Ihrem Keller hinzu"
+  },
+  "edit": {
+    "title": "Wein bearbeiten",
+    "subtitle": "Weininformationen aktualisieren"
+  },
+  "form": {
+    "sections": {
+      "basicInfo": "Grundinformationen",
+      "drinkingWindow": "Trinkfenster",
+      "photo": "Foto"
+    },
+    "labels": {
+      "wineName": "Weinname",
+      "grapeVarieties": "Rebsorten",
+      "vintage": "Jahrgang",
+      "quantity": "Anzahl",
+      "pricePerBottle": "Preis (pro Flasche)",
+      "startYear": "Startjahr",
+      "endYear": "Endjahr"
+    },
+    "placeholders": {
+      "wineName": "z.B. Château Margaux",
+      "grapeVarieties": "Tippen und Enter drücken",
+      "vintage": "z.B. 2015",
+      "quantity": "Anzahl Flaschen",
+      "price": "0.00",
+      "startYear": "z.B. 2025",
+      "endYear": "z.B. 2035"
+    },
+    "descriptions": {
+      "grapeVarieties": "Mehrere Rebsorten hinzufügen",
+      "drinkingWindow": "Wann wird dieser Wein voraussichtlich am besten sein?",
+      "photoSize": "Foto sollte 5 MB nicht überschreiten",
+      "photoDrop": "Bild hierher ziehen oder klicken zum Auswählen"
+    },
+    "buttons": {
+      "removePhoto": "Foto entfernen",
+      "addWine": "Wein hinzufügen",
+      "updateWine": "Wein aktualisieren"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "quantityMin": "Anzahl muss mindestens 1 sein",
+      "invalidVintage": "Bitte geben Sie einen gültigen Jahrgang ein",
+      "invalidYear": "Ungültiges Jahr",
+      "startBeforeEnd": "Startjahr muss vor dem Endjahr liegen",
+      "endAfterStart": "Endjahr muss nach dem Startjahr liegen"
+    }
+  },
+  "card": {
+    "vintage": "Jahrgang: {{vintage}}",
+    "quantity": "Anzahl: {{quantity}}",
+    "drinkWindow": "Trinken: {{start}}-{{end}}"
+  },
+  "filters": {
+    "title": "Suchen & Filtern",
+    "activeCount": "{{count}} aktiv",
+    "searchPlaceholder": "Nach Weinname suchen...",
+    "grapeVarieties": "Rebsorten",
+    "grapeSelect": "Rebsorten auswählen",
+    "vintageRange": "Jahrgangsbereich",
+    "priceRange": "Preisbereich",
+    "drinkingWindow": "Trinkfenster",
+    "from": "Von",
+    "to": "Bis",
+    "min": "Min",
+    "max": "Max",
+    "selectStatus": "Status auswählen",
+    "drinkingWindowOptions": {
+      "all": "Alle Weine",
+      "ready": "Jetzt trinkreif",
+      "future": "In Zukunft trinken",
+      "past": "Höhepunkt überschritten"
+    }
+  },
+  "tastingNote": {
+    "form": {
+      "rating": "Bewertung",
+      "date": "Degustationsdatum",
+      "notes": "Degustationsnotizen",
+      "datePlaceholder": "Datum wählen",
+      "notesPlaceholder": "Beschreiben Sie Aroma, Geschmack, Körper, Abgang des Weins...",
+      "notesDescription": "Teilen Sie Ihre Eindrücke und Beobachtungen",
+      "validation": {
+        "ratingRange": "Bewertung muss zwischen 1 und 5 liegen",
+        "notesRequired": "Notizen sind erforderlich"
+      },
+      "buttons": {
+        "addNote": "Notiz hinzufügen",
+        "updateNote": "Notiz aktualisieren"
+      }
+    }
+  },
+  "notifications": {
+    "wineAdded": {
+      "title": "Wein hinzugefügt",
+      "message": "Wein wurde zu Ihrem Keller hinzugefügt"
+    },
+    "wineUpdated": {
+      "title": "Wein aktualisiert",
+      "message": "Weininformationen wurden aktualisiert"
+    },
+    "wineDeleted": {
+      "title": "Wein gelöscht",
+      "message": "Wein wurde aus Ihrem Keller entfernt"
+    },
+    "noteAdded": {
+      "title": "Notiz hinzugefügt",
+      "message": "Degustationsnotiz wurde hinzugefügt"
+    },
+    "noteUpdated": {
+      "title": "Notiz aktualisiert",
+      "message": "Degustationsnotiz wurde aktualisiert"
+    },
+    "noteDeleted": {
+      "title": "Notiz gelöscht",
+      "message": "Degustationsnotiz wurde gelöscht"
+    },
+    "photoUploaded": {
+      "title": "Foto hochgeladen",
+      "message": "Weinfoto wurde hochgeladen"
+    },
+    "error": {
+      "title": "Fehler",
+      "message": "Etwas ist schiefgelaufen"
+    }
+  }
+}

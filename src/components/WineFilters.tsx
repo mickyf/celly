@@ -13,6 +13,7 @@ import {
 } from '@mantine/core'
 import { IconSearch, IconFilter, IconX, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -35,6 +36,7 @@ interface WineFiltersProps {
 }
 
 export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount }: WineFiltersProps) {
+  const { t } = useTranslation(['wines', 'common'])
   const [opened, setOpened] = useState(false)
 
   // Extract unique grape varieties from all wines
@@ -67,10 +69,10 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
         <Group justify="space-between">
           <Group gap="xs">
             <IconFilter size={20} />
-            <Text fw={600}>Search & Filter</Text>
+            <Text fw={600}>{t('wines:filters.title')}</Text>
             {hasActiveFilters && (
               <Badge size="sm" variant="filled" color="grape">
-                {activeFilterCount} active
+                {t('wines:filters.activeCount', { count: activeFilterCount })}
               </Badge>
             )}
           </Group>
@@ -82,7 +84,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
                 leftSection={<IconX size={14} />}
                 onClick={handleReset}
               >
-                Clear All
+                {t('common:buttons.clearAll')}
               </Button>
             )}
             <Button
@@ -91,13 +93,13 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
               onClick={() => setOpened(!opened)}
               rightSection={opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
             >
-              {opened ? 'Hide' : 'Show'} Filters
+              {opened ? t('common:buttons.hideFilters') : t('common:buttons.showFilters')}
             </Button>
           </Group>
         </Group>
 
         <TextInput
-          placeholder="Search by wine name..."
+          placeholder={t('wines:filters.searchPlaceholder')}
           leftSection={<IconSearch size={16} />}
           value={filters.search}
           onChange={(e) =>
@@ -108,8 +110,8 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
         <Collapse in={opened}>
           <Stack gap="md" mt="md">
             <MultiSelect
-              label="Grape Varieties"
-              placeholder="Select grapes"
+              label={t('wines:filters.grapeVarieties')}
+              placeholder={t('wines:filters.grapeSelect')}
               data={grapeOptions}
               value={filters.grapes}
               onChange={(value) => onFiltersChange({ ...filters, grapes: value })}
@@ -119,11 +121,11 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
 
             <div>
               <Text size="sm" fw={500} mb="xs">
-                Vintage Range
+                {t('wines:filters.vintageRange')}
               </Text>
               <Group grow>
                 <NumberInput
-                  placeholder="From"
+                  placeholder={t('wines:filters.from')}
                   min={1900}
                   max={new Date().getFullYear() + 10}
                   value={filters.vintageMin ?? ''}
@@ -135,7 +137,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
                   }
                 />
                 <NumberInput
-                  placeholder="To"
+                  placeholder={t('wines:filters.to')}
                   min={1900}
                   max={new Date().getFullYear() + 10}
                   value={filters.vintageMax ?? ''}
@@ -151,11 +153,11 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
 
             <div>
               <Text size="sm" fw={500} mb="xs">
-                Price Range
+                {t('wines:filters.priceRange')}
               </Text>
               <Group grow>
                 <NumberInput
-                  placeholder="Min"
+                  placeholder={t('wines:filters.min')}
                   prefix="$"
                   decimalScale={2}
                   min={0}
@@ -168,7 +170,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
                   }
                 />
                 <NumberInput
-                  placeholder="Max"
+                  placeholder={t('wines:filters.max')}
                   prefix="$"
                   decimalScale={2}
                   min={0}
@@ -184,13 +186,13 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
             </div>
 
             <Select
-              label="Drinking Window"
-              placeholder="Select status"
+              label={t('wines:filters.drinkingWindow')}
+              placeholder={t('wines:filters.selectStatus')}
               data={[
-                { value: 'all', label: 'All Wines' },
-                { value: 'ready', label: 'Ready to Drink Now' },
-                { value: 'future', label: 'Drink in Future' },
-                { value: 'past', label: 'Past Prime' },
+                { value: 'all', label: t('wines:filters.drinkingWindowOptions.all') },
+                { value: 'ready', label: t('wines:filters.drinkingWindowOptions.ready') },
+                { value: 'future', label: t('wines:filters.drinkingWindowOptions.future') },
+                { value: 'past', label: t('wines:filters.drinkingWindowOptions.past') },
               ]}
               value={filters.drinkingWindow}
               onChange={(value) =>

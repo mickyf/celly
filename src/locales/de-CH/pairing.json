@@ -1,0 +1,28 @@
+{
+  "title": "Food Pairing",
+  "subtitle": "Lassen Sie die KI den perfekten Wein aus Ihrem Keller vorschlagen",
+  "form": {
+    "label": "Was planen Sie zu essen?",
+    "placeholder": "Z.B. Gegrilltes Ribeye-Steak mit geröstetem Gemüse und Trüffelbutter",
+    "description": "Beschreiben Sie Ihr Menü oder Gericht detailliert für bessere Pairing-Vorschläge"
+  },
+  "buttons": {
+    "getPairing": "KI-Pairing-Vorschläge abrufen",
+    "analyzing": "Analysiert...",
+    "viewWine": "Wein anzeigen",
+    "clearResults": "Ergebnisse löschen",
+    "addFirstWine": "Ersten Wein hinzufügen"
+  },
+  "emptyState": {
+    "title": "Keine Weine im Keller",
+    "message": "Sie müssen Weine zu Ihrem Keller hinzufügen, bevor Sie Pairing-Vorschläge erhalten können."
+  },
+  "wineCount": "{{count}} Wein in Ihrem Keller verfügbar",
+  "wineCount_other": "{{count}} Weine in Ihrem Keller verfügbar",
+  "results": {
+    "title": "Pairing-Empfehlungen",
+    "rank": "#{{rank}} Empfehlung",
+    "match": "{{score}}% Übereinstimmung",
+    "whyLabel": "Warum dieses Pairing funktioniert:"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "buttons": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "viewDetails": "View Details",
+    "clearAll": "Clear All",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters"
+  },
+  "actions": {
+    "search": "Search",
+    "filter": "Filter",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "labels": {
+    "quantity": "Quantity",
+    "price": "Price",
+    "rating": "Rating",
+    "date": "Date",
+    "vintage": "Vintage"
+  },
+  "status": {
+    "ready": "Ready",
+    "loading": "Loading..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myWines": "My Wines",
+    "foodPairing": "Food Pairing"
+  },
+  "plurals": {
+    "wine": "wine",
+    "wine_other": "wines",
+    "bottle": "bottle",
+    "bottle_other": "bottles",
+    "note": "note",
+    "note_other": "notes"
+  },
+  "counts": {
+    "wines": "{{count}} wine",
+    "wines_other": "{{count}} wines",
+    "bottles": "{{count}} bottle",
+    "bottles_other": "{{count}} bottles"
+  },
+  "confirmDelete": {
+    "title": "Confirm Delete",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  }
+}
