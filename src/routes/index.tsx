@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
 import {
   Container,
   Title,
@@ -86,7 +86,7 @@ function Dashboard() {
                   {t('dashboard:stats.totalBottles')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  {stats.totalBottles}
+                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines">{stats.totalBottles}</Link>
                 </Text>
               </div>
             </Group>
@@ -100,7 +100,7 @@ function Dashboard() {
                   {t('dashboard:stats.uniqueWines')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  {stats.totalWines}
+                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines">{stats.totalWines}</Link>
                 </Text>
               </div>
             </Group>
