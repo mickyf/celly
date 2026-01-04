@@ -93,6 +93,7 @@ function EditWine() {
         <WineForm
           wine={wine}
           onSubmit={handleSubmit}
+          onCancel={() => navigate({ to: '/wines/$id', params: { id } })}
           isLoading={updateWine.isPending || uploadPhoto.isPending}
         />
       </Stack>
