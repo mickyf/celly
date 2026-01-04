@@ -1,0 +1,159 @@
+{
+  "list": {
+    "title": "My Wines",
+    "subtitle": "Manage your wine collection",
+    "showingCount": "Showing {{filtered}} of {{total}} wines",
+    "showingCountSingle": "Showing {{filtered}} of {{total}} wine",
+    "addButton": "Add Wine",
+    "emptyState": "No wines yet. Start by adding your first bottle!",
+    "noResults": "No wines match your filters. Try adjusting your search criteria."
+  },
+  "detail": {
+    "notFound": "Wine not found",
+    "sections": {
+      "grapeVarieties": "Grape Varieties",
+      "quantity": "Quantity",
+      "pricePerBottle": "Price per Bottle",
+      "drinkingWindow": "Drinking Window",
+      "tastingNotes": "Tasting Notes",
+      "addTastingNote": "Add Tasting Note"
+    },
+    "notSpecified": "Not specified",
+    "readyBadge": "Ready to Drink",
+    "emptyNotes": "No tasting notes yet. Add your first tasting note!",
+    "confirmDelete": "Are you sure you want to delete this wine? This will also delete all associated tasting notes.",
+    "confirmDeleteNote": "Are you sure you want to delete this tasting note?",
+    "modalEdit": "Edit Tasting Note",
+    "modalAdd": "Add Tasting Note"
+  },
+  "add": {
+    "title": "Add Wine",
+    "subtitle": "Add a new bottle to your cellar"
+  },
+  "edit": {
+    "title": "Edit Wine",
+    "subtitle": "Update wine information"
+  },
+  "form": {
+    "sections": {
+      "basicInfo": "Basic Information",
+      "drinkingWindow": "Drinking Window",
+      "photo": "Photo"
+    },
+    "labels": {
+      "wineName": "Wine Name",
+      "grapeVarieties": "Grape Varieties",
+      "vintage": "Vintage",
+      "quantity": "Quantity",
+      "pricePerBottle": "Price (per bottle)",
+      "startYear": "Start Year",
+      "endYear": "End Year"
+    },
+    "placeholders": {
+      "wineName": "e.g., Château Margaux",
+      "grapeVarieties": "Type and press Enter",
+      "vintage": "e.g., 2015",
+      "quantity": "Number of bottles",
+      "price": "0.00",
+      "startYear": "e.g., 2025",
+      "endYear": "e.g., 2035"
+    },
+    "descriptions": {
+      "grapeVarieties": "Add multiple grape varieties",
+      "drinkingWindow": "When is this wine expected to be at its best?",
+      "photoSize": "Photo should not exceed 5MB",
+      "photoDrop": "Drag image here or click to select"
+    },
+    "buttons": {
+      "removePhoto": "Remove Photo",
+      "addWine": "Add Wine",
+      "updateWine": "Update Wine"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "quantityMin": "Quantity must be at least 1",
+      "invalidVintage": "Please enter a valid vintage year",
+      "invalidYear": "Invalid year",
+      "startBeforeEnd": "Start year must be before end year",
+      "endAfterStart": "End year must be after start year"
+    }
+  },
+  "card": {
+    "vintage": "Vintage: {{vintage}}",
+    "quantity": "Quantity: {{quantity}}",
+    "drinkWindow": "Drink: {{start}}-{{end}}"
+  },
+  "filters": {
+    "title": "Search & Filter",
+    "activeCount": "{{count}} active",
+    "searchPlaceholder": "Search by wine name...",
+    "grapeVarieties": "Grape Varieties",
+    "grapeSelect": "Select grapes",
+    "vintageRange": "Vintage Range",
+    "priceRange": "Price Range",
+    "drinkingWindow": "Drinking Window",
+    "from": "From",
+    "to": "To",
+    "min": "Min",
+    "max": "Max",
+    "selectStatus": "Select status",
+    "drinkingWindowOptions": {
+      "all": "All Wines",
+      "ready": "Ready to Drink Now",
+      "future": "Drink in Future",
+      "past": "Past Prime"
+    }
+  },
+  "tastingNote": {
+    "form": {
+      "rating": "Rating",
+      "date": "Tasting Date",
+      "notes": "Tasting Notes",
+      "datePlaceholder": "Pick date",
+      "notesPlaceholder": "Describe the wine's aroma, taste, body, finish...",
+      "notesDescription": "Share your impressions and observations",
+      "validation": {
+        "ratingRange": "Rating must be between 1 and 5",
+        "notesRequired": "Notes are required"
+      },
+      "buttons": {
+        "addNote": "Add Note",
+        "updateNote": "Update Note"
+      }
+    }
+  },
+  "notifications": {
+    "wineAdded": {
+      "title": "Wine added",
+      "message": "Wine has been added to your cellar"
+    },
+    "wineUpdated": {
+      "title": "Wine updated",
+      "message": "Wine information has been updated"
+    },
+    "wineDeleted": {
+      "title": "Wine deleted",
+      "message": "Wine has been removed from your cellar"
+    },
+    "noteAdded": {
+      "title": "Note added",
+      "message": "Tasting note has been added"
+    },
+    "noteUpdated": {
+      "title": "Note updated",
+      "message": "Tasting note has been updated"
+    },
+    "noteDeleted": {
+      "title": "Note deleted",
+      "message": "Tasting note has been deleted"
+    },
+    "photoUploaded": {
+      "title": "Photo uploaded",
+      "message": "Wine photo has been uploaded"
+    },
+    "error": {
+      "title": "Error",
+      "message": "Something went wrong"
+    }
+  }
+}

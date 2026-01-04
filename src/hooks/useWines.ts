@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -40,6 +41,7 @@ export const useWine = (id: string) => {
 }
 
 export const useAddWine = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -62,14 +64,14 @@ export const useAddWine = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       notifications.show({
-        title: 'Success',
-        message: 'Wine added to your cellar',
+        title: t('wines:notifications.wineAdded.title'),
+        message: t('wines:notifications.wineAdded.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })
@@ -78,6 +80,7 @@ export const useAddWine = () => {
 }
 
 export const useUpdateWine = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -96,14 +99,14 @@ export const useUpdateWine = () => {
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       queryClient.invalidateQueries({ queryKey: ['wines', data.id] })
       notifications.show({
-        title: 'Success',
-        message: 'Wine updated successfully',
+        title: t('wines:notifications.wineUpdated.title'),
+        message: t('wines:notifications.wineUpdated.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })
@@ -112,6 +115,7 @@ export const useUpdateWine = () => {
 }
 
 export const useDeleteWine = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -123,14 +127,14 @@ export const useDeleteWine = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       notifications.show({
-        title: 'Success',
-        message: 'Wine removed from your cellar',
+        title: t('wines:notifications.wineDeleted.title'),
+        message: t('wines:notifications.wineDeleted.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })
@@ -139,6 +143,8 @@ export const useDeleteWine = () => {
 }
 
 export const useUploadWinePhoto = () => {
+  const { t } = useTranslation(['wines'])
+
   return useMutation({
     mutationFn: async ({ file, wineId }: { file: File; wineId: string }) => {
       const {
@@ -163,9 +169,16 @@ export const useUploadWinePhoto = () => {
 
       return publicUrl
     },
+    onSuccess: () => {
+      notifications.show({
+        title: t('wines:notifications.photoUploaded.title'),
+        message: t('wines:notifications.photoUploaded.message'),
+        color: 'green',
+      })
+    },
     onError: (error) => {
       notifications.show({
-        title: 'Upload failed',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })

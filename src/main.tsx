@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { MantineProvider, createTheme } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import App from './App.tsx'
+import './i18n/config'
 
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'

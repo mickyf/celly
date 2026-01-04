@@ -4,12 +4,14 @@ import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
 import { WineForm, type WineFormValues } from '../../../components/WineForm'
 import { useWine, useUpdateWine, useUploadWinePhoto } from '../../../hooks/useWines'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/wines/$id/edit')({
   component: EditWine,
 })
 
 function EditWine() {
+  const { t } = useTranslation(['wines'])
   const { id } = Route.useParams()
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
@@ -75,7 +77,7 @@ function EditWine() {
   if (!wine) {
     return (
       <Container size="md">
-        <Text c="red">Wine not found</Text>
+        <Text c="red">{t('wines:detail.notFound')}</Text>
       </Container>
     )
   }
@@ -84,9 +86,9 @@ function EditWine() {
     <Container size="md">
       <Stack gap="xl">
         <div>
-          <Title order={1}>Edit Wine</Title>
+          <Title order={1}>{t('wines:edit.title')}</Title>
           <Text c="dimmed" size="lg">
-            Update wine information
+            {t('wines:edit.subtitle')}
           </Text>
         </div>
 

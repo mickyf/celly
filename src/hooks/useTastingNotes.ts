@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { useTranslation } from 'react-i18next'
 import type { Tables, TablesInsert, TablesUpdate } from '../types/database'
 
 type TastingNote = Tables<'tasting_notes'>
@@ -30,6 +31,7 @@ export const useTastingNotes = (wineId?: string) => {
 }
 
 export const useAddTastingNote = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -53,14 +55,14 @@ export const useAddTastingNote = () => {
       queryClient.invalidateQueries({ queryKey: ['tasting_notes', data.wine_id] })
       queryClient.invalidateQueries({ queryKey: ['tasting_notes'] })
       notifications.show({
-        title: 'Success',
-        message: 'Tasting note added',
+        title: t('wines:notifications.noteAdded.title'),
+        message: t('wines:notifications.noteAdded.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })
@@ -69,6 +71,7 @@ export const useAddTastingNote = () => {
 }
 
 export const useUpdateTastingNote = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -87,14 +90,14 @@ export const useUpdateTastingNote = () => {
       queryClient.invalidateQueries({ queryKey: ['tasting_notes', data.wine_id] })
       queryClient.invalidateQueries({ queryKey: ['tasting_notes'] })
       notifications.show({
-        title: 'Success',
-        message: 'Tasting note updated',
+        title: t('wines:notifications.noteUpdated.title'),
+        message: t('wines:notifications.noteUpdated.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })
@@ -103,6 +106,7 @@ export const useUpdateTastingNote = () => {
 }
 
 export const useDeleteTastingNote = () => {
+  const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -116,14 +120,14 @@ export const useDeleteTastingNote = () => {
       queryClient.invalidateQueries({ queryKey: ['tasting_notes', wineId] })
       queryClient.invalidateQueries({ queryKey: ['tasting_notes'] })
       notifications.show({
-        title: 'Success',
-        message: 'Tasting note deleted',
+        title: t('wines:notifications.noteDeleted.title'),
+        message: t('wines:notifications.noteDeleted.message'),
         color: 'green',
       })
     },
     onError: (error) => {
       notifications.show({
-        title: 'Error',
+        title: t('wines:notifications.error.title'),
         message: error.message,
         color: 'red',
       })

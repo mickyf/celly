@@ -1,0 +1,45 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Willkommen in Ihrem Weinkeller",
+  "stats": {
+    "totalBottles": "Flaschen Total",
+    "uniqueWines": "Verschiedene Weine",
+    "totalValue": "Gesamtwert",
+    "tastingNotes": "Degustationsnotizen",
+    "readyToDrink": "Trinkreif"
+  },
+  "sections": {
+    "readyToDrink": "Trinkreif",
+    "topGrapes": "Top Rebsorten",
+    "recentNotes": "Neueste Degustationsnotizen",
+    "quickActions": "Schnellaktionen"
+  },
+  "readyText": "{{count}} von {{total}} Weinen befinden sich in ihrem optimalen Trinkfenster",
+  "readyCount": "{{count}} Weine",
+  "grapeCount": "{{count}} Wein",
+  "grapeCount_other": "{{count}} Weine",
+  "noGrapes": "Noch keine Weine mit Rebsorten vorhanden",
+  "quickActions": {
+    "addWine": {
+      "title": "Ersten Wein hinzufügen",
+      "description": "Beginnen Sie mit Ihrer Sammlung",
+      "button": "Wein hinzufügen"
+    },
+    "viewReady": {
+      "button": "Trinkreife Weine anzeigen"
+    },
+    "getPairing": {
+      "title": "Perfektes Pairing finden",
+      "description": "Lassen Sie die KI Weine für Ihr Menü vorschlagen",
+      "button": "Pairing abrufen"
+    },
+    "viewAll": {
+      "button": "Alle Weine anzeigen"
+    }
+  },
+  "table": {
+    "wine": "Wein",
+    "rating": "Bewertung",
+    "date": "Datum"
+  }
+}

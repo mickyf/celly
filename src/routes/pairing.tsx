@@ -25,6 +25,7 @@ import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useWines } from '../hooks/useWines'
 import { useFoodPairing } from '../hooks/useFoodPairing'
+import { useTranslation } from 'react-i18next'
 import type { PairingRecommendation } from '../lib/claude'
 
 export const Route = createFileRoute('/pairing')({
@@ -32,6 +33,7 @@ export const Route = createFileRoute('/pairing')({
 })
 
 function FoodPairing() {
+  const { t } = useTranslation(['pairing', 'common'])
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -90,28 +92,28 @@ function FoodPairing() {
       <Container size="md">
         <Stack gap="xl">
           <div>
-            <Title order={1}>Food Pairing</Title>
+            <Title order={1}>{t('pairing:title')}</Title>
             <Text c="dimmed" size="lg">
-              Let AI suggest the perfect wine from your cellar
+              {t('pairing:subtitle')}
             </Text>
           </div>
 
           <Alert
             variant="light"
             color="blue"
-            title="No wines in cellar"
+            title={t('pairing:emptyState.title')}
             icon={<IconInfoCircle />}
           >
             <Stack gap="sm">
               <Text size="sm">
-                You need to add wines to your cellar before you can get pairing suggestions.
+                {t('pairing:emptyState.message')}
               </Text>
               <Button
                 size="sm"
                 leftSection={<IconBottle size={16} />}
                 onClick={() => navigate({ to: '/wines/add' })}
               >
-                Add Your First Wine
+                {t('pairing:buttons.addFirstWine')}
               </Button>
             </Stack>
           </Alert>
@@ -124,18 +126,18 @@ function FoodPairing() {
     <Container size="md">
       <Stack gap="xl">
         <div>
-          <Title order={1}>Food Pairing</Title>
+          <Title order={1}>{t('pairing:title')}</Title>
           <Text c="dimmed" size="lg">
-            Let AI suggest the perfect wine from your cellar
+            {t('pairing:subtitle')}
           </Text>
         </div>
 
         <Paper shadow="sm" p="xl" radius="md" withBorder>
           <Stack>
             <Textarea
-              label="What are you planning to eat?"
-              placeholder="E.g., Grilled ribeye steak with roasted vegetables and truffle butter"
-              description="Describe your menu or dish in detail for better pairing suggestions"
+              label={t('pairing:form.label')}
+              placeholder={t('pairing:form.placeholder')}
+              description={t('pairing:form.description')}
               minRows={4}
               value={menu}
               onChange={(e) => setMenu(e.currentTarget.value)}
@@ -153,12 +155,12 @@ function FoodPairing() {
               onClick={handleGetPairing}
               loading={pairingMutation.isPending}
             >
-              {pairingMutation.isPending ? 'Analyzing...' : 'Get AI Pairing Suggestions'}
+              {pairingMutation.isPending ? t('pairing:buttons.analyzing') : t('pairing:buttons.getPairing')}
             </Button>
 
             {wines && (
               <Text size="sm" c="dimmed">
-                {wines.length} {wines.length === 1 ? 'wine' : 'wines'} available in your cellar
+                {t('pairing:wineCount', { count: wines.length })}
               </Text>
             )}
           </Stack>
@@ -169,7 +171,7 @@ function FoodPairing() {
             <Group>
               <IconChefHat size={24} stroke={1.5} />
               <Text size="lg" fw={700}>
-                Pairing Recommendations
+                {t('pairing:results.title')}
               </Text>
             </Group>
 
@@ -180,10 +182,10 @@ function FoodPairing() {
                     <div style={{ flex: 1 }}>
                       <Group gap="sm" mb="xs">
                         <Badge size="lg" variant="filled" color="grape">
-                          #{rec.rank} Recommendation
+                          {t('pairing:results.rank', { rank: rec.rank })}
                         </Badge>
                         <Badge size="lg" variant="light" color="green">
-                          {rec.pairingScore}% Match
+                          {t('pairing:results.match', { score: rec.pairingScore })}
                         </Badge>
                       </Group>
                       <Title order={3}>
@@ -208,7 +210,7 @@ function FoodPairing() {
                         navigate({ to: '/wines/$id', params: { id: rec.wineId } })
                       }
                     >
-                      View Wine
+                      {t('pairing:buttons.viewWine')}
                     </Button>
                   </Group>
 
@@ -216,7 +218,7 @@ function FoodPairing() {
 
                   <Paper bg="gray.0" p="md" radius="sm">
                     <Text size="sm" fw={600} mb="xs">
-                      Why this pairing works:
+                      {t('pairing:results.whyLabel')}
                     </Text>
                     <Text size="sm" style={{ lineHeight: 1.6 }}>
                       {rec.explanation}
@@ -227,7 +229,7 @@ function FoodPairing() {
             ))}
 
             <Button variant="subtle" onClick={() => setRecommendations([])}>
-              Clear Results
+              {t('pairing:buttons.clearResults')}
             </Button>
           </Stack>
         )}

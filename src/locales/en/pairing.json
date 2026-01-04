@@ -1,0 +1,28 @@
+{
+  "title": "Food Pairing",
+  "subtitle": "Let AI suggest the perfect wine from your cellar",
+  "form": {
+    "label": "What are you planning to eat?",
+    "placeholder": "E.g., Grilled ribeye steak with roasted vegetables and truffle butter",
+    "description": "Describe your menu or dish in detail for better pairing suggestions"
+  },
+  "buttons": {
+    "getPairing": "Get AI Pairing Suggestions",
+    "analyzing": "Analyzing...",
+    "viewWine": "View Wine",
+    "clearResults": "Clear Results",
+    "addFirstWine": "Add Your First Wine"
+  },
+  "emptyState": {
+    "title": "No wines in cellar",
+    "message": "You need to add wines to your cellar before you can get pairing suggestions."
+  },
+  "wineCount": "{{count}} wine available in your cellar",
+  "wineCount_other": "{{count}} wines available in your cellar",
+  "results": {
+    "title": "Pairing Recommendations",
+    "rank": "#{{rank}} Recommendation",
+    "match": "{{score}}% Match",
+    "whyLabel": "Why this pairing works:"
+  }
+}

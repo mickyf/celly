@@ -7,12 +7,14 @@ import { useWines, useDeleteWine } from '../../hooks/useWines'
 import { WineCard } from '../../components/WineCard'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
 import { useDisclosure } from '@mantine/hooks'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/wines/')({
   component: WineList,
 })
 
 function WineList() {
+  const { t } = useTranslation(['wines', 'common'])
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -77,7 +79,7 @@ function WineList() {
       // Drinking window filter
       if (filters.drinkingWindow !== 'all') {
         if (!wine.drink_window_start || !wine.drink_window_end) {
-          return filters.drinkingWindow === 'all'
+          return false
         }
 
         const isReady =
@@ -132,16 +134,16 @@ function WineList() {
         <Stack gap="xl">
           <Group justify="space-between">
             <div>
-              <Title order={1}>My Wines</Title>
+              <Title order={1}>{t('wines:list.title')}</Title>
               <Text c="dimmed" size="lg">
-                Manage your wine collection
+                {t('wines:list.subtitle')}
               </Text>
             </div>
             <Button
               leftSection={<IconPlus size={20} />}
               onClick={() => navigate({ to: '/wines/add' })}
             >
-              Add Wine
+              {t('wines:list.addButton')}
             </Button>
           </Group>
 
@@ -161,8 +163,10 @@ function WineList() {
               {filteredWines.length > 0 ? (
                 <>
                   <Text size="sm" c="dimmed">
-                    Showing {filteredWines.length} of {wines.length}{' '}
-                    {wines.length === 1 ? 'wine' : 'wines'}
+                    {wines.length === 1
+                      ? t('wines:list.showingCountSingle', { filtered: filteredWines.length, total: wines.length })
+                      : t('wines:list.showingCount', { filtered: filteredWines.length, total: wines.length })
+                    }
                   </Text>
                   <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
                     {filteredWines.map((wine) => (
@@ -178,27 +182,27 @@ function WineList() {
                 </>
               ) : (
                 <Text c="dimmed" ta="center" py="xl">
-                  No wines match your filters. Try adjusting your search criteria.
+                  {t('wines:list.noResults')}
                 </Text>
               )}
             </>
           ) : (
             <Text c="dimmed" ta="center" py="xl">
-              No wines yet. Start by adding your first bottle!
+              {t('wines:list.emptyState')}
             </Text>
           )}
         </Stack>
       </Container>
 
-      <Modal opened={opened} onClose={close} title="Confirm Delete" centered>
+      <Modal opened={opened} onClose={close} title={t('common:confirmDelete.title')} centered>
         <Stack>
-          <Text>Are you sure you want to remove this wine from your cellar?</Text>
+          <Text>{t('wines:detail.confirmDelete')}</Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={close}>
-              Cancel
+              {t('common:confirmDelete.cancel')}
             </Button>
             <Button color="red" onClick={confirmDelete} loading={deleteWine.isPending}>
-              Delete
+              {t('common:confirmDelete.delete')}
             </Button>
           </Group>
         </Stack>

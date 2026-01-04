@@ -11,6 +11,8 @@ import {
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from 'react-i18next'
+import { LanguageSelector } from '../components/LanguageSelector'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -19,6 +21,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const [opened, { toggle }] = useDisclosure()
   const [user, setUser] = useState<User | null>(null)
+  const { t } = useTranslation('common')
 
   useEffect(() => {
     // Get initial session
@@ -57,6 +60,7 @@ function RootLayout() {
             <IconBottle size={28} stroke={1.5} />
             <Title order={3}>Celly</Title>
           </Group>
+          <LanguageSelector />
         </Group>
       </AppShell.Header>
 
@@ -65,21 +69,21 @@ function RootLayout() {
           <>
             <NavLink
               href="/"
-              label="Dashboard"
+              label={t('nav.dashboard')}
               leftSection={<IconHome size={20} stroke={1.5} />}
             />
             <NavLink
               href="/wines"
-              label="My Wines"
+              label={t('nav.myWines')}
               leftSection={<IconBottle size={20} stroke={1.5} />}
             />
             <NavLink
               href="/pairing"
-              label="Food Pairing"
+              label={t('nav.foodPairing')}
               leftSection={<IconChefHat size={20} stroke={1.5} />}
             />
             <NavLink
-              label="Sign Out"
+              label={t('actions.signOut')}
               leftSection={<IconLogout size={20} stroke={1.5} />}
               onClick={handleSignOut}
               style={{ marginTop: 'auto' }}
@@ -88,7 +92,7 @@ function RootLayout() {
         ) : (
           <NavLink
             href="/login"
-            label="Sign In"
+            label={t('actions.signIn')}
             leftSection={<IconLogin size={20} stroke={1.5} />}
           />
         )}

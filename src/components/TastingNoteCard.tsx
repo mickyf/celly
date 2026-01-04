@@ -1,5 +1,6 @@
 import { Paper, Text, Rating, Group, Button, Stack } from '@mantine/core'
 import { IconEdit, IconTrash, IconCalendar } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
 
@@ -12,6 +13,7 @@ interface TastingNoteCardProps {
 }
 
 export function TastingNoteCard({ note, onEdit, onDelete }: TastingNoteCardProps) {
+  const { t } = useTranslation(['common'])
   return (
     <Paper shadow="xs" p="md" radius="md" withBorder>
       <Stack gap="sm">
@@ -38,7 +40,7 @@ export function TastingNoteCard({ note, onEdit, onDelete }: TastingNoteCardProps
                 leftSection={<IconEdit size={14} />}
                 onClick={onEdit}
               >
-                Edit
+                {t('common:buttons.edit')}
               </Button>
             )}
             {onDelete && (
@@ -49,7 +51,7 @@ export function TastingNoteCard({ note, onEdit, onDelete }: TastingNoteCardProps
                 leftSection={<IconTrash size={14} />}
                 onClick={onDelete}
               >
-                Delete
+                {t('common:buttons.delete')}
               </Button>
             )}
           </Group>
