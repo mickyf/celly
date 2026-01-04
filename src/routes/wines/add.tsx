@@ -32,6 +32,7 @@ function AddWine() {
       // First create the wine
       const wine = await addWine.mutateAsync({
         name: values.name,
+        winery_id: values.winery_id,
         grapes: values.grapes,
         vintage: values.vintage,
         quantity: values.quantity,

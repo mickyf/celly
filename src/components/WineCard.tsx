@@ -1,6 +1,7 @@
 import { Card, Image, Text, Badge, Group, Button, Stack } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { useWinery } from '../hooks/useWineries'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -14,6 +15,7 @@ interface WineCardProps {
 
 export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
+  const { data: winery } = useWinery(wine.winery_id || '')
   const currentYear = new Date().getFullYear()
   const isReadyToDrink =
     wine.drink_window_start &&
@@ -53,6 +55,11 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
               </Badge>
             )}
           </Group>
+          {winery && (
+            <Text size="sm" c="dimmed">
+              {winery.name}
+            </Text>
+          )}
           {wine.vintage && (
             <Text size="sm" c="dimmed">
               {t('wines:card.vintage', { vintage: wine.vintage })}

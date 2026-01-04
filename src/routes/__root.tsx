@@ -3,10 +3,11 @@ import { AppShell, Burger, Group, NavLink, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconBottle,
-  IconHome,
+  IconBuilding,
   IconChefHat,
+  IconHome,
   IconLogin,
-  IconLogout
+  IconLogout,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -70,21 +71,26 @@ function RootLayout() {
             <NavLink
               href="/"
               label={t('nav.dashboard')}
-              leftSection={<IconHome size={20} stroke={1.5} />}
+              leftSection={<IconHome size={24} stroke={1.5} />}
             />
             <NavLink
               href="/wines"
               label={t('nav.myWines')}
-              leftSection={<IconBottle size={20} stroke={1.5} />}
+              leftSection={<IconBottle size={24} stroke={1.5} />}
+            />
+            <NavLink
+              href="/wineries"
+              label={t('nav.wineries')}
+              leftSection={<IconBuilding size={24} stroke={1.5} />}
             />
             <NavLink
               href="/pairing"
               label={t('nav.foodPairing')}
-              leftSection={<IconChefHat size={20} stroke={1.5} />}
+              leftSection={<IconChefHat size={24} stroke={1.5} />}
             />
             <NavLink
               label={t('actions.signOut')}
-              leftSection={<IconLogout size={20} stroke={1.5} />}
+              leftSection={<IconLogout size={24} stroke={1.5} />}
               onClick={handleSignOut}
               style={{ marginTop: 'auto' }}
             />

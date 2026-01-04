@@ -13,9 +13,13 @@ import { Route as PairingRouteImport } from './routes/pairing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WinesIndexRouteImport } from './routes/wines/index'
+import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
 import { Route as WinesAddRouteImport } from './routes/wines/add'
+import { Route as WineriesAddRouteImport } from './routes/wineries/add'
 import { Route as WinesIdIndexRouteImport } from './routes/wines/$id/index'
+import { Route as WineriesIdIndexRouteImport } from './routes/wineries/$id/index'
 import { Route as WinesIdEditRouteImport } from './routes/wines/$id/edit'
+import { Route as WineriesIdEditRouteImport } from './routes/wineries/$id/edit'
 
 const PairingRoute = PairingRouteImport.update({
   id: '/pairing',
@@ -37,9 +41,19 @@ const WinesIndexRoute = WinesIndexRouteImport.update({
   path: '/wines/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WineriesIndexRoute = WineriesIndexRouteImport.update({
+  id: '/wineries/',
+  path: '/wineries/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WinesAddRoute = WinesAddRouteImport.update({
   id: '/wines/add',
   path: '/wines/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WineriesAddRoute = WineriesAddRouteImport.update({
+  id: '/wineries/add',
+  path: '/wineries/add',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WinesIdIndexRoute = WinesIdIndexRouteImport.update({
@@ -47,9 +61,19 @@ const WinesIdIndexRoute = WinesIdIndexRouteImport.update({
   path: '/wines/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WineriesIdIndexRoute = WineriesIdIndexRouteImport.update({
+  id: '/wineries/$id/',
+  path: '/wineries/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WinesIdEditRoute = WinesIdEditRouteImport.update({
   id: '/wines/$id/edit',
   path: '/wines/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WineriesIdEditRoute = WineriesIdEditRouteImport.update({
+  id: '/wineries/$id/edit',
+  path: '/wineries/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -57,18 +81,26 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wineries': typeof WineriesIndexRoute
   '/wines': typeof WinesIndexRoute
+  '/wineries/$id/edit': typeof WineriesIdEditRoute
   '/wines/$id/edit': typeof WinesIdEditRoute
+  '/wineries/$id': typeof WineriesIdIndexRoute
   '/wines/$id': typeof WinesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wineries': typeof WineriesIndexRoute
   '/wines': typeof WinesIndexRoute
+  '/wineries/$id/edit': typeof WineriesIdEditRoute
   '/wines/$id/edit': typeof WinesIdEditRoute
+  '/wineries/$id': typeof WineriesIdIndexRoute
   '/wines/$id': typeof WinesIdIndexRoute
 }
 export interface FileRoutesById {
@@ -76,9 +108,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wineries/': typeof WineriesIndexRoute
   '/wines/': typeof WinesIndexRoute
+  '/wineries/$id/edit': typeof WineriesIdEditRoute
   '/wines/$id/edit': typeof WinesIdEditRoute
+  '/wineries/$id/': typeof WineriesIdIndexRoute
   '/wines/$id/': typeof WinesIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -87,27 +123,39 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pairing'
+    | '/wineries/add'
     | '/wines/add'
+    | '/wineries'
     | '/wines'
+    | '/wineries/$id/edit'
     | '/wines/$id/edit'
+    | '/wineries/$id'
     | '/wines/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/pairing'
+    | '/wineries/add'
     | '/wines/add'
+    | '/wineries'
     | '/wines'
+    | '/wineries/$id/edit'
     | '/wines/$id/edit'
+    | '/wineries/$id'
     | '/wines/$id'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/pairing'
+    | '/wineries/add'
     | '/wines/add'
+    | '/wineries/'
     | '/wines/'
+    | '/wineries/$id/edit'
     | '/wines/$id/edit'
+    | '/wineries/$id/'
     | '/wines/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -115,9 +163,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   PairingRoute: typeof PairingRoute
+  WineriesAddRoute: typeof WineriesAddRoute
   WinesAddRoute: typeof WinesAddRoute
+  WineriesIndexRoute: typeof WineriesIndexRoute
   WinesIndexRoute: typeof WinesIndexRoute
+  WineriesIdEditRoute: typeof WineriesIdEditRoute
   WinesIdEditRoute: typeof WinesIdEditRoute
+  WineriesIdIndexRoute: typeof WineriesIdIndexRoute
   WinesIdIndexRoute: typeof WinesIdIndexRoute
 }
 
@@ -151,11 +203,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WinesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wineries/': {
+      id: '/wineries/'
+      path: '/wineries'
+      fullPath: '/wineries'
+      preLoaderRoute: typeof WineriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wines/add': {
       id: '/wines/add'
       path: '/wines/add'
       fullPath: '/wines/add'
       preLoaderRoute: typeof WinesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wineries/add': {
+      id: '/wineries/add'
+      path: '/wineries/add'
+      fullPath: '/wineries/add'
+      preLoaderRoute: typeof WineriesAddRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wines/$id/': {
@@ -165,11 +231,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WinesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wineries/$id/': {
+      id: '/wineries/$id/'
+      path: '/wineries/$id'
+      fullPath: '/wineries/$id'
+      preLoaderRoute: typeof WineriesIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wines/$id/edit': {
       id: '/wines/$id/edit'
       path: '/wines/$id/edit'
       fullPath: '/wines/$id/edit'
       preLoaderRoute: typeof WinesIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wineries/$id/edit': {
+      id: '/wineries/$id/edit'
+      path: '/wineries/$id/edit'
+      fullPath: '/wineries/$id/edit'
+      preLoaderRoute: typeof WineriesIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -179,9 +259,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   PairingRoute: PairingRoute,
+  WineriesAddRoute: WineriesAddRoute,
   WinesAddRoute: WinesAddRoute,
+  WineriesIndexRoute: WineriesIndexRoute,
   WinesIndexRoute: WinesIndexRoute,
+  WineriesIdEditRoute: WineriesIdEditRoute,
   WinesIdEditRoute: WinesIdEditRoute,
+  WineriesIdIndexRoute: WineriesIdIndexRoute,
   WinesIdIndexRoute: WinesIdIndexRoute,
 }
 export const routeTree = rootRouteImport

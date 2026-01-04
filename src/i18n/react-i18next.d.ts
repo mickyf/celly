@@ -12,6 +12,7 @@ declare module 'react-i18next' {
       common: typeof common
       dashboard: typeof dashboard
       wines: typeof wines
+      wineries: typeof wineries
       pairing: typeof pairing
       auth: typeof auth
     }

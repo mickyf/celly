@@ -1,0 +1,70 @@
+{
+  "list": {
+    "title": "Weingüter",
+    "subtitle": "Verwalten Sie Ihre Weinproduzenten",
+    "addButton": "Weingut hinzufügen",
+    "emptyState": "Noch keine Weingüter. Fügen Sie Ihr erstes Weingut hinzu!",
+    "noResults": "Keine Weingüter entsprechen Ihrer Suche.",
+    "showingCount": "{{filtered}} von {{total}} Weingütern angezeigt",
+    "searchPlaceholder": "Weingüter suchen..."
+  },
+  "detail": {
+    "notFound": "Weingut nicht gefunden",
+    "sections": {
+      "basicInfo": "Weingut-Informationen",
+      "wines": "Weine von diesem Weingut"
+    },
+    "confirmDelete": "Sind Sie sicher, dass Sie dieses Weingut löschen möchten?",
+    "emptyWines": "Noch keine Weine von diesem Weingut.",
+    "viewWine": "Wein ansehen"
+  },
+  "add": {
+    "title": "Weingut hinzufügen",
+    "subtitle": "Neuen Weinproduzenten hinzufügen"
+  },
+  "edit": {
+    "title": "Weingut bearbeiten",
+    "subtitle": "Weingut-Informationen aktualisieren"
+  },
+  "form": {
+    "labels": {
+      "wineryName": "Weingut-Name",
+      "country": "Land"
+    },
+    "placeholders": {
+      "wineryName": "z.B. Château Margaux",
+      "country": "Land auswählen"
+    },
+    "buttons": {
+      "addWinery": "Weingut hinzufügen",
+      "updateWinery": "Weingut aktualisieren"
+    },
+    "validation": {
+      "nameRequired": "Weingut-Name ist erforderlich"
+    }
+  },
+  "card": {
+    "wineCount_one": "{{count}} Wein",
+    "wineCount_other": "{{count}} Weine"
+  },
+  "notifications": {
+    "wineryAdded": {
+      "title": "Weingut hinzugefügt",
+      "message": "Weingut wurde erfolgreich hinzugefügt"
+    },
+    "wineryUpdated": {
+      "title": "Weingut aktualisiert",
+      "message": "Weingut-Informationen wurden aktualisiert"
+    },
+    "wineryDeleted": {
+      "title": "Weingut gelöscht",
+      "message": "Weingut wurde entfernt"
+    },
+    "error": {
+      "title": "Fehler"
+    }
+  },
+  "errors": {
+    "hasWines": "Weingut mit {{count}} zugeordneten Wein(en) kann nicht gelöscht werden. Bitte entfernen oder weisen Sie die Weine neu zu."
+  }
+}

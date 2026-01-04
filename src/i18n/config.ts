@@ -6,12 +6,14 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import enCommon from '../locales/en/common.json'
 import enDashboard from '../locales/en/dashboard.json'
 import enWines from '../locales/en/wines.json'
+import enWineries from '../locales/en/wineries.json'
 import enPairing from '../locales/en/pairing.json'
 import enAuth from '../locales/en/auth.json'
 
 import deCommon from '../locales/de-CH/common.json'
 import deDashboard from '../locales/de-CH/dashboard.json'
 import deWines from '../locales/de-CH/wines.json'
+import deWineries from '../locales/de-CH/wineries.json'
 import dePairing from '../locales/de-CH/pairing.json'
 import deAuth from '../locales/de-CH/auth.json'
 
@@ -24,6 +26,7 @@ i18n
         common: enCommon,
         dashboard: enDashboard,
         wines: enWines,
+        wineries: enWineries,
         pairing: enPairing,
         auth: enAuth,
       },
@@ -31,6 +34,7 @@ i18n
         common: deCommon,
         dashboard: deDashboard,
         wines: deWines,
+        wineries: deWineries,
         pairing: dePairing,
         auth: deAuth,
       },

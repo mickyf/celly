@@ -9,11 +9,13 @@ import {
   Text,
   Image,
   TagsInput,
+  Select,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useWineries } from '../hooks/useWineries'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -27,6 +29,7 @@ interface WineFormProps {
 
 export interface WineFormValues {
   name: string
+  winery_id: string | null
   grapes: string[]
   vintage: number | null
   quantity: number
@@ -37,14 +40,25 @@ export interface WineFormValues {
 
 export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
   const { t } = useTranslation(['wines', 'common'])
+  const { data: wineries } = useWineries()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     wine?.photo_url || null
   )
 
+  const wineryOptions = useMemo(
+    () =>
+      wineries?.map((w) => ({
+        value: w.id,
+        label: w.name,
+      })) || [],
+    [wineries]
+  )
+
   const form = useForm<WineFormValues>({
     initialValues: {
       name: wine?.name || '',
+      winery_id: wine?.winery_id || null,
       grapes: wine?.grapes || [],
       vintage: wine?.vintage || null,
       quantity: wine?.quantity || 1,
@@ -108,6 +122,16 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
               placeholder={t('wines:form.placeholders.wineName')}
               required
               {...form.getInputProps('name')}
+            />
+
+            <Select
+              label={t('wines:form.labels.winery')}
+              placeholder={t('wines:form.placeholders.winery')}
+              description={t('wines:form.descriptions.winery')}
+              data={wineryOptions}
+              searchable
+              clearable
+              {...form.getInputProps('winery_id')}
             />
 
             <TagsInput
