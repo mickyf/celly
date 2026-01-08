@@ -27,3 +27,4 @@ dist-ssr
 .branches
 .temp
 .output
+supabase/snippets/*
