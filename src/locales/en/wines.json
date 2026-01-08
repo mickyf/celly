@@ -125,6 +125,27 @@
       }
     }
   },
+  "enrichment": {
+    "button": "Enrich with AI",
+    "success": {
+      "title": "Wine enriched",
+      "message": "Updated {{count}} fields: {{fields}}"
+    },
+    "wineryCreated": {
+      "title": "Winery created",
+      "message": "A new winery was added to your collection"
+    },
+    "lowConfidence": {
+      "title": "Low confidence identification",
+      "message": "The AI was not highly confident in this identification. Please review the suggested data."
+    },
+    "errors": {
+      "title": "Enrichment failed",
+      "allFieldsFilled": "All fields already have data. Nothing to enrich.",
+      "noData": "AI could not identify this wine. Try editing manually.",
+      "noUpdates": "No fields were updated. The AI could not provide additional information."
+    }
+  },
   "notifications": {
     "wineAdded": {
       "title": "Wine added",

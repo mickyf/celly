@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Database } from '../types/database'
+import { WINE_COUNTRIES } from '../constants/countries'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
@@ -15,6 +16,27 @@ export interface PairingRecommendation {
 
 export interface PairingResponse {
   recommendations: PairingRecommendation[]
+}
+
+export interface WineEnrichmentData {
+  grapes?: string[]
+  vintage?: number
+  drinkingWindow?: {
+    start: number
+    end: number
+  }
+  winery?: {
+    name: string
+    countryCode: string // ISO 3166-1 alpha-2
+    matchedExistingId?: string // ID of existing winery if matched
+  }
+  confidence: 'high' | 'medium' | 'low'
+  explanation: string
+}
+
+export interface WineEnrichmentResponse {
+  enrichmentData: WineEnrichmentData | null
+  error?: string
 }
 
 export async function getFoodPairing(
@@ -109,4 +131,173 @@ Important:
   )
 
   return { recommendations }
+}
+
+export async function enrichWineData(
+  wineName: string,
+  existingVintage?: number | null,
+  existingWineries?: Array<{ id: string; name: string; country_code: string }>
+): Promise<WineEnrichmentResponse> {
+  const apiKey = import.meta.env.VITE_CLAUDE_API_KEY
+
+  if (!apiKey || apiKey === 'your-claude-api-key-here') {
+    return {
+      enrichmentData: null,
+      error:
+        'Claude API key not configured. Please add VITE_CLAUDE_API_KEY to your .env.local file',
+    }
+  }
+
+  const anthropic = new Anthropic({
+    apiKey,
+    dangerouslyAllowBrowser: true, // For local development only
+  })
+
+  const currentYear = new Date().getFullYear()
+
+  // Format existing wineries list
+  const wineriesListText =
+    existingWineries && existingWineries.length > 0
+      ? `\n\nExisting wineries in the user's collection:\n${existingWineries
+          .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
+          .join('\n')}`
+      : ''
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `You are a wine expert. I need you to identify this wine and provide structured data about it.
+
+Wine name: ${wineName}${existingVintage ? ` (vintage: ${existingVintage})` : ''}${wineriesListText}
+
+Please identify the wine and provide:
+1. Grape varieties used in this wine
+2. Vintage year (if not already provided and if it's a specific wine)
+3. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
+4. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
+5. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
+
+Return your response as a JSON object with this exact structure:
+{
+  "grapes": ["Cabernet Sauvignon", "Merlot"],
+  "vintage": 2015,
+  "drinkingWindow": {
+    "start": 2020,
+    "end": 2035
+  },
+  "winery": {
+    "name": "Château Example",
+    "countryCode": "FR",
+    "matchedExistingId": "uuid-if-matched-existing-winery"
+  },
+  "confidence": "high",
+  "explanation": "Brief explanation of your identification and confidence level"
+}
+
+Important guidelines:
+- Only include fields you can confidently identify
+- If the wine name is too generic (e.g., just "Merlot") or you cannot identify it, set confidence to "low"
+- Vintage should be between 1800 and 2030
+- Drinking window start must be less than end
+- Country codes must be valid ISO 3166-1 alpha-2 codes (2 letters, uppercase)
+- Valid country codes: ${WINE_COUNTRIES.map((c) => c.code).join(', ')}
+- Confidence should be "high" for specific, well-known wines, "medium" for regional wines, "low" for generic varieties
+- If you cannot identify the wine at all, return confidence: "low" with minimal data
+- For winery matching: Consider variations in spelling, punctuation, abbreviations, etc. For example, "Domaine de la Romanée-Conti" matches "Domaine de la Romanee Conti", "Château Margaux" matches "Chateau Margaux", "Smith & Sons" matches "Smith and Sons"
+- Only include matchedExistingId if you're confident the winery is the same, accounting for spelling variations`,
+        },
+      ],
+    })
+
+    // Parse the response
+    const responseText =
+      message.content[0].type === 'text' ? message.content[0].text : ''
+
+    // Extract JSON from the response (Claude might wrap it in markdown)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      return {
+        enrichmentData: null,
+        error: 'Failed to parse enrichment response from Claude',
+      }
+    }
+
+    const parsedResponse = JSON.parse(jsonMatch[0])
+
+    // Validate the response data
+    const enrichmentData: WineEnrichmentData = {
+      confidence: parsedResponse.confidence || 'low',
+      explanation: parsedResponse.explanation || 'No explanation provided',
+    }
+
+    // Validate grapes
+    if (
+      parsedResponse.grapes &&
+      Array.isArray(parsedResponse.grapes) &&
+      parsedResponse.grapes.length > 0
+    ) {
+      enrichmentData.grapes = parsedResponse.grapes
+    }
+
+    // Validate vintage
+    if (
+      parsedResponse.vintage &&
+      typeof parsedResponse.vintage === 'number' &&
+      parsedResponse.vintage >= 1800 &&
+      parsedResponse.vintage <= 2030
+    ) {
+      enrichmentData.vintage = parsedResponse.vintage
+    }
+
+    // Validate drinking window
+    if (
+      parsedResponse.drinkingWindow &&
+      typeof parsedResponse.drinkingWindow.start === 'number' &&
+      typeof parsedResponse.drinkingWindow.end === 'number' &&
+      parsedResponse.drinkingWindow.start < parsedResponse.drinkingWindow.end
+    ) {
+      enrichmentData.drinkingWindow = {
+        start: parsedResponse.drinkingWindow.start,
+        end: parsedResponse.drinkingWindow.end,
+      }
+    }
+
+    // Validate winery
+    if (
+      parsedResponse.winery &&
+      parsedResponse.winery.name &&
+      parsedResponse.winery.countryCode
+    ) {
+      const validCountryCode = WINE_COUNTRIES.some(
+        (c) => c.code === parsedResponse.winery.countryCode.toUpperCase()
+      )
+      if (validCountryCode) {
+        enrichmentData.winery = {
+          name: parsedResponse.winery.name,
+          countryCode: parsedResponse.winery.countryCode.toUpperCase(),
+        }
+        // Include matched ID if provided and valid
+        if (
+          parsedResponse.winery.matchedExistingId &&
+          existingWineries?.some((w) => w.id === parsedResponse.winery.matchedExistingId)
+        ) {
+          enrichmentData.winery.matchedExistingId = parsedResponse.winery.matchedExistingId
+        }
+      }
+    }
+
+    return { enrichmentData }
+  } catch (error) {
+    return {
+      enrichmentData: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to enrich wine data with AI',
+    }
+  }
 }
