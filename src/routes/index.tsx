@@ -86,7 +86,7 @@ function Dashboard() {
                   {t('dashboard:stats.totalBottles')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines">{stats.totalBottles}</Link>
+                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines" search={{}}>{stats.totalBottles}</Link>
                 </Text>
               </div>
             </Group>
@@ -100,7 +100,7 @@ function Dashboard() {
                   {t('dashboard:stats.uniqueWines')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines">{stats.totalWines}</Link>
+                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines" search={{}}>{stats.totalWines}</Link>
                 </Text>
               </div>
             </Group>
@@ -166,7 +166,7 @@ function Dashboard() {
                 <Button
                   variant="light"
                   rightSection={<IconArrowRight size={16} />}
-                  onClick={() => navigate({ to: '/wines' })}
+                  onClick={() => navigate({ to: '/wines', search: { drinkingWindow: 'ready' } })}
                 >
                   {t('dashboard:quickActions.viewReady.button')}
                 </Button>
@@ -214,7 +214,7 @@ function Dashboard() {
                   variant="subtle"
                   size="xs"
                   rightSection={<IconArrowRight size={14} />}
-                  onClick={() => navigate({ to: '/wines' })}
+                  onClick={() => navigate({ to: '/wines', search: {} })}
                 >
                   {t('dashboard:quickActions.viewAll.button')}
                 </Button>

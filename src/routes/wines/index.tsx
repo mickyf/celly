@@ -13,11 +13,45 @@ import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/wines/')({
   component: WineList,
+  validateSearch: (search: Record<string, unknown>): Partial<WineFilterValues> => {
+    const validated: Partial<WineFilterValues> = {}
+
+    if (typeof search.search === 'string' && search.search) {
+      validated.search = search.search
+    }
+    if (typeof search.winery === 'string') {
+      validated.winery = search.winery
+    }
+    if (Array.isArray(search.grapes) && search.grapes.length > 0) {
+      validated.grapes = search.grapes.filter((g): g is string => typeof g === 'string')
+    }
+    if (typeof search.vintageMin === 'number') {
+      validated.vintageMin = search.vintageMin
+    }
+    if (typeof search.vintageMax === 'number') {
+      validated.vintageMax = search.vintageMax
+    }
+    if (typeof search.priceMin === 'number') {
+      validated.priceMin = search.priceMin
+    }
+    if (typeof search.priceMax === 'number') {
+      validated.priceMax = search.priceMax
+    }
+    if (['ready', 'future', 'past'].includes(search.drinkingWindow as string)) {
+      validated.drinkingWindow = search.drinkingWindow as WineFilterValues['drinkingWindow']
+    }
+    if (['complete', 'incomplete'].includes(search.dataCompleteness as string)) {
+      validated.dataCompleteness = search.dataCompleteness as WineFilterValues['dataCompleteness']
+    }
+
+    return validated
+  },
 })
 
 function WineList() {
   const { t } = useTranslation(['wines', 'common'])
   const navigate = useNavigate()
+  const search = Route.useSearch()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wines, isLoading } = useWines()
@@ -29,7 +63,8 @@ function WineList() {
   const [enrichModalOpened, { open: openEnrichModal, close: closeEnrichModal }] = useDisclosure(false)
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
 
-  const [filters, setFilters] = useState<WineFilterValues>({
+  // Merge URL search params with default values
+  const defaultFilters: WineFilterValues = {
     search: '',
     winery: null,
     grapes: [],
@@ -39,7 +74,34 @@ function WineList() {
     priceMax: null,
     drinkingWindow: 'all',
     dataCompleteness: 'all',
-  })
+  }
+
+  const filters: WineFilterValues = {
+    ...defaultFilters,
+    ...search,
+  }
+
+  // Update filters by navigating with new search params
+  const setFilters = (newFilters: WineFilterValues) => {
+    // Only include non-default values in URL to keep it clean
+    const searchParams: Partial<WineFilterValues> = {}
+
+    if (newFilters.search) searchParams.search = newFilters.search
+    if (newFilters.winery) searchParams.winery = newFilters.winery
+    if (newFilters.grapes.length > 0) searchParams.grapes = newFilters.grapes
+    if (newFilters.vintageMin !== null) searchParams.vintageMin = newFilters.vintageMin
+    if (newFilters.vintageMax !== null) searchParams.vintageMax = newFilters.vintageMax
+    if (newFilters.priceMin !== null) searchParams.priceMin = newFilters.priceMin
+    if (newFilters.priceMax !== null) searchParams.priceMax = newFilters.priceMax
+    if (newFilters.drinkingWindow !== 'all') searchParams.drinkingWindow = newFilters.drinkingWindow
+    if (newFilters.dataCompleteness !== 'all') searchParams.dataCompleteness = newFilters.dataCompleteness
+
+    navigate({
+      to: '/wines',
+      search: searchParams,
+      replace: true,
+    })
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

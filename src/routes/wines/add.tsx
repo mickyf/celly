@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useRouter } from '@tanstack/react-router'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/wines/add')({
 
 function AddWine() {
   const { t } = useTranslation(['wines'])
-  const navigate = useNavigate()
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const addWine = useAddWine()
@@ -57,8 +57,7 @@ function AddWine() {
           .eq('id', wine.id)
       }
 
-      // Navigate back to wines list
-      navigate({ to: '/wines' })
+      router.history.back()
     } catch (error) {
       console.error('Error adding wine:', error)
     }
@@ -84,7 +83,7 @@ function AddWine() {
 
         <WineForm
           onSubmit={handleSubmit}
-          onCancel={() => navigate({ to: '/wines' })}
+          onCancel={() => router.history.back()}
           isLoading={addWine.isPending || uploadPhoto.isPending}
         />
       </Stack>
