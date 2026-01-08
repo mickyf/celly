@@ -28,8 +28,9 @@ export const useEnrichWine = () => {
       const needsDrinkWindow =
         wine.drink_window_start === null || wine.drink_window_end === null
       const needsWinery = wine.winery_id === null
+      const needsPrice = wine.price === null
 
-      if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery) {
+      if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice) {
         throw new Error(t('wines:enrichment.errors.allFieldsFilled'))
       }
 
@@ -92,6 +93,12 @@ export const useEnrichWine = () => {
         updateData.drink_window_start = enrichmentData.drinkingWindow.start
         updateData.drink_window_end = enrichmentData.drinkingWindow.end
         fieldsUpdated.push(t('wines:form.sections.drinkingWindow'))
+      }
+
+      // Update price if needed
+      if (needsPrice && enrichmentData.price) {
+        updateData.price = enrichmentData.price
+        fieldsUpdated.push(t('wines:form.labels.pricePerBottle'))
       }
 
       // Handle winery matching and creation
