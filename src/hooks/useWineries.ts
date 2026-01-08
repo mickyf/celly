@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import type { Tables, TablesInsert, TablesUpdate } from '../types/database'
 
 type Winery = Tables<'wineries'>
-type NewWinery = TablesInsert<'wineries'>
+type NewWinery = Omit<TablesInsert<'wineries'>, 'user_id'>
 type UpdateWinery = TablesUpdate<'wineries'>
 
 export const useWineries = () => {
