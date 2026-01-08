@@ -34,6 +34,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      stock_movements: {
+        Row: {
+          created_at: string | null
+          id: string
+          movement_date: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          notes: string | null
+          quantity: number
+          user_id: string
+          wine_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          movement_date?: string
+          movement_type: Database["public"]["Enums"]["movement_type"]
+          notes?: string | null
+          quantity: number
+          user_id: string
+          wine_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          movement_date?: string
+          movement_type?: Database["public"]["Enums"]["movement_type"]
+          notes?: string | null
+          quantity?: number
+          user_id?: string
+          wine_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_wine_id_fkey"
+            columns: ["wine_id"]
+            isOneToOne: false
+            referencedRelation: "wines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasting_notes: {
         Row: {
           created_at: string | null
@@ -163,7 +204,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      movement_type: "in" | "out"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -293,7 +334,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      movement_type: ["in", "out"],
+    },
   },
 } as const
 

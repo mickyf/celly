@@ -114,7 +114,7 @@ function Dashboard() {
                   {t('dashboard:stats.totalValue')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  ${stats.totalValue.toFixed(2)}
+                  CHF {stats.totalValue.toFixed(2)}
                 </Text>
               </div>
             </Group>
@@ -234,7 +234,7 @@ function Dashboard() {
                       <Table.Td>
                         <Rating value={tasting.rating} readOnly size="sm" />
                       </Table.Td>
-                      <Table.Td>{dayjs(tasting.tasted_at).format('MMM D, YYYY')}</Table.Td>
+                      <Table.Td>{dayjs(tasting.tasted_at).format('DD.MM.YYYY')}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

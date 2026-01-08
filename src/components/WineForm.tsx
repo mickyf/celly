@@ -181,7 +181,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
             <NumberInput
               label={t('wines:form.labels.pricePerBottle')}
               placeholder={t('wines:form.placeholders.price')}
-              prefix="$"
+              prefix="CHF "
               decimalScale={2}
               min={0}
               {...form.getInputProps('price')}

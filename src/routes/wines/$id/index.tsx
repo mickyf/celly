@@ -21,6 +21,7 @@ import {
   IconPlus,
   IconBottle,
   IconSparkles,
+  IconArrowLeft,
 } from '@tabler/icons-react'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -32,10 +33,16 @@ import {
   useUpdateTastingNote,
   useDeleteTastingNote,
 } from '../../../hooks/useTastingNotes'
+import {
+  useStockMovements,
+  useAddStockMovement,
+} from '../../../hooks/useStockMovements'
 import { useEnrichWine } from '../../../hooks/useWineEnrichment'
 import { useDisclosure } from '@mantine/hooks'
 import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
 import { TastingNoteCard } from '../../../components/TastingNoteCard'
+import { StockMovementForm, type StockMovementFormValues } from '../../../components/StockMovementForm'
+import { StockMovementHistory } from '../../../components/StockMovementHistory'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../../../constants/countries'
 import type { Database } from '../../../types/database'
@@ -55,15 +62,19 @@ function WineDetail() {
   const { data: wine, isLoading: wineLoading } = useWine(id)
   const { data: winery } = useWinery(wine?.winery_id || '')
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
+  const { data: stockMovements, isLoading: movementsLoading } = useStockMovements(id)
   const deleteWine = useDeleteWine()
   const addNote = useAddTastingNote()
   const updateNote = useUpdateTastingNote()
   const deleteNote = useDeleteTastingNote()
+  const addStockMovement = useAddStockMovement()
   const enrichWine = useEnrichWine()
 
   const [deleteWineOpened, { open: openDeleteWine, close: closeDeleteWine }] =
     useDisclosure(false)
   const [noteModalOpened, { open: openNoteModal, close: closeNoteModal }] =
+    useDisclosure(false)
+  const [stockModalOpened, { open: openStockModal, close: closeStockModal }] =
     useDisclosure(false)
   const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null)
   const [deleteNoteOpened, { open: openDeleteNote, close: closeDeleteNote }] =
@@ -131,6 +142,18 @@ function WineDetail() {
     setEditingNote(null)
   }
 
+  const handleAddStockMovement = async (values: StockMovementFormValues) => {
+    await addStockMovement.mutateAsync({
+      wine_id: id,
+      user_id: '', // will be replaced in hook
+      movement_type: values.movement_type,
+      quantity: values.quantity,
+      notes: values.notes,
+      movement_date: values.movement_date,
+    })
+    closeStockModal()
+  }
+
   const handleEnrichWine = async () => {
     if (!wine) return
     await enrichWine.mutateAsync({ wine })
@@ -176,6 +199,16 @@ function WineDetail() {
     <>
       <Container size="lg">
         <Stack gap="xl">
+          {/* Back Button */}
+          <Button
+            variant="subtle"
+            leftSection={<IconArrowLeft size={20} />}
+            onClick={() => navigate({ to: '/wines' })}
+            style={{ alignSelf: 'flex-start' }}
+          >
+            {t('common:buttons.back')}
+          </Button>
+
           {/* Wine Header */}
           <Group justify="space-between">
             <div>
@@ -288,7 +321,7 @@ function WineDetail() {
                       {t('wines:detail.sections.pricePerBottle')}
                     </Text>
                     <Text size="lg" mt="xs">
-                      ${wine.price.toFixed(2)}
+                      CHF {wine.price.toFixed(2)}
                     </Text>
                   </div>
                 )}
@@ -306,6 +339,27 @@ function WineDetail() {
               </Stack>
             </Paper>
           </SimpleGrid>
+
+          {/* Stock History Section */}
+          <div>
+            <Group justify="space-between" mb="md">
+              <Title order={2}>{t('wines:stockMovement.title')}</Title>
+              <Button leftSection={<IconPlus size={20} />} onClick={openStockModal}>
+                {t('wines:stockMovement.addMovement')}
+              </Button>
+            </Group>
+
+            {movementsLoading ? (
+              <Center py="xl">
+                <Loader />
+              </Center>
+            ) : (
+              <StockMovementHistory
+                movements={stockMovements || []}
+                wineId={id}
+              />
+            )}
+          </div>
 
           {/* Tasting Notes Section */}
           <div>
@@ -407,6 +461,22 @@ function WineDetail() {
             </Button>
           </Group>
         </Stack>
+      </Modal>
+
+      {/* Add Stock Movement Modal */}
+      <Modal
+        opened={stockModalOpened}
+        onClose={closeStockModal}
+        title={t('wines:stockMovement.addMovement')}
+        size="lg"
+        centered
+      >
+        <StockMovementForm
+          wineId={id}
+          onSubmit={handleAddStockMovement}
+          onCancel={closeStockModal}
+          isLoading={addStockMovement.isPending}
+        />
       </Modal>
     </>
   )
