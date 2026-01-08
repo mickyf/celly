@@ -16,4 +16,4 @@
 - ~~add a back button to the detail view~~
 - ~~store wine filters in the url as search params~~
 - ~~fix typescript issues~~
-- /init to update CLAUDE.md
+- ~~/init to update CLAUDE.md~~
