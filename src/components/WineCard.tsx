@@ -1,8 +1,10 @@
-import { Card, Image, Text, Badge, Group, Button, Stack } from '@mantine/core'
-import { IconGlass, IconTrash, IconEdit, IconEye } from '@tabler/icons-react'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip } from '@mantine/core'
+import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useWinery } from '../hooks/useWineries'
+import { useStockMovements } from '../hooks/useStockMovements'
 import type { Database } from '../types/database'
+import dayjs from 'dayjs'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
@@ -11,17 +13,25 @@ interface WineCardProps {
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
+  showRecentMovements?: boolean
 }
 
-export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
+export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements = false }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
   const { data: winery } = useWinery(wine.winery_id || '')
+  const { data: stockMovements } = useStockMovements(showRecentMovements ? wine.id : undefined)
+
   const currentYear = new Date().getFullYear()
   const isReadyToDrink =
     wine.drink_window_start &&
     wine.drink_window_end &&
     currentYear >= wine.drink_window_start &&
     currentYear <= wine.drink_window_end
+
+  // Get most recent stock movement (if enabled)
+  const recentMovement = showRecentMovements && stockMovements && stockMovements.length > 0
+    ? stockMovements[0]
+    : null
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -77,14 +87,28 @@ export function WineCard({ wine, onView, onEdit, onDelete }: WineCardProps) {
           </Group>
         )}
 
-        <Group>
-          <Text size="sm" c="dimmed">
-            {t('wines:card.quantity', { quantity: wine.quantity })}
-          </Text>
-          {wine.price && (
+        <Group justify="space-between">
+          <Group>
             <Text size="sm" c="dimmed">
-              ${wine.price.toFixed(2)}
+              {t('wines:card.quantity', { quantity: wine.quantity })}
             </Text>
+            {wine.price && (
+              <Text size="sm" c="dimmed">
+                CHF {wine.price.toFixed(2)}
+              </Text>
+            )}
+          </Group>
+          {recentMovement && (
+            <Tooltip label={`${dayjs(recentMovement.movement_date).format('DD.MM.YYYY')}: ${recentMovement.notes || t(`wines:stockMovement.type.${recentMovement.movement_type}`)}`}>
+              <Badge
+                size="sm"
+                color={recentMovement.movement_type === 'in' ? 'green' : 'orange'}
+                variant="light"
+                leftSection={recentMovement.movement_type === 'in' ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />}
+              >
+                {recentMovement.movement_type === 'in' ? '+' : '-'}{recentMovement.quantity}
+              </Badge>
+            </Tooltip>
           )}
         </Group>
 

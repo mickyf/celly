@@ -132,6 +132,37 @@
       }
     }
   },
+  "stockMovement": {
+    "title": "Bestandshistorie",
+    "addMovement": "Bestandsänderung erfassen",
+    "editMovement": "Bestandsbewegung bearbeiten",
+    "noMovements": "Noch keine Bestandsbewegungen erfasst",
+    "deleteConfirm": "Möchten Sie diese Bestandsbewegung wirklich löschen? Dies wird die Weinmenge anpassen.",
+    "type": {
+      "in": "Eingang",
+      "out": "Ausgang"
+    },
+    "form": {
+      "movementType": {
+        "in": "Eingang",
+        "out": "Ausgang"
+      },
+      "quantity": "Anzahl",
+      "quantityPlaceholder": "Anzahl Flaschen",
+      "date": "Bewegungsdatum",
+      "datePlaceholder": "Datum wählen",
+      "notes": "Notizen",
+      "notesPlaceholder": "z.B. Im Laden gekauft, Beim Abendessen konsumiert...",
+      "notesDescription": "Optionale Details zu dieser Bestandsänderung",
+      "validation": {
+        "quantityPositive": "Anzahl muss grösser als 0 sein"
+      },
+      "buttons": {
+        "addMovement": "Bewegung erfassen",
+        "updateMovement": "Bewegung aktualisieren"
+      }
+    }
+  },
   "enrichment": {
     "button": "Mit KI anreichern",
     "success": {
@@ -206,6 +237,18 @@
     "photoUploaded": {
       "title": "Foto hochgeladen",
       "message": "Weinfoto wurde hochgeladen"
+    },
+    "stockMovementAdded": {
+      "title": "Bestandsbewegung erfasst",
+      "message": "Bestandsänderung wurde erfolgreich erfasst"
+    },
+    "stockMovementUpdated": {
+      "title": "Bestandsbewegung aktualisiert",
+      "message": "Bestandsänderung wurde erfolgreich aktualisiert"
+    },
+    "stockMovementDeleted": {
+      "title": "Bestandsbewegung gelöscht",
+      "message": "Bestandsänderung wurde entfernt"
     },
     "error": {
       "title": "Fehler",

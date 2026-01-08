@@ -22,7 +22,7 @@ export function TastingNoteCard({ note, onEdit, onDelete }: TastingNoteCardProps
           <Group gap="xs">
             <IconCalendar size={16} />
             <Text size="sm" c="dimmed">
-              {dayjs(note.tasted_at).format('MMM D, YYYY')}
+              {dayjs(note.tasted_at).format('DD.MM.YYYY')}
             </Text>
           </Group>
         </Group>

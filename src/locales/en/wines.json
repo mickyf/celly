@@ -132,6 +132,37 @@
       }
     }
   },
+  "stockMovement": {
+    "title": "Stock History",
+    "addMovement": "Record Stock Change",
+    "editMovement": "Edit Stock Movement",
+    "noMovements": "No stock movements recorded yet",
+    "deleteConfirm": "Are you sure you want to delete this stock movement? This will adjust the wine quantity.",
+    "type": {
+      "in": "Stock In",
+      "out": "Stock Out"
+    },
+    "form": {
+      "movementType": {
+        "in": "Stock In",
+        "out": "Stock Out"
+      },
+      "quantity": "Quantity",
+      "quantityPlaceholder": "Number of bottles",
+      "date": "Movement Date",
+      "datePlaceholder": "Pick date",
+      "notes": "Notes",
+      "notesPlaceholder": "e.g., Purchased from store, Consumed at dinner...",
+      "notesDescription": "Optional details about this stock change",
+      "validation": {
+        "quantityPositive": "Quantity must be greater than 0"
+      },
+      "buttons": {
+        "addMovement": "Record Movement",
+        "updateMovement": "Update Movement"
+      }
+    }
+  },
   "enrichment": {
     "button": "Enrich with AI",
     "success": {
@@ -206,6 +237,18 @@
     "photoUploaded": {
       "title": "Photo uploaded",
       "message": "Wine photo has been uploaded"
+    },
+    "stockMovementAdded": {
+      "title": "Stock movement recorded",
+      "message": "Stock change has been recorded successfully"
+    },
+    "stockMovementUpdated": {
+      "title": "Stock movement updated",
+      "message": "Stock change has been updated successfully"
+    },
+    "stockMovementDeleted": {
+      "title": "Stock movement deleted",
+      "message": "Stock change has been removed"
     },
     "error": {
       "title": "Error",
