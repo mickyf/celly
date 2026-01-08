@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate, useRouter } from '@tanstack/react-router'
 import {
   Container,
   Title,
@@ -57,6 +57,7 @@ function WineDetail() {
   const { t } = useTranslation(['wines', 'common'])
   const { id } = Route.useParams()
   const navigate = useNavigate()
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
@@ -203,7 +204,7 @@ function WineDetail() {
           <Button
             variant="subtle"
             leftSection={<IconArrowLeft size={20} />}
-            onClick={() => navigate({ to: '/wines' })}
+            onClick={() => router.history.back()}
             style={{ alignSelf: 'flex-start' }}
           >
             {t('common:buttons.back')}

@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate, useRouter } from '@tanstack/react-router'
 import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -14,6 +14,7 @@ function EditWine() {
   const { t } = useTranslation(['wines'])
   const { id } = Route.useParams()
   const navigate = useNavigate()
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading } = useWine(id)
@@ -56,8 +57,7 @@ function EditWine() {
         })
       }
 
-      // Navigate back to wines list
-      navigate({ to: '/wines' })
+      router.history.back()
     } catch (error) {
       console.error('Error updating wine:', error)
     }
