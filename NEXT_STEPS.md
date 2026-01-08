@@ -14,3 +14,6 @@
 - ~~change the currency from USD to CHF~~
 - ~~change date format to Swiss style~~
 - ~~add a back button to the detail view~~
+- ~~store wine filters in the url as search params~~
+- ~~fix typescript issues~~
+- /init to update CLAUDE.md

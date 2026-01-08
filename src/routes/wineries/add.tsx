@@ -29,7 +29,6 @@ function AddWinery() {
       await addWinery.mutateAsync({
         name: values.name,
         country_code: values.country_code,
-        user_id: '',
       })
 
       // Navigate back to wineries list

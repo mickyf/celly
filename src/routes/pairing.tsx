@@ -57,7 +57,7 @@ function FoodPairing() {
     const currentYear = new Date().getFullYear()
     const availableWines = wines.filter(
       (wine) =>
-        wine.quantity > 0 &&
+        (wine.quantity ?? 0) > 0 &&
         (!wine.drink_window_start ||
           !wine.drink_window_end ||
           (currentYear >= wine.drink_window_start && currentYear <= wine.drink_window_end))
