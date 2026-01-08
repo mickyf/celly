@@ -66,6 +66,12 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       drink_window_start: wine?.drink_window_start || null,
       drink_window_end: wine?.drink_window_end || null,
     },
+    transformValues: (values: WineFormValues) => ({
+      ...values,
+      price: (typeof values.price === 'string' && values.price === '') ? null : values.price,
+      drink_window_start: (typeof values.drink_window_start === 'string' && values.drink_window_start === '') ? null : values.drink_window_start,
+      drink_window_end: (typeof values.drink_window_end === 'string' && values.drink_window_end === '') ? null : values.drink_window_end,
+    }),
     validate: {
       name: (value) => (value.trim().length > 0 ? null : t('wines:form.validation.nameRequired')),
       quantity: (value) => (value > 0 ? null : t('wines:form.validation.quantityMin')),
@@ -75,6 +81,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
           : t('wines:form.validation.invalidVintage'),
       drink_window_start: (value, values) => {
         if (value === null) return null
+        if (typeof value === 'string' && value === '') return null
         if (value < 1900) return t('wines:form.validation.invalidYear')
         if (values.drink_window_end && value > values.drink_window_end) {
           return t('wines:form.validation.startBeforeEnd')
@@ -83,6 +90,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       },
       drink_window_end: (value, values) => {
         if (value === null) return null
+        if (typeof value === 'string' && value === '') return null
         if (value < 1900) return t('wines:form.validation.invalidYear')
         if (values.drink_window_start && value < values.drink_window_start) {
           return t('wines:form.validation.endAfterStart')
