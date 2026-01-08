@@ -12,10 +12,11 @@ import {
   Select,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
-import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react'
+import { IconUpload, IconPhoto, IconX, IconCamera } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries } from '../hooks/useWineries'
+import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -45,6 +46,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     wine?.photo_url || null
   )
+  const [cameraOpened, setCameraOpened] = useState(false)
 
   const wineryOptions = useMemo(
     () =>
@@ -110,6 +112,15 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleCameraCapture = (file: File) => {
+    setPhotoFile(file)
+    const reader = new FileReader()
+    reader.onload = () => {
+      setPhotoPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleSubmit = (values: WineFormValues) => {
@@ -235,41 +246,58 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                 </Button>
               </div>
             ) : (
-              <Dropzone
-                onDrop={handlePhotoDrop}
-                accept={IMAGE_MIME_TYPE}
-                maxSize={5 * 1024 ** 2}
-                multiple={false}
-              >
-                <Group
-                  justify="center"
-                  gap="xl"
-                  mih={220}
-                  style={{ pointerEvents: 'none' }}
+              <Stack gap="md">
+                <Dropzone
+                  onDrop={handlePhotoDrop}
+                  accept={IMAGE_MIME_TYPE}
+                  maxSize={5 * 1024 ** 2}
+                  multiple={false}
                 >
-                  <Dropzone.Accept>
-                    <IconUpload size={52} stroke={1.5} />
-                  </Dropzone.Accept>
-                  <Dropzone.Reject>
-                    <IconX size={52} stroke={1.5} />
-                  </Dropzone.Reject>
-                  <Dropzone.Idle>
-                    <IconPhoto size={52} stroke={1.5} />
-                  </Dropzone.Idle>
+                  <Group
+                    justify="center"
+                    gap="xl"
+                    mih={220}
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <Dropzone.Accept>
+                      <IconUpload size={52} stroke={1.5} />
+                    </Dropzone.Accept>
+                    <Dropzone.Reject>
+                      <IconX size={52} stroke={1.5} />
+                    </Dropzone.Reject>
+                    <Dropzone.Idle>
+                      <IconPhoto size={52} stroke={1.5} />
+                    </Dropzone.Idle>
 
-                  <div>
-                    <Text size="xl" inline>
-                      {t('common:camera.photoDrop')}
-                    </Text>
-                    <Text size="sm" c="dimmed" inline mt={7}>
-                      {t('common:camera.photoSize')}
-                    </Text>
-                  </div>
-                </Group>
-              </Dropzone>
+                    <div>
+                      <Text size="xl" inline>
+                        {t('common:camera.photoDrop')}
+                      </Text>
+                      <Text size="sm" c="dimmed" inline mt={7}>
+                        {t('common:camera.photoSize')}
+                      </Text>
+                    </div>
+                  </Group>
+                </Dropzone>
+
+                <Button
+                  variant="light"
+                  leftSection={<IconCamera size={18} />}
+                  onClick={() => setCameraOpened(true)}
+                  fullWidth
+                >
+                  {t('common:camera.takePhoto')}
+                </Button>
+              </Stack>
             )}
           </Stack>
         </Paper>
+
+        <CameraCapture
+          opened={cameraOpened}
+          onClose={() => setCameraOpened(false)}
+          onCapture={handleCameraCapture}
+        />
 
         <Group justify="flex-end">
           {onCancel && (

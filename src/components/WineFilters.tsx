@@ -28,6 +28,7 @@ export interface WineFilterValues {
   priceMin: number | null
   priceMax: number | null
   drinkingWindow: 'all' | 'ready' | 'future' | 'past'
+  dataCompleteness: 'all' | 'complete' | 'incomplete'
 }
 
 interface WineFiltersProps {
@@ -67,6 +68,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       priceMin: null,
       priceMax: null,
       drinkingWindow: 'all',
+      dataCompleteness: 'all',
     })
   }
 
@@ -218,6 +220,24 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
                 onFiltersChange({
                   ...filters,
                   drinkingWindow: (value as WineFilterValues['drinkingWindow']) || 'all',
+                })
+              }
+              clearable={false}
+            />
+
+            <Select
+              label={t('wines:filters.dataCompleteness')}
+              placeholder={t('wines:filters.selectCompleteness')}
+              data={[
+                { value: 'all', label: t('wines:filters.dataCompletenessOptions.all') },
+                { value: 'complete', label: t('wines:filters.dataCompletenessOptions.complete') },
+                { value: 'incomplete', label: t('wines:filters.dataCompletenessOptions.incomplete') },
+              ]}
+              value={filters.dataCompleteness}
+              onChange={(value) =>
+                onFiltersChange({
+                  ...filters,
+                  dataCompleteness: (value as WineFilterValues['dataCompleteness']) || 'all',
                 })
               }
               clearable={false}

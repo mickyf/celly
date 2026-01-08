@@ -54,6 +54,13 @@
   },
   "camera": {
     "photoSize": "Photo should not exceed 5MB",
-    "photoDrop": "Drag image here or click to select"
+    "photoDrop": "Drag image here or click to select",
+    "takePhoto": "Take Photo",
+    "capturePhoto": "Capture",
+    "retakePhoto": "Retake",
+    "closeCamera": "Close",
+    "cameraTitle": "Camera",
+    "cameraError": "Unable to access camera. Please check permissions.",
+    "switchCamera": "Switch Camera"
   }
 }

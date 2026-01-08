@@ -95,16 +95,23 @@
     "vintageRange": "Vintage Range",
     "priceRange": "Price Range",
     "drinkingWindow": "Drinking Window",
+    "dataCompleteness": "Data Completeness",
     "from": "From",
     "to": "To",
     "min": "Min",
     "max": "Max",
     "selectStatus": "Select status",
+    "selectCompleteness": "Select completeness",
     "drinkingWindowOptions": {
       "all": "All Wines",
       "ready": "Ready to Drink Now",
       "future": "Drink in Future",
       "past": "Past Prime"
+    },
+    "dataCompletenessOptions": {
+      "all": "All Wines",
+      "complete": "Complete Data",
+      "incomplete": "Incomplete Data"
     }
   },
   "tastingNote": {
@@ -144,6 +151,31 @@
       "allFieldsFilled": "All fields already have data. Nothing to enrich.",
       "noData": "AI could not identify this wine. Try editing manually.",
       "noUpdates": "No fields were updated. The AI could not provide additional information."
+    }
+  },
+  "bulkEnrichment": {
+    "button": "Enrich {{count}} Wines",
+    "button_one": "Enrich 1 Wine",
+    "progress": {
+      "title": "Enriching Wines with AI",
+      "message": "Processing wine {{current}} of {{total}}",
+      "pleaseWait": "Please wait... This may take a few minutes."
+    },
+    "success": {
+      "title": "Bulk enrichment completed",
+      "message": "Successfully enriched {{count}} of {{total}} wines"
+    },
+    "partialFailure": {
+      "title": "Bulk enrichment completed with errors",
+      "message": "{{count}} wines could not be enriched. Check individual wine details."
+    },
+    "noChanges": {
+      "title": "No wines enriched",
+      "message": "All wines already have complete data or could not be identified by AI."
+    },
+    "errors": {
+      "title": "Bulk enrichment failed",
+      "message": "An error occurred during bulk enrichment. Please try again."
     }
   },
   "notifications": {

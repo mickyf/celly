@@ -95,16 +95,23 @@
     "vintageRange": "Jahrgangsbereich",
     "priceRange": "Preisbereich",
     "drinkingWindow": "Trinkfenster",
+    "dataCompleteness": "Datenvollständigkeit",
     "from": "Von",
     "to": "Bis",
     "min": "Min",
     "max": "Max",
     "selectStatus": "Status auswählen",
+    "selectCompleteness": "Vollständigkeit auswählen",
     "drinkingWindowOptions": {
       "all": "Alle Weine",
       "ready": "Jetzt trinkreif",
       "future": "In Zukunft trinken",
       "past": "Höhepunkt überschritten"
+    },
+    "dataCompletenessOptions": {
+      "all": "Alle Weine",
+      "complete": "Vollständige Daten",
+      "incomplete": "Unvollständige Daten"
     }
   },
   "tastingNote": {
@@ -144,6 +151,31 @@
       "allFieldsFilled": "Alle Felder enthalten bereits Daten. Nichts anzureichern.",
       "noData": "KI konnte diesen Wein nicht identifizieren. Versuchen Sie es manuell zu bearbeiten.",
       "noUpdates": "Keine Felder wurden aktualisiert. Die KI konnte keine zusätzlichen Informationen bereitstellen."
+    }
+  },
+  "bulkEnrichment": {
+    "button": "{{count}} Weine anreichern",
+    "button_one": "1 Wein anreichern",
+    "progress": {
+      "title": "Weine werden mit KI angereichert",
+      "message": "Verarbeite Wein {{current}} von {{total}}",
+      "pleaseWait": "Bitte warten... Dies kann einige Minuten dauern."
+    },
+    "success": {
+      "title": "Massenanreicherung abgeschlossen",
+      "message": "{{count}} von {{total}} Weinen erfolgreich angereichert"
+    },
+    "partialFailure": {
+      "title": "Massenanreicherung mit Fehlern abgeschlossen",
+      "message": "{{count}} Weine konnten nicht angereichert werden. Überprüfen Sie die einzelnen Weindetails."
+    },
+    "noChanges": {
+      "title": "Keine Weine angereichert",
+      "message": "Alle Weine haben bereits vollständige Daten oder konnten nicht von der KI identifiziert werden."
+    },
+    "errors": {
+      "title": "Massenanreicherung fehlgeschlagen",
+      "message": "Bei der Massenanreicherung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
     }
   },
   "notifications": {
