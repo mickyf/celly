@@ -30,6 +30,7 @@ export interface WineEnrichmentData {
     countryCode: string // ISO 3166-1 alpha-2
     matchedExistingId?: string // ID of existing winery if matched
   }
+  price?: number
   confidence: 'high' | 'medium' | 'low'
   explanation: string
 }
@@ -179,7 +180,8 @@ Please identify the wine and provide:
 2. Vintage year (if not already provided and if it's a specific wine)
 3. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
 4. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
-5. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
+5. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
+6. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
 
 Return your response as a JSON object with this exact structure:
 {
@@ -194,6 +196,7 @@ Return your response as a JSON object with this exact structure:
     "countryCode": "FR",
     "matchedExistingId": "uuid-if-matched-existing-winery"
   },
+  "price": 150.00,
   "confidence": "high",
   "explanation": "Brief explanation of your identification and confidence level"
 }
@@ -205,6 +208,8 @@ Important guidelines:
 - Drinking window start must be less than end
 - Country codes must be valid ISO 3166-1 alpha-2 codes (2 letters, uppercase)
 - Valid country codes: ${WINE_COUNTRIES.map((c) => c.code).join(', ')}
+- Price should be a reasonable retail price estimate in USD (positive number, typically between 10 and 10000 for most wines)
+- Only include price if you can make a reasonable estimate based on the wine's quality, vintage, and reputation
 - Confidence should be "high" for specific, well-known wines, "medium" for regional wines, "low" for generic varieties
 - If you cannot identify the wine at all, return confidence: "low" with minimal data
 - For winery matching: Consider variations in spelling, punctuation, abbreviations, etc. For example, "Domaine de la Romanée-Conti" matches "Domaine de la Romanee Conti", "Château Margaux" matches "Chateau Margaux", "Smith & Sons" matches "Smith and Sons"
@@ -288,6 +293,16 @@ Important guidelines:
           enrichmentData.winery.matchedExistingId = parsedResponse.winery.matchedExistingId
         }
       }
+    }
+
+    // Validate price
+    if (
+      parsedResponse.price &&
+      typeof parsedResponse.price === 'number' &&
+      parsedResponse.price > 0 &&
+      parsedResponse.price <= 100000
+    ) {
+      enrichmentData.price = parsedResponse.price
     }
 
     return { enrichmentData }
