@@ -54,6 +54,13 @@
   },
   "camera": {
     "photoSize": "Foto sollte 5 MB nicht überschreiten",
-    "photoDrop": "Bild hierher ziehen oder klicken zum Auswählen"
+    "photoDrop": "Bild hierher ziehen oder klicken zum Auswählen",
+    "takePhoto": "Foto aufnehmen",
+    "capturePhoto": "Aufnehmen",
+    "retakePhoto": "Erneut aufnehmen",
+    "closeCamera": "Schliessen",
+    "cameraTitle": "Kamera",
+    "cameraError": "Kamera konnte nicht geöffnet werden. Bitte Berechtigungen prüfen.",
+    "switchCamera": "Kamera wechseln"
   }
 }

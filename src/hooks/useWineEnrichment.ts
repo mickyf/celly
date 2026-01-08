@@ -14,6 +14,14 @@ interface EnrichmentResult {
   wineryCreated: boolean
 }
 
+interface BulkEnrichmentResult {
+  total: number
+  successful: number
+  failed: number
+  skipped: number
+  errors: Array<{ wineName: string; error: string }>
+}
+
 export const useEnrichWine = () => {
   const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
@@ -169,6 +177,207 @@ export const useEnrichWine = () => {
     onError: (error) => {
       notifications.show({
         title: t('wines:enrichment.errors.title'),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
+export const useBulkEnrichWines = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+  const addWinery = useAddWinery()
+  const updateWine = useUpdateWine()
+
+  return useMutation({
+    mutationFn: async ({
+      wines,
+      onProgress
+    }: {
+      wines: Wine[]
+      onProgress?: (current: number, total: number) => void
+    }): Promise<BulkEnrichmentResult> => {
+      const result: BulkEnrichmentResult = {
+        total: wines.length,
+        successful: 0,
+        failed: 0,
+        skipped: 0,
+        errors: [],
+      }
+
+      // Fetch existing wineries once for all enrichments
+      const { data: existingWineries } = await supabase
+        .from('wineries')
+        .select('id, name, country_code')
+        .order('name', { ascending: true })
+
+      const validWineries = (existingWineries || []).filter(
+        (w): w is { id: string; name: string; country_code: string } =>
+          w.country_code !== null
+      )
+
+      // Process wines sequentially to avoid rate limits
+      for (let i = 0; i < wines.length; i++) {
+        const wine = wines[i]
+
+        // Report progress
+        onProgress?.(i, wines.length)
+
+        try {
+          // Check if wine needs enrichment
+          const needsGrapes = !wine.grapes || wine.grapes.length === 0
+          const needsVintage = wine.vintage === null
+          const needsDrinkWindow =
+            wine.drink_window_start === null || wine.drink_window_end === null
+          const needsWinery = wine.winery_id === null
+          const needsPrice = wine.price === null
+
+          if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice) {
+            result.skipped++
+            continue
+          }
+
+          // Call AI enrichment
+          const { enrichmentData, error } = await enrichWineData(
+            wine.name,
+            wine.vintage,
+            validWineries
+          )
+
+          if (error || !enrichmentData) {
+            result.failed++
+            result.errors.push({
+              wineName: wine.name,
+              error: error || t('wines:enrichment.errors.noData'),
+            })
+            continue
+          }
+
+          // Prepare update data
+          const updateData: Partial<Wine> = {}
+
+          // Update grapes if needed
+          if (
+            needsGrapes &&
+            enrichmentData.grapes &&
+            enrichmentData.grapes.length > 0
+          ) {
+            updateData.grapes = enrichmentData.grapes
+          }
+
+          // Update vintage if needed
+          if (needsVintage && enrichmentData.vintage) {
+            updateData.vintage = enrichmentData.vintage
+          }
+
+          // Update drinking window if needed
+          if (needsDrinkWindow && enrichmentData.drinkingWindow) {
+            updateData.drink_window_start = enrichmentData.drinkingWindow.start
+            updateData.drink_window_end = enrichmentData.drinkingWindow.end
+          }
+
+          // Update price if needed
+          if (needsPrice && enrichmentData.price) {
+            updateData.price = enrichmentData.price
+          }
+
+          // Handle winery matching and creation
+          if (needsWinery && enrichmentData.winery) {
+            const { name, countryCode, matchedExistingId } = enrichmentData.winery
+
+            if (matchedExistingId) {
+              updateData.winery_id = matchedExistingId
+            } else {
+              try {
+                const newWinery = await addWinery.mutateAsync({
+                  name,
+                  country_code: countryCode,
+                })
+                updateData.winery_id = newWinery.id
+                // Add to validWineries for future iterations
+                if (newWinery.country_code) {
+                  validWineries.push({
+                    id: newWinery.id,
+                    name: newWinery.name,
+                    country_code: newWinery.country_code,
+                  })
+                }
+              } catch (error) {
+                console.error('Failed to create winery:', error)
+              }
+            }
+          }
+
+          // Only update if we have changes
+          if (Object.keys(updateData).length > 0) {
+            await updateWine.mutateAsync({
+              id: wine.id,
+              ...updateData,
+            })
+            result.successful++
+          } else {
+            result.skipped++
+          }
+        } catch (error) {
+          result.failed++
+          result.errors.push({
+            wineName: wine.name,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+
+        // Add a small delay between requests to avoid rate limits
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+
+      // Report final progress
+      onProgress?.(wines.length, wines.length)
+
+      return result
+    },
+    onSuccess: (result) => {
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+      queryClient.invalidateQueries({ queryKey: ['wineries'] })
+
+      // Show summary notification
+      if (result.successful > 0) {
+        notifications.show({
+          title: t('wines:bulkEnrichment.success.title'),
+          message: t('wines:bulkEnrichment.success.message', {
+            count: result.successful,
+            total: result.total,
+          }),
+          color: 'green',
+          autoClose: 5000,
+        })
+      }
+
+      if (result.failed > 0) {
+        notifications.show({
+          title: t('wines:bulkEnrichment.partialFailure.title'),
+          message: t('wines:bulkEnrichment.partialFailure.message', {
+            count: result.failed,
+          }),
+          color: 'yellow',
+          autoClose: 8000,
+        })
+      }
+
+      if (result.successful === 0 && result.failed === 0) {
+        notifications.show({
+          title: t('wines:bulkEnrichment.noChanges.title'),
+          message: t('wines:bulkEnrichment.noChanges.message'),
+          color: 'blue',
+          autoClose: 5000,
+        })
+      }
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:bulkEnrichment.errors.title'),
         message: error instanceof Error ? error.message : String(error),
         color: 'red',
         autoClose: 8000,
