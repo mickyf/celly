@@ -20,6 +20,7 @@ import {
   IconTrash,
   IconPlus,
   IconBottle,
+  IconSparkles,
 } from '@tabler/icons-react'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -31,6 +32,7 @@ import {
   useUpdateTastingNote,
   useDeleteTastingNote,
 } from '../../../hooks/useTastingNotes'
+import { useEnrichWine } from '../../../hooks/useWineEnrichment'
 import { useDisclosure } from '@mantine/hooks'
 import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
 import { TastingNoteCard } from '../../../components/TastingNoteCard'
@@ -57,6 +59,7 @@ function WineDetail() {
   const addNote = useAddTastingNote()
   const updateNote = useUpdateTastingNote()
   const deleteNote = useDeleteTastingNote()
+  const enrichWine = useEnrichWine()
 
   const [deleteWineOpened, { open: openDeleteWine, close: closeDeleteWine }] =
     useDisclosure(false)
@@ -128,6 +131,20 @@ function WineDetail() {
     setEditingNote(null)
   }
 
+  const handleEnrichWine = async () => {
+    if (!wine) return
+    await enrichWine.mutateAsync({ wine })
+  }
+
+  // Calculate if enrichment is possible
+  const canEnrich = wine && (
+    !wine.grapes || wine.grapes.length === 0 ||
+    wine.vintage === null ||
+    wine.drink_window_start === null ||
+    wine.drink_window_end === null ||
+    wine.winery_id === null
+  )
+
   if (authLoading || wineLoading) {
     return (
       <Center h={400}>
@@ -177,6 +194,17 @@ function WineDetail() {
               )}
             </div>
             <Group>
+              {canEnrich && (
+                <Button
+                  variant="gradient"
+                  gradient={{ from: 'grape', to: 'violet', deg: 90 }}
+                  leftSection={<IconSparkles size={20} />}
+                  onClick={handleEnrichWine}
+                  loading={enrichWine.isPending}
+                >
+                  {t('wines:enrichment.button')}
+                </Button>
+              )}
               <Button
                 variant="light"
                 leftSection={<IconEdit size={20} />}

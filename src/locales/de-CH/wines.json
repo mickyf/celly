@@ -125,6 +125,27 @@
       }
     }
   },
+  "enrichment": {
+    "button": "Mit KI anreichern",
+    "success": {
+      "title": "Wein angereichert",
+      "message": "{{count}} Felder aktualisiert: {{fields}}"
+    },
+    "wineryCreated": {
+      "title": "Weingut erstellt",
+      "message": "Ein neues Weingut wurde zu Ihrer Sammlung hinzugefügt"
+    },
+    "lowConfidence": {
+      "title": "Niedrige Identifikationssicherheit",
+      "message": "Die KI war bei dieser Identifikation nicht sehr sicher. Bitte überprüfen Sie die vorgeschlagenen Daten."
+    },
+    "errors": {
+      "title": "Anreicherung fehlgeschlagen",
+      "allFieldsFilled": "Alle Felder enthalten bereits Daten. Nichts anzureichern.",
+      "noData": "KI konnte diesen Wein nicht identifizieren. Versuchen Sie es manuell zu bearbeiten.",
+      "noUpdates": "Keine Felder wurden aktualisiert. Die KI konnte keine zusätzlichen Informationen bereitstellen."
+    }
+  },
   "notifications": {
     "wineAdded": {
       "title": "Wein hinzugefügt",
