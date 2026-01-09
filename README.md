@@ -2,6 +2,8 @@
 
 A modern wine cellar management application that enables wine enthusiasts to track their collection, add tasting notes, and get AI-powered food pairing recommendations.
 
+The app is currently hosted under: https://celly.pages.dev/
+
 ## Features
 
 - **Wine Collection Management**: Track wines with detailed information including winery, grapes, vintage, quantity, price, and drinking windows
