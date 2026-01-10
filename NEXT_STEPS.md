@@ -4,6 +4,7 @@
 - ~~language picker on mobile is to big, use flags (Swiss and British) only~~
 - ~~fix image not completely displayed~~
 - ~~make language Swiss-German de-ch default~~
+- ~~fix wrong language returned on food pairing recomendations~~
 
 ## New Features
 - ~~add cancel buttons to add and edit~~

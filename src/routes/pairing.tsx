@@ -33,7 +33,7 @@ export const Route = createFileRoute('/pairing')({
 })
 
 function FoodPairing() {
-  const { t } = useTranslation(['pairing', 'common'])
+  const { t, i18n } = useTranslation(['pairing', 'common'])
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -66,6 +66,7 @@ function FoodPairing() {
     const result = await pairingMutation.mutateAsync({
       menu,
       wines: availableWines.length > 0 ? availableWines : wines,
+      language: i18n.language as 'en' | 'de-CH',
     })
 
     setRecommendations(result.recommendations)

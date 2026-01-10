@@ -8,16 +8,17 @@ type Wine = Database['public']['Tables']['wines']['Row']
 interface PairingRequest {
   menu: string
   wines: Wine[]
+  language?: 'en' | 'de-CH'
 }
 
 export const useFoodPairing = () => {
   return useMutation({
-    mutationFn: async ({ menu, wines }: PairingRequest): Promise<PairingResponse> => {
+    mutationFn: async ({ menu, wines, language = 'de-CH' }: PairingRequest): Promise<PairingResponse> => {
       if (wines.length === 0) {
         throw new Error('No wines available in your cellar for pairing')
       }
 
-      return await getFoodPairing(menu, wines)
+      return await getFoodPairing(menu, wines, language)
     },
     onError: (error: Error) => {
       notifications.show({
