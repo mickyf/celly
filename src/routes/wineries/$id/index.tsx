@@ -21,6 +21,8 @@ import { WineCard } from '../../../components/WineCard'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../../../constants/countries'
+import { PageHeader } from '../../../components/PageHeader'
+import type { BreadcrumbItem } from '../../../components/Breadcrumb'
 
 export const Route = createFileRoute('/wineries/$id/')({
   component: WineryDetail,
@@ -80,36 +82,48 @@ function WineryDetail() {
   const country = winery.country_code ? getCountryByCode(winery.country_code) : null
   const canDelete = wineryWines.length === 0
 
+  // Generate breadcrumbs
+  const breadcrumbs: BreadcrumbItem[] = [
+    { label: t('common:breadcrumbs.home'), to: '/' },
+    { label: t('common:breadcrumbs.wineries'), to: '/wineries' },
+    { label: winery.name, to: undefined }, // Current page
+  ]
+
   return (
     <>
       <Container size="lg">
         <Stack gap="xl">
-          <Group justify="space-between">
-            <div>
-              <Title order={1}>{winery.name}</Title>
-              {country && (
-                <Text c="dimmed" size="lg">
-                  {country.flag} {country.name}
-                </Text>
-              )}
-            </div>
-            <Group>
-              <Button
-                leftSection={<IconEdit size={20} />}
-                onClick={() => navigate({ to: '/wineries/$id/edit', params: { id } })}
-              >
-                {t('common:buttons.edit')}
-              </Button>
-              <Button
-                color="red"
-                leftSection={<IconTrash size={20} />}
-                onClick={openDelete}
-                disabled={!canDelete}
-              >
-                {t('common:buttons.delete')}
-              </Button>
-            </Group>
-          </Group>
+          <PageHeader
+            breadcrumbs={breadcrumbs}
+            title={
+              <div>
+                <Title order={1}>{winery.name}</Title>
+                {country && (
+                  <Text c="dimmed" size="lg">
+                    {country.flag} {country.name}
+                  </Text>
+                )}
+              </div>
+            }
+            actions={
+              <Group>
+                <Button
+                  leftSection={<IconEdit size={20} />}
+                  onClick={() => navigate({ to: '/wineries/$id/edit', params: { id } })}
+                >
+                  {t('common:buttons.edit')}
+                </Button>
+                <Button
+                  color="red"
+                  leftSection={<IconTrash size={20} />}
+                  onClick={openDelete}
+                  disabled={!canDelete}
+                >
+                  {t('common:buttons.delete')}
+                </Button>
+              </Group>
+            }
+          />
 
           <Paper shadow="sm" p="lg" radius="md" withBorder>
             <Stack gap="md">
@@ -128,9 +142,17 @@ function WineryDetail() {
                     <WineCard
                       key={wine.id}
                       wine={wine}
-                      onView={() => navigate({ to: '/wines/$id', params: { id: wine.id } })}
+                      onView={() => navigate({
+                        to: '/wines/$id',
+                        params: { id: wine.id },
+                        search: { from: 'winery', wineryId: winery.id, wineryName: winery.name }
+                      })}
                       onEdit={() =>
-                        navigate({ to: '/wines/$id/edit', params: { id: wine.id } })
+                        navigate({
+                          to: '/wines/$id/edit',
+                          params: { id: wine.id },
+                          search: { from: 'winery', wineryId: winery.id, wineryName: winery.name }
+                        })
                       }
                     />
                   ))}

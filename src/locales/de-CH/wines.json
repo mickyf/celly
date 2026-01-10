@@ -89,7 +89,8 @@
   "card": {
     "vintage": "Jahrgang: {{vintage}}",
     "quantity": "Anzahl: {{quantity}}",
-    "drinkWindow": "Trinken: {{start}}-{{end}}"
+    "drinkWindow": "Trinken: {{start}}-{{end}}",
+    "ready": "Jetzt trinkreif"
   },
   "filters": {
     "title": "Suchen & Filtern",

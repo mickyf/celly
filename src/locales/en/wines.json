@@ -89,7 +89,8 @@
   "card": {
     "vintage": "Vintage: {{vintage}}",
     "quantity": "Quantity: {{quantity}}",
-    "drinkWindow": "Drink: {{start}}-{{end}}"
+    "drinkWindow": "Drink: {{start}}-{{end}}",
+    "ready": "Ready to Drink Now"
   },
   "filters": {
     "title": "Search & Filter",

@@ -25,7 +25,6 @@
     "vintage": "Vintage"
   },
   "status": {
-    "ready": "Ready",
     "loading": "Loading..."
   },
   "nav": {
@@ -63,5 +62,13 @@
     "cameraTitle": "Camera",
     "cameraError": "Unable to access camera. Please check permissions.",
     "switchCamera": "Switch Camera"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "myWines": "My Wines",
+    "wineries": "Wineries",
+    "addWine": "Add New Wine",
+    "addWinery": "Add New Winery",
+    "edit": "Edit"
   }
 }
