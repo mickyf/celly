@@ -36,8 +36,8 @@ export function WineryForm({
   })
 
   return (
-    <form onSubmit={form.onSubmit(onSubmit)}>
-      <Stack gap="lg">
+    <form onSubmit={form.onSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <Stack gap="lg" style={{ flex: 1, paddingBottom: '80px' }}>
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <TextInput
@@ -57,20 +57,31 @@ export function WineryForm({
             />
           </Stack>
         </Paper>
-
-        <Group justify="flex-end">
-          {onCancel && (
-            <Button variant="default" onClick={onCancel}>
-              {t('common:buttons.cancel')}
-            </Button>
-          )}
-          <Button type="submit" loading={isLoading}>
-            {winery
-              ? t('wineries:form.buttons.updateWinery')
-              : t('wineries:form.buttons.addWinery')}
-          </Button>
-        </Group>
       </Stack>
+
+      <Group
+        justify="flex-end"
+        wrap="nowrap"
+        p="md"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          backgroundColor: 'var(--mantine-color-body)',
+          borderTop: '1px solid var(--mantine-color-default-border)',
+          zIndex: 100
+        }}
+      >
+        {onCancel && (
+          <Button variant="default" onClick={onCancel}>
+            {t('common:buttons.cancel')}
+          </Button>
+        )}
+        <Button type="submit" loading={isLoading}>
+          {winery
+            ? t('wineries:form.buttons.updateWinery')
+            : t('wineries:form.buttons.addWinery')}
+        </Button>
+      </Group>
     </form>
   )
 }

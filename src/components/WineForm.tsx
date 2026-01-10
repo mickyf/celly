@@ -131,8 +131,8 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   }
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <Stack gap="lg">
+    <form onSubmit={form.onSubmit(handleSubmit)} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <Stack gap="lg" style={{ flex: 1, paddingBottom: '80px' }}>
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={700} size="lg">
@@ -311,18 +311,30 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
           onClose={() => setCameraOpened(false)}
           onCapture={handleCameraCapture}
         />
-
-        <Group justify="flex-end">
-          {onCancel && (
-            <Button variant="default" onClick={onCancel}>
-              {t('common:buttons.cancel')}
-            </Button>
-          )}
-          <Button type="submit" loading={isLoading}>
-            {wine ? t('wines:form.buttons.updateWine') : t('wines:form.buttons.addWine')}
-          </Button>
-        </Group>
       </Stack>
+
+      <Group
+        justify="flex-end"
+        wrap="nowrap"
+        gap="xs"
+        p="md"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          backgroundColor: 'var(--mantine-color-body)',
+          borderTop: '1px solid var(--mantine-color-default-border)',
+          zIndex: 100
+        }}
+      >
+        {onCancel && (
+          <Button variant="default" onClick={onCancel}>
+            {t('common:buttons.cancel')}
+          </Button>
+        )}
+        <Button type="submit" loading={isLoading}>
+          {wine ? t('wines:form.buttons.updateWine') : t('wines:form.buttons.addWine')}
+        </Button>
+      </Group>
     </form>
   )
 }

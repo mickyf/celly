@@ -42,8 +42,8 @@ export function TastingNoteForm({
   })
 
   return (
-    <form onSubmit={form.onSubmit(onSubmit)}>
-      <Stack gap="md">
+    <form onSubmit={form.onSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <Stack gap="md" style={{ flex: 1, paddingBottom: '80px' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
             {t('wines:tastingNote.form.rating')}
@@ -71,18 +71,30 @@ export function TastingNoteForm({
           required
           {...form.getInputProps('notes')}
         />
-
-        <Group justify="flex-end" mt="md">
-          {onCancel && (
-            <Button variant="default" onClick={onCancel}>
-              {t('common:buttons.cancel')}
-            </Button>
-          )}
-          <Button type="submit" loading={isLoading}>
-            {note ? t('wines:tastingNote.form.buttons.updateNote') : t('wines:tastingNote.form.buttons.addNote')}
-          </Button>
-        </Group>
       </Stack>
+
+      <Group
+        justify="flex-end"
+        wrap="nowrap"
+        mt="md"
+        p="md"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          backgroundColor: 'var(--mantine-color-body)',
+          borderTop: '1px solid var(--mantine-color-default-border)',
+          zIndex: 100
+        }}
+      >
+        {onCancel && (
+          <Button variant="default" onClick={onCancel}>
+            {t('common:buttons.cancel')}
+          </Button>
+        )}
+        <Button type="submit" loading={isLoading}>
+          {note ? t('wines:tastingNote.form.buttons.updateNote') : t('wines:tastingNote.form.buttons.addNote')}
+        </Button>
+      </Group>
     </form>
   )
 }
