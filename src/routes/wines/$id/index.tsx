@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import {
   Container,
   Title,
@@ -21,7 +21,6 @@ import {
   IconPlus,
   IconBottle,
   IconSparkles,
-  IconArrowLeft,
 } from '@tabler/icons-react'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -46,18 +45,34 @@ import { StockMovementHistory } from '../../../components/StockMovementHistory'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../../../constants/countries'
 import type { Database } from '../../../types/database'
+import { PageHeader } from '../../../components/PageHeader'
+import { useMemo } from 'react'
+import type { BreadcrumbItem } from '../../../components/Breadcrumb'
 
 type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
 
+interface WineDetailSearch {
+  from?: string
+  wineryId?: string
+  wineryName?: string
+}
+
 export const Route = createFileRoute('/wines/$id/')({
   component: WineDetail,
+  validateSearch: (search: Record<string, unknown>): WineDetailSearch => {
+    return {
+      from: typeof search.from === 'string' ? search.from : undefined,
+      wineryId: typeof search.wineryId === 'string' ? search.wineryId : undefined,
+      wineryName: typeof search.wineryName === 'string' ? search.wineryName : undefined,
+    }
+  },
 })
 
 function WineDetail() {
   const { t } = useTranslation(['wines', 'common'])
   const { id } = Route.useParams()
+  const search = Route.useSearch()
   const navigate = useNavigate()
-  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
@@ -70,6 +85,28 @@ function WineDetail() {
   const deleteNote = useDeleteTastingNote()
   const addStockMovement = useAddStockMovement()
   const enrichWine = useEnrichWine()
+
+  // Generate breadcrumbs based on navigation context
+  const breadcrumbs = useMemo((): BreadcrumbItem[] => {
+    if (!wine) return []
+
+    // Cross-resource context: Coming from winery detail
+    if (search.from === 'winery' && search.wineryId && search.wineryName) {
+      return [
+        { label: t('common:breadcrumbs.home'), to: '/' },
+        { label: t('common:breadcrumbs.wineries'), to: '/wineries' },
+        { label: search.wineryName, to: `/wineries/${search.wineryId}` },
+        { label: wine.name, to: undefined }, // Current page
+      ]
+    }
+
+    // Default wine path
+    return [
+      { label: t('common:breadcrumbs.home'), to: '/' },
+      { label: t('common:breadcrumbs.myWines'), to: '/wines' },
+      { label: wine.name, to: undefined }, // Current page
+    ]
+  }, [wine, search, t])
 
   const [deleteWineOpened, { open: openDeleteWine, close: closeDeleteWine }] =
     useDisclosure(false)
@@ -200,62 +237,57 @@ function WineDetail() {
     <>
       <Container size="lg">
         <Stack gap="xl">
-          {/* Back Button */}
-          <Button
-            variant="subtle"
-            leftSection={<IconArrowLeft size={20} />}
-            onClick={() => router.history.back()}
-            style={{ alignSelf: 'flex-start' }}
-          >
-            {t('common:buttons.back')}
-          </Button>
-
-          {/* Wine Header */}
-          <Group justify="space-between">
-            <div>
-              <Group gap="sm">
-                <Title order={1}>{wine.name}</Title>
-                {isReadyToDrink && (
-                  <Badge color="green" variant="light" size="lg">
-                    {t('wines:detail.readyBadge')}
-                  </Badge>
+          {/* Page Header with Back Button and Breadcrumbs */}
+          <PageHeader
+            breadcrumbs={breadcrumbs}
+            title={
+              <div>
+                <Group gap="sm">
+                  <Title order={1}>{wine.name}</Title>
+                  {isReadyToDrink && (
+                    <Badge color="green" variant="light" size="lg">
+                      {t('wines:detail.readyBadge')}
+                    </Badge>
+                  )}
+                </Group>
+                {wine.vintage && (
+                  <Text c="dimmed" size="lg">
+                    {t('common:labels.vintage')}: {wine.vintage}
+                  </Text>
                 )}
-              </Group>
-              {wine.vintage && (
-                <Text c="dimmed" size="lg">
-                  {t('common:labels.vintage')}: {wine.vintage}
-                </Text>
-              )}
-            </div>
-            <Group>
-              {canEnrich && (
+              </div>
+            }
+            actions={
+              <Group>
+                {canEnrich && (
+                  <Button
+                    variant="gradient"
+                    gradient={{ from: 'grape', to: 'violet', deg: 90 }}
+                    leftSection={<IconSparkles size={20} />}
+                    onClick={handleEnrichWine}
+                    loading={enrichWine.isPending}
+                  >
+                    {t('wines:enrichment.button')}
+                  </Button>
+                )}
                 <Button
-                  variant="gradient"
-                  gradient={{ from: 'grape', to: 'violet', deg: 90 }}
-                  leftSection={<IconSparkles size={20} />}
-                  onClick={handleEnrichWine}
-                  loading={enrichWine.isPending}
+                  variant="light"
+                  leftSection={<IconEdit size={20} />}
+                  onClick={() => navigate({ to: '/wines/$id/edit', params: { id } })}
                 >
-                  {t('wines:enrichment.button')}
+                  {t('common:buttons.edit')}
                 </Button>
-              )}
-              <Button
-                variant="light"
-                leftSection={<IconEdit size={20} />}
-                onClick={() => navigate({ to: '/wines/$id/edit', params: { id } })}
-              >
-                {t('common:buttons.edit')}
-              </Button>
-              <Button
-                variant="light"
-                color="red"
-                leftSection={<IconTrash size={20} />}
-                onClick={openDeleteWine}
-              >
-                {t('common:buttons.delete')}
-              </Button>
-            </Group>
-          </Group>
+                <Button
+                  variant="light"
+                  color="red"
+                  leftSection={<IconTrash size={20} />}
+                  onClick={openDeleteWine}
+                >
+                  {t('common:buttons.delete')}
+                </Button>
+              </Group>
+            }
+          />
 
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
             {/* Wine Photo */}

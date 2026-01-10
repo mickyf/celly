@@ -25,7 +25,6 @@
     "vintage": "Jahrgang"
   },
   "status": {
-    "ready": "Bereit",
     "loading": "Lädt..."
   },
   "nav": {
@@ -63,5 +62,13 @@
     "cameraTitle": "Kamera",
     "cameraError": "Kamera konnte nicht geöffnet werden. Bitte Berechtigungen prüfen.",
     "switchCamera": "Kamera wechseln"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "myWines": "Meine Weine",
+    "wineries": "Weingüter",
+    "addWine": "Neuen Wein hinzufügen",
+    "addWinery": "Neues Weingut hinzufügen",
+    "edit": "Bearbeiten"
   }
 }

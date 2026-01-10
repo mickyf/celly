@@ -1,5 +1,5 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { AppShell, Burger, Group, NavLink, Title } from '@mantine/core'
+import { Outlet, createRootRoute, Link } from '@tanstack/react-router'
+import { AppShell, Burger, Group, NavLink, Title, Anchor } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconBottle,
@@ -58,8 +58,12 @@ function RootLayout() {
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <IconBottle size={28} stroke={1.5} />
-            <Title order={3}>Celly</Title>
+            <Anchor component={Link} to="/" underline="never" c="inherit">
+              <Group gap="xs">
+                <IconBottle size={28} stroke={1.5} />
+                <Title order={3}>Celly</Title>
+              </Group>
+            </Anchor>
           </Group>
           <LanguageSelector />
         </Group>

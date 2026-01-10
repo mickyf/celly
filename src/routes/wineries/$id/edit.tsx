@@ -1,23 +1,37 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
 import { supabase } from '../../../lib/supabase'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { WineryForm, type WineryFormValues } from '../../../components/WineryForm'
 import { useWinery, useUpdateWinery } from '../../../hooks/useWineries'
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '../../../components/PageHeader'
+import type { BreadcrumbItem } from '../../../components/Breadcrumb'
 
 export const Route = createFileRoute('/wineries/$id/edit')({
   component: EditWinery,
 })
 
 function EditWinery() {
-  const { t } = useTranslation(['wineries'])
+  const { t } = useTranslation(['wineries', 'common'])
   const { id } = Route.useParams()
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: winery, isLoading } = useWinery(id)
   const updateWinery = useUpdateWinery()
+
+  // Generate breadcrumbs
+  const breadcrumbs = useMemo((): BreadcrumbItem[] => {
+    if (!winery) return []
+
+    return [
+      { label: t('common:breadcrumbs.home'), to: '/' },
+      { label: t('common:breadcrumbs.wineries'), to: '/wineries' },
+      { label: winery.name, to: `/wineries/${id}` },
+      { label: t('common:breadcrumbs.edit'), to: undefined }, // Current page
+    ]
+  }, [winery, t, id])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,8 +48,8 @@ function EditWinery() {
         country_code: values.country_code,
       })
 
-      // Navigate back to wineries list
-      navigate({ to: '/wineries' })
+      // Navigate back to winery detail
+      navigate({ to: '/wineries/$id', params: { id } })
     } catch (error) {
       console.error('Error updating winery:', error)
     }
@@ -64,12 +78,17 @@ function EditWinery() {
   return (
     <Container size="md">
       <Stack gap="xl">
-        <div>
-          <Title order={1}>{t('wineries:edit.title')}</Title>
-          <Text c="dimmed" size="lg">
-            {t('wineries:edit.subtitle')}
-          </Text>
-        </div>
+        <PageHeader
+          breadcrumbs={breadcrumbs}
+          title={
+            <div>
+              <Title order={1}>{t('wineries:edit.title')}</Title>
+              <Text c="dimmed" size="lg">
+                {t('wineries:edit.subtitle')}
+              </Text>
+            </div>
+          }
+        />
 
         <WineryForm
           winery={winery}

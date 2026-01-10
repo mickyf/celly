@@ -1,4 +1,4 @@
-import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Box } from '@mantine/core'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Box, Anchor } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useWinery } from '../hooks/useWineries'
@@ -56,15 +56,29 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
       <Stack gap="sm" mt="md" mb="md">
 
         <Group justify="space-between" mb={5}>
-          <Text fw={700} size="lg">
-            {wine.name}
-          </Text>
+          {onView ? (
+            <Anchor
+              component="button"
+              onClick={onView}
+              fw={700}
+              size="lg"
+              underline="never"
+              c="inherit"
+              style={{ cursor: 'pointer', border: 'none', background: 'none', padding: 0, textAlign: 'left' }}
+            >
+              {wine.name}
+            </Anchor>
+          ) : (
+            <Text fw={700} size="lg">
+              {wine.name}
+            </Text>
+          )}
         </Group>
 
         <div>
           {isReadyToDrink && (
             <Badge color="green" variant="light" mr={BADGE_GAP}>
-              {t('common:status.ready')}
+              {t('wines:card.ready')}
             </Badge>
           )}
 
