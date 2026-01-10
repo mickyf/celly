@@ -1,4 +1,4 @@
-import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip } from '@mantine/core'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Flex, Box } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useWinery } from '../hooks/useWineries'
@@ -16,11 +16,11 @@ interface WineCardProps {
   showRecentMovements?: boolean
 }
 
-export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements = false }: WineCardProps) {
+export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements = true }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
   const { data: winery } = useWinery(wine.winery_id || '')
   const { data: stockMovements } = useStockMovements(showRecentMovements ? wine.id : undefined)
-
+  const BADGE_GAP = 3;
   const currentYear = new Date().getFullYear()
   const isReadyToDrink =
     wine.drink_window_start &&
@@ -53,107 +53,109 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
         )}
       </Card.Section>
 
-      <Stack gap="sm" mt="md">
+      <Stack gap="sm" mt="md" mb="md">
+
+        <Group justify="space-between" mb={5}>
+          <Text fw={700} size="lg">
+            {wine.name}
+          </Text>
+        </Group>
+
         <div>
-          <Group justify="space-between" mb={5}>
-            <Text fw={700} size="lg">
-              {wine.name}
-            </Text>
-            {isReadyToDrink && (
-              <Badge color="green" variant="light">
-                {t('common:status.ready')}
-              </Badge>
-            )}
-          </Group>
-          {winery && (
-            <Text size="sm" c="dimmed">
-              {winery.name}
-            </Text>
+          {isReadyToDrink && (
+            <Badge color="green" variant="light" mr={BADGE_GAP}>
+              {t('common:status.ready')}
+            </Badge>
           )}
+
+          {winery && (
+            <Badge color="grape" variant="outline" mr={BADGE_GAP}>
+              {winery.name}
+            </Badge>
+          )}
+
           {wine.vintage && (
-            <Text size="sm" c="dimmed">
+            <Badge color="yellow" variant="light" mr={BADGE_GAP}>
               {t('wines:card.vintage', { vintage: wine.vintage })}
-            </Text>
+            </Badge>
+          )}
+
+          {wine.grapes && wine.grapes.length > 0 && (
+            wine.grapes.map((grape, index) => (
+              <Badge key={index} variant="light" mr={BADGE_GAP}>
+                {grape}
+              </Badge>
+            ))
           )}
         </div>
 
-        {wine.grapes && wine.grapes.length > 0 && (
-          <Group gap="xs">
-            {wine.grapes.map((grape, index) => (
-              <Badge key={index} variant="light">
-                {grape}
-              </Badge>
-            ))}
-          </Group>
-        )}
+        <div>
+          <Badge color='blue' variant='light' mr={BADGE_GAP}>
+            {t('wines:card.quantity', { quantity: wine.quantity })}
+          </Badge>
+          {wine.price && (
+            <Badge color='blue' variant='outline' mr={BADGE_GAP}>
+              CHF {wine.price.toFixed(2)}
+            </Badge>
+          )}
 
-        <Group justify="space-between">
-          <Group>
-            <Text size="sm" c="dimmed">
-              {t('wines:card.quantity', { quantity: wine.quantity })}
-            </Text>
-            {wine.price && (
-              <Text size="sm" c="dimmed">
-                CHF {wine.price.toFixed(2)}
-              </Text>
-            )}
-          </Group>
           {recentMovement && (
             <Tooltip label={`${dayjs(recentMovement.movement_date).format('DD.MM.YYYY')}: ${recentMovement.notes || t(`wines:stockMovement.type.${recentMovement.movement_type}`)}`}>
               <Badge
-                size="sm"
                 color={recentMovement.movement_type === 'in' ? 'green' : 'orange'}
                 variant="light"
                 leftSection={recentMovement.movement_type === 'in' ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />}
+                mr={BADGE_GAP}
               >
                 {recentMovement.movement_type === 'in' ? '+' : '-'}{recentMovement.quantity}
               </Badge>
             </Tooltip>
           )}
-        </Group>
+          {wine.drink_window_start && wine.drink_window_end && (
+            <Badge color='yellow' variant='light' mr={BADGE_GAP}>
+              {t('wines:card.drinkWindow', { start: wine.drink_window_start, end: wine.drink_window_end })}
+            </Badge>
+          )}
+        </div>
+      </Stack>
 
-        {wine.drink_window_start && wine.drink_window_end && (
-          <Text size="sm" c="dimmed">
-            {t('wines:card.drinkWindow', { start: wine.drink_window_start, end: wine.drink_window_end })}
-          </Text>
-        )}
-
-        <Group justify="space-between" mt="md">
+      <Card.Section withBorder inheritPadding py="xs" mt="auto">
+        <Group gap="xs" justify='flex-start'>
           {onView && (
             <Button
               variant="filled"
-              size="xs"
               leftSection={<IconEye size={16} />}
               onClick={onView}
             >
               {t('common:buttons.viewDetails')}
             </Button>
           )}
-          <Group justify="flex-end">
-            {onEdit && (
-              <Button
-                variant="light"
-                size="xs"
-                leftSection={<IconEdit size={16} />}
-                onClick={onEdit}
-              >
-                {t('common:buttons.edit')}
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="light"
-                color="red"
-                size="xs"
-                leftSection={<IconTrash size={16} />}
-                onClick={() => onDelete(wine.id)}
-              >
-                {t('common:buttons.delete')}
-              </Button>
-            )}
-          </Group>
+
+          {onEdit && (
+            <Button
+              ml="auto"
+              variant="light"
+              leftSection={<IconEdit size={16} />}
+              onClick={onEdit}
+              pr={0}
+            >
+              <Box visibleFrom='xs' pr="1.125rem">{t('common:buttons.edit')}</Box>
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={() => onDelete(wine.id)}
+              pr={0}
+            >
+              <Box visibleFrom='xs' pr="1.125rem">{t('common:buttons.delete')}</Box>
+            </Button>
+          )}
         </Group>
-      </Stack>
+      </Card.Section>
     </Card>
   )
 }
