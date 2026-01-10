@@ -8,7 +8,18 @@ const languages = {
 
 export function LanguageSelector() {
   const { i18n } = useTranslation()
-  const currentLang = (i18n.language as keyof typeof languages) || 'de-CH'
+
+  // Safely determine current language with fallback
+  const getCurrentLang = (): keyof typeof languages => {
+    const lang = i18n.language
+    if (lang in languages) {
+      return lang as keyof typeof languages
+    }
+    // Fallback to 'de-CH' if language not found
+    return 'de-CH'
+  }
+
+  const currentLang = getCurrentLang()
 
   return (
     <Menu position="bottom-end" withinPortal={false}>

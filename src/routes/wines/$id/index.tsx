@@ -86,6 +86,11 @@ function WineDetail() {
   const addStockMovement = useAddStockMovement()
   const enrichWine = useEnrichWine()
 
+  // Get country information for winery
+  const wineryCountry = useMemo(() => {
+    return winery?.country_code ? getCountryByCode(winery.country_code, t) : null
+  }, [winery?.country_code, t])
+
   // Generate breadcrumbs based on navigation context
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
     if (!wine) return []
@@ -330,9 +335,9 @@ function WineDetail() {
                     </Text>
                     <Group mt="xs" gap="xs">
                       <Text size="lg">{winery.name}</Text>
-                      {winery.country_code && (
+                      {wineryCountry && (
                         <Text size="sm" c="dimmed">
-                          {getCountryByCode(winery.country_code, t)?.flag}
+                          {wineryCountry.flag}
                         </Text>
                       )}
                     </Group>
