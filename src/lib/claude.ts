@@ -43,7 +43,8 @@ export interface WineEnrichmentResponse {
 
 export async function getFoodPairing(
   menu: string,
-  availableWines: Wine[]
+  availableWines: Wine[],
+  language: 'en' | 'de-CH' = 'de-CH'
 ): Promise<PairingResponse> {
   const apiKey = import.meta.env.VITE_CLAUDE_API_KEY
 
@@ -66,6 +67,12 @@ export async function getFoodPairing(
     )
     .join('\n')
 
+  // Determine language instruction
+  const languageInstruction =
+    language === 'de-CH'
+      ? 'IMPORTANT: Write all explanations in Swiss Standard German (Schweizer Hochdeutsch), NOT dialect. Use standard German grammar and vocabulary as used in Switzerland. Key differences: use "ss" instead of "ß", prefer Swiss terminology.'
+      : 'Write all explanations in English.'
+
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 2048,
@@ -80,6 +87,8 @@ Available wines in cellar:
 ${wineList}
 
 Please provide your top 3 wine recommendations. For each wine, explain why it pairs well with the dish, highlighting specific flavor interactions, complementary characteristics, or traditional pairing principles.
+
+${languageInstruction}
 
 Return your response as a JSON object with this exact structure:
 {
@@ -161,8 +170,8 @@ export async function enrichWineData(
   const wineriesListText =
     existingWineries && existingWineries.length > 0
       ? `\n\nExisting wineries in the user's collection:\n${existingWineries
-          .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
-          .join('\n')}`
+        .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
+        .join('\n')}`
       : ''
 
   try {
