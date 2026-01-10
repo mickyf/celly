@@ -245,7 +245,8 @@ function WineList() {
       const needsDrinkWindow = wine.drink_window_start === null || wine.drink_window_end === null
       const needsWinery = wine.winery_id === null
       const needsPrice = wine.price === null
-      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice
+      const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
+      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings
     })
 
     if (winesToEnrich.length === 0) {
@@ -284,7 +285,8 @@ function WineList() {
       const needsDrinkWindow = wine.drink_window_start === null || wine.drink_window_end === null
       const needsWinery = wine.winery_id === null
       const needsPrice = wine.price === null
-      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice
+      const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
+      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings
     }).length
   }, [wines])
 
