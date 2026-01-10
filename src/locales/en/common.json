@@ -70,5 +70,21 @@
     "addWine": "Add New Wine",
     "addWinery": "Add New Winery",
     "edit": "Edit"
+  },
+  "countries": {
+    "AR": "Argentina",
+    "AT": "Austria",
+    "AU": "Australia",
+    "CH": "Switzerland",
+    "CL": "Chile",
+    "DE": "Germany",
+    "ES": "Spain",
+    "FR": "France",
+    "GR": "Greece",
+    "IT": "Italy",
+    "NZ": "New Zealand",
+    "PT": "Portugal",
+    "US": "United States",
+    "ZA": "South Africa"
   }
 }

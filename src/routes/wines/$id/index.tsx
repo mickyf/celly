@@ -332,7 +332,7 @@ function WineDetail() {
                       <Text size="lg">{winery.name}</Text>
                       {winery.country_code && (
                         <Text size="sm" c="dimmed">
-                          {getCountryByCode(winery.country_code)?.flag}
+                          {getCountryByCode(winery.country_code, t)?.flag}
                         </Text>
                       )}
                     </Group>

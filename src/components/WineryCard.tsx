@@ -15,64 +15,64 @@ interface WineryCardProps {
 export function WineryCard({ winery, onView, onEdit, onDelete }: WineryCardProps) {
   const { t } = useTranslation(['wineries', 'common'])
   const { data: wineCount = 0 } = useWineryWineCount(winery.id)
-  const country = winery.country_code ? getCountryByCode(winery.country_code) : null
+  const country = winery.country_code ? getCountryByCode(winery.country_code, t) : null
+  const BADGE_GAP = 3;
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
-      <Stack gap="sm">
+      <Stack gap="sm" mb="md">
         <div>
           <Group justify="space-between" mb={5}>
             <Text fw={700} size="lg">
               {winery.name}
             </Text>
-            <Badge variant="light" color="grape">
+          </Group>
+          <div>
+            <Badge variant="light" color="grape" mr={BADGE_GAP}>
               {t('wineries:card.wineCount', { count: wineCount })}
             </Badge>
-          </Group>
-          {country && (
-            <Text size="sm" c="dimmed">
-              {country.flag} {country.name}
-            </Text>
-          )}
+            {country && (
+              <Badge variant='outline' color='yellow' mr={BADGE_GAP}>
+                {country.flag} {country.name}
+              </Badge>
+            )}
+          </div>
         </div>
+      </Stack>
 
-        <Group justify="space-between" mt="md">
+      <Card.Section withBorder inheritPadding py="xs" mt="auto">
+        <Group gap="xs" justify='flex-start'>
           {onView && (
             <Button
               variant="filled"
-              size="xs"
               leftSection={<IconEye size={16} />}
               onClick={onView}
             >
               {t('common:buttons.viewDetails')}
             </Button>
           )}
-          <Group justify="flex-end" gap="xs">
-            {onEdit && (
-              <Button
-                variant="light"
-                size="xs"
-                leftSection={<IconEdit size={16} />}
-                onClick={onEdit}
-              >
-                {t('common:buttons.edit')}
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="light"
-                color="red"
-                size="xs"
-                leftSection={<IconTrash size={16} />}
-                onClick={() => onDelete(winery.id)}
-                disabled={wineCount > 0}
-              >
-                {t('common:buttons.delete')}
-              </Button>
-            )}
-          </Group>
+
+          {onEdit && (
+            <Button
+              ml="auto"
+              variant="light"
+              leftSection={<IconEdit size={16} />}
+              onClick={onEdit}
+              pr={0}
+            />
+          )}
+          {onDelete && (
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={() => onDelete(winery.id)}
+              disabled={wineCount > 0}
+              pr={0}
+            />
+          )}
         </Group>
-      </Stack>
+      </Card.Section>
     </Card>
   )
 }

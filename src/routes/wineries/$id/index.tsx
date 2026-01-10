@@ -79,7 +79,7 @@ function WineryDetail() {
     )
   }
 
-  const country = winery.country_code ? getCountryByCode(winery.country_code) : null
+  const country = winery.country_code ? getCountryByCode(winery.country_code, t) : null
   const canDelete = wineryWines.length === 0
 
   // Generate breadcrumbs

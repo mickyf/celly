@@ -1,8 +1,9 @@
 import { useForm } from '@mantine/form'
 import { TextInput, Button, Stack, Group, Paper, Select } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
-import { COUNTRY_OPTIONS } from '../constants/countries'
+import { getCountryOptions } from '../constants/countries'
 import type { Tables } from '../types/database'
+import { useMemo } from 'react'
 
 export interface WineryFormValues {
   name: string
@@ -23,6 +24,9 @@ export function WineryForm({
   isLoading,
 }: WineryFormProps) {
   const { t } = useTranslation(['wineries', 'common'])
+
+  // Get translated country options
+  const countryOptions = useMemo(() => getCountryOptions(t), [t])
 
   const form = useForm<WineryFormValues>({
     initialValues: {
@@ -50,7 +54,7 @@ export function WineryForm({
             <Select
               label={t('wineries:form.labels.country')}
               placeholder={t('wineries:form.placeholders.country')}
-              data={COUNTRY_OPTIONS}
+              data={countryOptions}
               searchable
               clearable
               {...form.getInputProps('country_code')}
