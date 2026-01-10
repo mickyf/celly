@@ -142,6 +142,7 @@ export type Database = {
       }
       wines: {
         Row: {
+          bottle_size: string | null
           created_at: string | null
           drink_window_end: number | null
           drink_window_start: number | null
@@ -158,6 +159,7 @@ export type Database = {
           winery_id: string | null
         }
         Insert: {
+          bottle_size?: string | null
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null
@@ -174,6 +176,7 @@ export type Database = {
           winery_id?: string | null
         }
         Update: {
+          bottle_size?: string | null
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null

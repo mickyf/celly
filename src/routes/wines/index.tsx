@@ -25,6 +25,9 @@ export const Route = createFileRoute('/wines/')({
     if (Array.isArray(search.grapes) && search.grapes.length > 0) {
       validated.grapes = search.grapes.filter((g): g is string => typeof g === 'string')
     }
+    if (Array.isArray(search.bottleSizes) && search.bottleSizes.length > 0) {
+      validated.bottleSizes = search.bottleSizes.filter((s): s is string => typeof s === 'string')
+    }
     if (typeof search.vintageMin === 'number') {
       validated.vintageMin = search.vintageMin
     }
@@ -68,6 +71,7 @@ function WineList() {
     search: '',
     winery: null,
     grapes: [],
+    bottleSizes: [],
     vintageMin: null,
     vintageMax: null,
     priceMin: null,
@@ -89,6 +93,7 @@ function WineList() {
     if (newFilters.search) searchParams.search = newFilters.search
     if (newFilters.winery) searchParams.winery = newFilters.winery
     if (newFilters.grapes.length > 0) searchParams.grapes = newFilters.grapes
+    if (newFilters.bottleSizes.length > 0) searchParams.bottleSizes = newFilters.bottleSizes
     if (newFilters.vintageMin !== null) searchParams.vintageMin = newFilters.vintageMin
     if (newFilters.vintageMax !== null) searchParams.vintageMax = newFilters.vintageMax
     if (newFilters.priceMin !== null) searchParams.priceMin = newFilters.priceMin
@@ -120,11 +125,11 @@ function WineList() {
       // Search filter - search by wine name OR winery name
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
-        const wineNameMatch = wine.name.toLowerCase().includes(searchLower)
+        const wineNameMatch = wine.name?.toLowerCase().includes(searchLower) || false
 
         // Get winery name if wine has a winery
         const winery = wineries?.find((w) => w.id === wine.winery_id)
-        const wineryNameMatch = winery?.name.toLowerCase().includes(searchLower)
+        const wineryNameMatch = winery?.name?.toLowerCase().includes(searchLower) || false
 
         // Return false if neither wine name nor winery name match
         if (!wineNameMatch && !wineryNameMatch) {
@@ -143,6 +148,13 @@ function WineList() {
           wine.grapes?.includes(grape)
         )
         if (!hasMatchingGrape) return false
+      }
+
+      // Bottle size filter
+      if (filters.bottleSizes.length > 0) {
+        if (!wine.bottle_size || !filters.bottleSizes.includes(wine.bottle_size)) {
+          return false
+        }
       }
 
       // Vintage filter
@@ -202,6 +214,7 @@ function WineList() {
     if (filters.search) count++
     if (filters.winery) count++
     if (filters.grapes.length > 0) count++
+    if (filters.bottleSizes.length > 0) count++
     if (filters.vintageMin !== null || filters.vintageMax !== null) count++
     if (filters.priceMin !== null || filters.priceMax !== null) count++
     if (filters.drinkingWindow !== 'all') count++

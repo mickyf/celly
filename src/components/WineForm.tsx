@@ -36,6 +36,7 @@ export interface WineFormValues {
   vintage: number | null
   quantity: number
   price: number | null
+  bottle_size: string | null
   drink_window_start: number | null
   drink_window_end: number | null
   food_pairings: string | null
@@ -67,6 +68,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       vintage: wine?.vintage || null,
       quantity: wine?.quantity || 1,
       price: wine?.price ? Number(wine.price) : null,
+      bottle_size: wine?.bottle_size || null,
       drink_window_start: wine?.drink_window_start || null,
       drink_window_end: wine?.drink_window_end || null,
       food_pairings: wine?.food_pairings || null,
@@ -188,6 +190,23 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
               decimalScale={2}
               min={0}
               {...form.getInputProps('price')}
+            />
+
+            <Select
+              label={t('wines:form.labels.bottleSize')}
+              placeholder={t('wines:form.placeholders.bottleSize')}
+              description={t('wines:form.descriptions.bottleSize')}
+              data={[
+                { value: '37.5cl', label: '37.5cl (Halbe Flasche)' },
+                { value: '75cl', label: '75cl (Standard)' },
+                { value: '150cl', label: '150cl (Magnum)' },
+                { value: '300cl', label: '300cl (Double Magnum)' },
+                { value: '500cl', label: '500cl (Jeroboam)' },
+                { value: '600cl', label: '600cl (Imperial)' },
+              ]}
+              searchable
+              clearable
+              {...form.getInputProps('bottle_size')}
             />
           </Stack>
         </Paper>

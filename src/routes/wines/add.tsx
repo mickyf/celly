@@ -37,6 +37,7 @@ function AddWine() {
         vintage: values.vintage,
         quantity: values.quantity,
         price: values.price,
+        bottle_size: values.bottle_size,
         drink_window_start: values.drink_window_start,
         drink_window_end: values.drink_window_end,
         food_pairings: values.food_pairings,

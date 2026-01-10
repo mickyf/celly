@@ -23,6 +23,7 @@ export interface WineFilterValues {
   search: string
   winery: string | null
   grapes: string[]
+  bottleSizes: string[]
   vintageMin: number | null
   vintageMax: number | null
   priceMin: number | null
@@ -53,6 +54,16 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
     label: grape,
   }))
 
+  // Extract unique bottle sizes from all wines
+  const allBottleSizes = Array.from(
+    new Set(wines.map((wine) => wine.bottle_size).filter((size): size is string => size !== null && size !== undefined && size !== ''))
+  ).sort()
+
+  const bottleSizeOptions = allBottleSizes.map((size) => ({
+    value: size,
+    label: size,
+  }))
+
   const wineryOptions = wineries?.map((winery) => ({
     value: winery.id,
     label: winery.name,
@@ -63,6 +74,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       search: '',
       winery: null,
       grapes: [],
+      bottleSizes: [],
       vintageMin: null,
       vintageMax: null,
       priceMin: null,
@@ -136,6 +148,16 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
               data={grapeOptions}
               value={filters.grapes}
               onChange={(value) => onFiltersChange({ ...filters, grapes: value })}
+              searchable
+              clearable
+            />
+
+            <MultiSelect
+              label={t('wines:filters.bottleSize')}
+              placeholder={t('wines:filters.bottleSizeSelect')}
+              data={bottleSizeOptions}
+              value={filters.bottleSizes}
+              onChange={(value) => onFiltersChange({ ...filters, bottleSizes: value })}
               searchable
               clearable
             />
