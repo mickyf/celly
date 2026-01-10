@@ -37,7 +37,7 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         {wine.photo_url ? (
-          <Image src={wine.photo_url} height={200} alt={wine.name} />
+          <Image src={wine.photo_url} height={200} alt={wine.name} fit='contain' />
         ) : (
           <div
             style={{
