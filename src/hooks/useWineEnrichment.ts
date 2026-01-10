@@ -37,8 +37,9 @@ export const useEnrichWine = () => {
         wine.drink_window_start === null || wine.drink_window_end === null
       const needsWinery = wine.winery_id === null
       const needsPrice = wine.price === null
+      const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
 
-      if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice) {
+      if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings) {
         throw new Error(t('wines:enrichment.errors.allFieldsFilled'))
       }
 
@@ -107,6 +108,12 @@ export const useEnrichWine = () => {
       if (needsPrice && enrichmentData.price) {
         updateData.price = enrichmentData.price
         fieldsUpdated.push(t('wines:form.labels.pricePerBottle'))
+      }
+
+      // Update food pairings if needed
+      if (needsFoodPairings && enrichmentData.foodPairings) {
+        updateData.food_pairings = enrichmentData.foodPairings
+        fieldsUpdated.push(t('wines:form.labels.foodPairings'))
       }
 
       // Handle winery matching and creation
@@ -233,8 +240,9 @@ export const useBulkEnrichWines = () => {
             wine.drink_window_start === null || wine.drink_window_end === null
           const needsWinery = wine.winery_id === null
           const needsPrice = wine.price === null
+          const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
 
-          if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice) {
+          if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings) {
             result.skipped++
             continue
           }
@@ -281,6 +289,11 @@ export const useBulkEnrichWines = () => {
           // Update price if needed
           if (needsPrice && enrichmentData.price) {
             updateData.price = enrichmentData.price
+          }
+
+          // Update food pairings if needed
+          if (needsFoodPairings && enrichmentData.foodPairings) {
+            updateData.food_pairings = enrichmentData.foodPairings
           }
 
           // Handle winery matching and creation

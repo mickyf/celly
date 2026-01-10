@@ -17,3 +17,6 @@
 - ~~store wine filters in the url as search params~~
 - ~~fix typescript issues~~
 - ~~/init to update CLAUDE.md~~
+- ~~add food pairings to the wine incl. AI enrichment~~
+- add bottle size, e.g. 75cl, 150cl, ...
+- make language Swiss-German de-ch default

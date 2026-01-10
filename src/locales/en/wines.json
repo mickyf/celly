@@ -15,6 +15,7 @@
       "quantity": "Quantity",
       "pricePerBottle": "Price per Bottle",
       "drinkingWindow": "Drinking Window",
+      "foodPairings": "Food Pairings",
       "tastingNotes": "Tasting Notes",
       "addTastingNote": "Add Tasting Note"
     },
@@ -48,7 +49,8 @@
       "quantity": "Quantity",
       "pricePerBottle": "Price (per bottle)",
       "startYear": "Start Year",
-      "endYear": "End Year"
+      "endYear": "End Year",
+      "foodPairings": "Food Pairings"
     },
     "placeholders": {
       "wineName": "e.g., Château Margaux",
@@ -58,12 +60,14 @@
       "quantity": "Number of bottles",
       "price": "0.00",
       "startYear": "e.g., 2025",
-      "endYear": "e.g., 2035"
+      "endYear": "e.g., 2035",
+      "foodPairings": "e.g., Grilled steak, aged cheese, roasted lamb..."
     },
     "descriptions": {
       "winery": "Associate this wine with a winery",
       "grapeVarieties": "Add multiple grape varieties",
-      "drinkingWindow": "When is this wine expected to be at its best?"
+      "drinkingWindow": "When is this wine expected to be at its best?",
+      "foodPairings": "Recommended dishes and ingredients that pair well with this wine"
     },
     "buttons": {
       "removePhoto": "Remove Photo",
