@@ -98,6 +98,11 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
               CHF {wine.price.toFixed(2)}
             </Badge>
           )}
+          {wine.bottle_size && (
+            <Badge color='gray' variant='light' mr={BADGE_GAP}>
+              {wine.bottle_size}
+            </Badge>
+          )}
 
           {recentMovement && (
             <Tooltip label={`${dayjs(recentMovement.movement_date).format('DD.MM.YYYY')}: ${recentMovement.notes || t(`wines:stockMovement.type.${recentMovement.movement_type}`)}`}>

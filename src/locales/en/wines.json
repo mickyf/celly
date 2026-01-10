@@ -48,6 +48,7 @@
       "vintage": "Vintage",
       "quantity": "Quantity",
       "pricePerBottle": "Price (per bottle)",
+      "bottleSize": "Bottle Size",
       "startYear": "Start Year",
       "endYear": "End Year",
       "foodPairings": "Food Pairings"
@@ -59,6 +60,7 @@
       "vintage": "e.g., 2015",
       "quantity": "Number of bottles",
       "price": "0.00",
+      "bottleSize": "Select bottle size",
       "startYear": "e.g., 2025",
       "endYear": "e.g., 2035",
       "foodPairings": "e.g., Grilled steak, aged cheese, roasted lamb..."
@@ -66,6 +68,7 @@
     "descriptions": {
       "winery": "Associate this wine with a winery",
       "grapeVarieties": "Add multiple grape varieties",
+      "bottleSize": "Standard bottle size is 75cl",
       "drinkingWindow": "When is this wine expected to be at its best?",
       "foodPairings": "Recommended dishes and ingredients that pair well with this wine"
     },
@@ -96,6 +99,8 @@
     "winerySelect": "Select winery",
     "grapeVarieties": "Grape Varieties",
     "grapeSelect": "Select grapes",
+    "bottleSize": "Bottle Size",
+    "bottleSizeSelect": "Select bottle sizes",
     "vintageRange": "Vintage Range",
     "priceRange": "Price Range",
     "drinkingWindow": "Drinking Window",
