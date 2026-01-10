@@ -6,14 +6,19 @@ The app is currently hosted under: https://celly.pages.dev/
 
 ## Features
 
-- **Wine Collection Management**: Track wines with detailed information including winery, grapes, vintage, quantity, price, and drinking windows
-- **Photo Storage**: Upload and store wine bottle photos
-- **Tasting Notes**: Add ratings (1-5 stars), notes, and dates for each wine
-- **Smart Filtering**: Search and filter by name, winery, grapes, vintage range, price range, and drinking window status
-- **Dashboard Statistics**: Visual overview of collection with charts and key metrics
-- **AI Food Pairing**: Get intelligent food pairing recommendations powered by Claude Sonnet 4.5 API
+- **Wine Collection Management**: Track wines with detailed information including winery, grapes, vintage, quantity, price, bottle size, and drinking windows
 - **Winery Database**: Track and organize wines by winery with country information
-- **Internationalization**: Full support for English and Swiss German (de-CH)
+- **Stock Inventory**: Track wine additions and removals with automatic quantity updates
+- **Bottle Size Tracking**: Record bottle sizes (75cl, 150cl, Magnum, etc.) for each wine
+- **Photo Storage**: Upload wine bottle photos or capture them directly with your device camera
+- **Tasting Notes**: Add ratings (1-5 stars), notes, and dates for each wine
+- **Food Pairings**: Store food pairing suggestions for each wine with AI-powered enrichment
+- **AI Data Enrichment**: Automatically fill in missing wine information (grapes, price, drinking window, food pairings) using Claude Sonnet 4.5 API
+- **AI Food Pairing**: Get intelligent food pairing recommendations for meals based on wines in your collection
+- **Smart Filtering**: Search and filter by name, winery, grapes, vintage range, price range, and drinking window status with URL-based filter persistence
+- **Dashboard Statistics**: Visual overview of collection with charts and key metrics
+- **Internationalization**: Full support for English and Swiss German (de-CH) with Swiss-German as default
+- **Swiss Localization**: CHF currency and Swiss date format (dd.MM.yyyy)
 - **Drinking Window Tracking**: Know which wines are ready to drink, aging, or past their prime
 
 ## Tech Stack
