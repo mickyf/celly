@@ -1,4 +1,4 @@
-import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Flex, Box } from '@mantine/core'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Box } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useWinery } from '../hooks/useWineries'
