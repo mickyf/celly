@@ -2,6 +2,7 @@
 - ~~edit of wine doesn't work~~
 - ~~add a tasting note fails with `TypeError: values.tasted_at.toISOString is not a function at handleAddNote ($id.tsx:83:35)`~~
 - ~~language picker on mobile is to big, use flags (Swiss and British) only~~
+- ~~fix image not completely displayed~~
 
 ## New Features
 - ~~add cancel buttons to add and edit~~
