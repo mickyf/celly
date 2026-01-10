@@ -337,6 +337,17 @@ function WineDetail() {
                     </Text>
                   </div>
                 )}
+
+                {wine.food_pairings && (
+                  <div>
+                    <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                      {t('wines:detail.sections.foodPairings')}
+                    </Text>
+                    <Text size="sm" mt="xs" style={{ whiteSpace: 'pre-line' }}>
+                      {wine.food_pairings}
+                    </Text>
+                  </div>
+                )}
               </Stack>
             </Paper>
           </SimpleGrid>

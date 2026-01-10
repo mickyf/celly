@@ -171,6 +171,13 @@ Currently configured for local development. For cloud deployment:
 5. Move Claude API calls to backend Edge Function
 6. Deploy frontend to Vercel, Netlify, or similar
 
+## Current deployment
+
+Currently, the app is hosted on Supabase Free and Cloudflare Pages.
+
+1. Push code to Github. This will trigger Cloudflare to build and deploy.
+2. Locally run `npx supabase db push` do execute migrations.
+
 ## Known Limitations
 
 - Single user only (no sharing/collaboration features)

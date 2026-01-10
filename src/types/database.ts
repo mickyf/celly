@@ -145,6 +145,7 @@ export type Database = {
           created_at: string | null
           drink_window_end: number | null
           drink_window_start: number | null
+          food_pairings: string | null
           grapes: string[]
           id: string
           name: string
@@ -160,6 +161,7 @@ export type Database = {
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null
+          food_pairings?: string | null
           grapes?: string[]
           id?: string
           name: string
@@ -175,6 +177,7 @@ export type Database = {
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null
+          food_pairings?: string | null
           grapes?: string[]
           id?: string
           name?: string

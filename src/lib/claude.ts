@@ -31,6 +31,7 @@ export interface WineEnrichmentData {
     matchedExistingId?: string // ID of existing winery if matched
   }
   price?: number
+  foodPairings?: string
   confidence: 'high' | 'medium' | 'low'
   explanation: string
 }
@@ -181,7 +182,8 @@ Please identify the wine and provide:
 3. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
 4. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
 5. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
-6. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
+6. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
+7. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
 
 Return your response as a JSON object with this exact structure:
 {
@@ -197,6 +199,7 @@ Return your response as a JSON object with this exact structure:
     "matchedExistingId": "uuid-if-matched-existing-winery"
   },
   "price": 150.00,
+  "foodPairings": "Gegrilltes Rindfleisch, gereifter Käse wie Gruyère oder Comté, Lammbraten, Schmorgerichte, Pilzrisotto",
   "confidence": "high",
   "explanation": "Brief explanation of your identification and confidence level"
 }
@@ -210,6 +213,7 @@ Important guidelines:
 - Valid country codes: ${WINE_COUNTRIES.map((c) => c.code).join(', ')}
 - Price should be a reasonable retail price estimate in USD (positive number, typically between 10 and 10000 for most wines)
 - Only include price if you can make a reasonable estimate based on the wine's quality, vintage, and reputation
+- foodPairings MUST be in Swiss Standard German (Schweizer Hochdeutsch), NOT dialect. Use standard German grammar and vocabulary as used in Switzerland. Key differences from German German: use "ss" instead of "ß" (e.g., "Rindfleisch" not "Rindfleisch"), prefer Swiss terminology (e.g., "Rindfleisch" for beef, "Käse" for cheese). It should be a comma-separated list of dishes and ingredients (e.g., "Gegrilltes Rindfleisch, gereifter Käse, Lammbraten, Schmorgerichte"). Base recommendations on the wine's grape varieties and traditional pairings.
 - Confidence should be "high" for specific, well-known wines, "medium" for regional wines, "low" for generic varieties
 - If you cannot identify the wine at all, return confidence: "low" with minimal data
 - For winery matching: Consider variations in spelling, punctuation, abbreviations, etc. For example, "Domaine de la Romanée-Conti" matches "Domaine de la Romanee Conti", "Château Margaux" matches "Chateau Margaux", "Smith & Sons" matches "Smith and Sons"
@@ -303,6 +307,15 @@ Important guidelines:
       parsedResponse.price <= 100000
     ) {
       enrichmentData.price = parsedResponse.price
+    }
+
+    // Validate food pairings
+    if (
+      parsedResponse.foodPairings &&
+      typeof parsedResponse.foodPairings === 'string' &&
+      parsedResponse.foodPairings.trim().length > 0
+    ) {
+      enrichmentData.foodPairings = parsedResponse.foodPairings.trim()
     }
 
     return { enrichmentData }

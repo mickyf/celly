@@ -10,6 +10,7 @@ import {
   Image,
   TagsInput,
   Select,
+  Textarea,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import { IconUpload, IconPhoto, IconX, IconCamera } from '@tabler/icons-react'
@@ -37,6 +38,7 @@ export interface WineFormValues {
   price: number | null
   drink_window_start: number | null
   drink_window_end: number | null
+  food_pairings: string | null
 }
 
 export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
@@ -67,6 +69,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       price: wine?.price ? Number(wine.price) : null,
       drink_window_start: wine?.drink_window_start || null,
       drink_window_end: wine?.drink_window_end || null,
+      food_pairings: wine?.food_pairings || null,
     },
     transformValues: (values: WineFormValues) => ({
       ...values,
@@ -214,6 +217,16 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                 {...form.getInputProps('drink_window_end')}
               />
             </Group>
+
+            <Textarea
+              label={t('wines:form.labels.foodPairings')}
+              placeholder={t('wines:form.placeholders.foodPairings')}
+              description={t('wines:form.descriptions.foodPairings')}
+              autosize
+              minRows={3}
+              maxRows={6}
+              {...form.getInputProps('food_pairings')}
+            />
           </Stack>
         </Paper>
 

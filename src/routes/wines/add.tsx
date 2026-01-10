@@ -39,6 +39,7 @@ function AddWine() {
         price: values.price,
         drink_window_start: values.drink_window_start,
         drink_window_end: values.drink_window_end,
+        food_pairings: values.food_pairings,
         photo_url: photoUrl,
         user_id: '',
       })

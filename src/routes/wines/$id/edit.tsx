@@ -41,6 +41,7 @@ function EditWine() {
         price: values.price,
         drink_window_start: values.drink_window_start,
         drink_window_end: values.drink_window_end,
+        food_pairings: values.food_pairings,
       })
 
       // If there's a new photo, upload it
