@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 
 const languages = {
   en: { flag: '🇬🇧', label: 'English' },
-  'de-CH': { flag: '🇨🇭', label: 'Deutsch (Schweiz)' },
+  'de-CH': { flag: '🇨🇭', label: 'Deutsch' },
 }
 
 export function LanguageSelector() {
   const { i18n } = useTranslation()
-  const currentLang = (i18n.language as keyof typeof languages) || 'en'
+  const currentLang = (i18n.language as keyof typeof languages) || 'de-CH'
 
   return (
     <Menu position="bottom-end" withinPortal={false}>
