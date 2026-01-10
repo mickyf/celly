@@ -70,5 +70,21 @@
     "addWine": "Neuen Wein hinzufügen",
     "addWinery": "Neues Weingut hinzufügen",
     "edit": "Bearbeiten"
+  },
+  "countries": {
+    "AR": "Argentinien",
+    "AT": "Österreich",
+    "AU": "Australien",
+    "CH": "Schweiz",
+    "CL": "Chile",
+    "DE": "Deutschland",
+    "ES": "Spanien",
+    "FR": "Frankreich",
+    "GR": "Griechenland",
+    "IT": "Italien",
+    "NZ": "Neuseeland",
+    "PT": "Portugal",
+    "US": "Vereinigte Staaten",
+    "ZA": "Südafrika"
   }
 }

@@ -1,4 +1,4 @@
-import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Box, Anchor } from '@mantine/core'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useWinery } from '../hooks/useWineries'
@@ -157,9 +157,7 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}
               pr={0}
-            >
-              <Box visibleFrom='xs' pr="1.125rem">{t('common:buttons.edit')}</Box>
-            </Button>
+            />
           )}
 
           {onDelete && (
@@ -169,9 +167,7 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
               leftSection={<IconTrash size={16} />}
               onClick={() => onDelete(wine.id)}
               pr={0}
-            >
-              <Box visibleFrom='xs' pr="1.125rem">{t('common:buttons.delete')}</Box>
-            </Button>
+            />
           )}
         </Group>
       </Card.Section>

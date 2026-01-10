@@ -23,3 +23,4 @@
 - ~~add food pairings to the wine incl. AI enrichment~~
 - ~~add bottle size, e.g. 75cl, 150cl, ...~~
 - ~~make cancel and save buttons sticky on bottom~~
+- ~~better navigation~~
