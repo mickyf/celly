@@ -14,6 +14,7 @@ export function initializeSentry() {
     dsn: sentryConfig.dsn,
     environment: sentryConfig.environment,
     debug: sentryConfig.debug,
+    tunnel: sentryConfig.tunnel,
 
     // Performance Monitoring
     tracesSampleRate: sentryConfig.tracesSampleRate,
