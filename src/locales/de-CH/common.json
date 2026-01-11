@@ -86,5 +86,13 @@
     "PT": "Portugal",
     "US": "Vereinigte Staaten",
     "ZA": "Südafrika"
+  },
+  "errors": {
+    "boundary": {
+      "title": "Ein Fehler ist aufgetreten",
+      "message": "Ein unerwarteter Fehler ist aufgetreten. Unser Team wurde benachrichtigt.",
+      "retry": "Erneut versuchen",
+      "home": "Zum Dashboard"
+    }
   }
 }

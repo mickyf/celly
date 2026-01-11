@@ -1,3 +1,4 @@
+import { initializeSentry } from './lib/sentry'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MantineProvider, createTheme } from '@mantine/core'
@@ -29,6 +30,9 @@ const theme = createTheme({
   },
   defaultRadius: 'md',
 })
+
+// Initialize Sentry before React renders
+initializeSentry()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

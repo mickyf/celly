@@ -1,11 +1,16 @@
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import * as Sentry from '@sentry/react'
+import { instrumentRouter } from './lib/sentry'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
 // Create a new router instance
 const router = createRouter({ routeTree })
+
+// Instrument router for Sentry
+instrumentRouter(router)
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -14,7 +19,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Create a query client
+// Create a query client (error tracking handled in individual hooks)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -32,4 +37,4 @@ function App() {
   )
 }
 
-export default App
+export default Sentry.withProfiler(App)
