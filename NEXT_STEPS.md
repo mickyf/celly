@@ -25,3 +25,11 @@
 - ~~add bottle size, e.g. 75cl, 150cl, ...~~
 - ~~make cancel and save buttons sticky on bottom~~
 - ~~better navigation~~
+- ~~Sentry.io integration for error and performance monitoring~~
+- ~~add Sentry.io tunneling to prevent adblocker blocks, maybe leveraging Supabase Edge Functions~~
+- Settings per User
+- AI API key per user
+- route API request via Supabase Edge Function to not expose the API key
+- Login page: password forget
+- Branding: icon and logo
+- PWA: App manifest with icon
