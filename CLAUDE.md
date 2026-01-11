@@ -161,18 +161,33 @@ All user-facing text uses translation keys. Components import `useTranslation` a
 
 ### AI Integration Patterns
 
-**AI Food Pairing Flow** (`src/lib/claude.ts` - `getPairings` function):
-1. Filter wines to those in drinking window: `currentYear >= drink_window_start AND currentYear <= drink_window_end`
-2. Format wine list as numbered text for Claude
-3. Send prompt to Claude Sonnet 4.5 requesting JSON response with pairing recommendations
-4. Parse JSON, map `wineIndex` back to actual wine IDs
-5. Display ranked results with explanations and pairing scores
+**Architecture**:
+- Claude API requests are proxied through Supabase Edge Function (`supabase/functions/claude-proxy/`) for security
+- API key is stored server-side, never exposed to the browser
+- Frontend calls Edge Function with authentication token
+- Edge Function validates user session and forwards requests to Claude API
+
+**Edge Function** (`supabase/functions/claude-proxy/index.ts`):
+- Handles two request types: `food-pairing` and `wine-enrichment`
+- Validates user authentication via Supabase auth token
+- Reads `CLAUDE_API_KEY` from server environment (set via Supabase secrets)
+- Returns structured JSON responses to frontend
+- All Claude API logic (prompts, parsing, validation) runs server-side
+
+**AI Food Pairing Flow** (`src/lib/claude.ts` - `getFoodPairing` function):
+1. Frontend collects available wines and menu/dish
+2. Sends request to Edge Function with wine data and language preference
+3. Edge Function formats wine list and sends prompt to Claude Sonnet 4.5
+4. Claude returns JSON with pairing recommendations
+5. Edge Function maps `wineIndex` back to actual wine IDs
+6. Frontend displays ranked results with explanations and pairing scores
 
 **AI Wine Enrichment** (`src/lib/claude.ts` - `enrichWineData` function):
-- Uses Claude Sonnet 4.5 to automatically fill missing wine data fields
+- Frontend sends wine name and existing data to Edge Function
+- Edge Function uses Claude Sonnet 4.5 to automatically fill missing wine data fields
 - Can enrich: grapes, vintage, drinking window, winery (with intelligent matching), price, and food pairings
 - Returns confidence levels: high, medium, low for each enriched field
-- Validates all returned data (vintage ranges 1800-current year, country codes ISO 3166-1 alpha-2, price ranges 0-10000)
+- Edge Function validates all returned data (vintage ranges 1800-current year, country codes ISO 3166-1 alpha-2, price ranges 0-10000)
 - Winery matching: Handles spelling variations (e.g., "Château" vs "Chateau") to avoid duplicates
 - Food pairings generated in Swiss Standard German (Schweizer Hochdeutsch)
 - Pre-flight validation ensures only wines with missing fields are enriched
@@ -184,9 +199,10 @@ All user-facing text uses translation keys. Components import `useTranslation` a
 - Progress tracking pattern: `onProgress` callback with current/total counts for real-time UI updates
 
 **API Configuration**:
-- Uses `dangerouslyAllowBrowser: true` for local development
-- Expects `VITE_CLAUDE_API_KEY` environment variable
-- Error handling in hooks shows notifications with detailed error messages
+- Uses Supabase's built-in `supabase.functions.invoke('claude-proxy', { body })` method
+- Automatically handles authentication and edge function URL resolution
+- Claude API key: Set `CLAUDE_API_KEY` in Supabase project secrets (production) or `supabase/.env` (local)
+- Error handling shows notifications with detailed error messages
 
 ### TypeScript Type Safety
 
@@ -250,18 +266,38 @@ import './i18n/config' // Must import to initialize i18next
 
 ## Environment Setup
 
+### Frontend Environment Variables
+
 Required environment variables in `.env.local`:
 
 ```bash
 # Supabase (get from `npx supabase start` output)
 VITE_SUPABASE_URL=http://127.0.0.1:54321
 VITE_SUPABASE_ANON_KEY=<anon-key>
-
-# Claude API (get from console.anthropic.com)
-VITE_CLAUDE_API_KEY=sk-ant-<your-key>
 ```
 
+Note: Edge Function URL is automatically resolved from `VITE_SUPABASE_URL` using Supabase's `functions.invoke()` method.
+
 Copy `.env.example` to `.env.local` and fill in values.
+
+### Edge Function Environment Variables
+
+Required environment variables in `supabase/.env`:
+
+```bash
+# Claude API (get from console.anthropic.com)
+CLAUDE_API_KEY=sk-ant-<your-key>
+```
+
+For local development:
+1. Copy `supabase/.env.example` to `supabase/.env`
+2. Add your Claude API key to `supabase/.env`
+3. The key is automatically loaded when running `npx supabase start`
+
+For production:
+1. Set secrets in Supabase Dashboard: Settings → Edge Functions → Secrets
+2. Add `CLAUDE_API_KEY` with your production API key
+3. Secrets are automatically available to all Edge Functions
 
 ## Database Migrations
 
@@ -460,16 +496,64 @@ When adding new features or text:
 - **Local Development**: Supabase runs locally via Docker (requires Docker Desktop)
 - **No Import/Export**: Users cannot bulk import or export wine data
 - **No Location Tracking**: Physical cellar location not tracked
-- **Browser API Keys**: Claude API key exposed in browser (acceptable for local dev, needs backend proxy for production)
 - **AI Rate Limiting**: Bulk enrichment uses 1 second delay between requests to avoid API rate limits
 - **Food Pairing Language**: Food pairings must be in Swiss Standard German (Schweizer Hochdeutsch)
 
 ## Deployment Considerations
 
-Currently local-only. For cloud deployment:
-1. Create Supabase project at supabase.com
-2. Run `npx supabase db push` to push schema
-3. Update environment variables to cloud URLs
-4. Deploy frontend to Vercel/Netlify
-5. Create storage bucket `wine-images` with public read access
-6. Move Claude API calls to backend Edge Function to protect API key
+For cloud deployment:
+
+### 1. Create Supabase Project
+- Go to [supabase.com](https://supabase.com) and create a new project
+- Wait for project provisioning to complete
+
+### 2. Deploy Database Schema
+```bash
+# Link to your cloud project
+npx supabase link --project-ref <your-project-ref>
+
+# Push migrations to cloud
+npx supabase db push
+
+# Verify schema
+npx supabase db pull
+```
+
+### 3. Deploy Edge Functions
+```bash
+# Deploy the Claude proxy function
+npx supabase functions deploy claude-proxy
+
+# Set Claude API key as a secret
+npx supabase secrets set CLAUDE_API_KEY=sk-ant-your-key-here
+```
+
+Alternatively, set secrets via Dashboard:
+1. Go to Settings → Edge Functions → Secrets
+2. Add `CLAUDE_API_KEY` with your production API key
+
+### 4. Configure Storage
+Create the `wine-images` bucket:
+1. Go to Storage in Supabase Dashboard
+2. Create bucket named `wine-images`
+3. Set as public bucket with user-scoped RLS policies (already defined in migrations)
+
+### 5. Update Frontend Environment
+Update `.env.production` or deployment platform (Vercel/Netlify):
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=<your-anon-key>
+```
+
+Edge Function URL is automatically resolved using `supabase.functions.invoke()`.
+
+### 6. Deploy Frontend
+- Deploy to Vercel/Netlify/etc.
+- Ensure environment variables are configured
+- Build command: `npm run build`
+- Output directory: `dist`
+
+### 7. Testing Production AI Features
+- Claude API requests now go through Edge Function
+- API key is secure on server-side
+- All requests require valid Supabase authentication
