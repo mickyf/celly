@@ -14,6 +14,8 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from 'react-i18next'
 import { LanguageSelector } from '../components/LanguageSelector'
+import { AppErrorBoundary } from '../components/ErrorBoundary'
+import { setSentryUser } from '../lib/sentryUser'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -27,14 +29,18 @@ function RootLayout() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      setSentryUser(currentUser)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      setSentryUser(currentUser)
     })
 
     return () => subscription.unsubscribe()
@@ -42,10 +48,12 @@ function RootLayout() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
+    setSentryUser(null)
   }
 
   return (
-    <AppShell
+    <AppErrorBoundary>
+      <AppShell
       header={{ height: 60 }}
       navbar={{
         width: 250,
@@ -112,5 +120,6 @@ function RootLayout() {
         <Outlet />
       </AppShell.Main>
     </AppShell>
+    </AppErrorBoundary>
   )
 }

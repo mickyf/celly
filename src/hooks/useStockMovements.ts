@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
+import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
 
 type StockMovement = Database['public']['Tables']['stock_movements']['Row']
@@ -12,6 +13,13 @@ export const useStockMovements = (wineId?: string) => {
   return useQuery({
     queryKey: wineId ? ['stock_movements', wineId] : ['stock_movements'],
     queryFn: async () => {
+      Sentry.addBreadcrumb({
+        category: 'data.query',
+        message: 'Fetching stock movements',
+        level: 'info',
+        data: { wineId },
+      })
+
       let query = supabase
         .from('stock_movements')
         .select('*')
@@ -23,7 +31,24 @@ export const useStockMovements = (wineId?: string) => {
 
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'supabase_query',
+            table: 'stock_movements',
+            operation: 'select',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'select',
+              error_code: error.code,
+              error_hint: error.hint,
+            },
+          },
+        })
+        throw error
+      }
       return data as StockMovement[]
     },
   })
@@ -35,11 +60,31 @@ export const useAddStockMovement = () => {
 
   return useMutation({
     mutationFn: async (movement: NewStockMovement) => {
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Adding stock movement',
+        level: 'info',
+        data: {
+          wineId: movement.wine_id,
+          movementType: movement.movement_type,
+          quantity: movement.quantity,
+        },
+      })
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
-      if (!user) throw new Error('Not authenticated')
+      if (!user) {
+        const error = new Error('Not authenticated')
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'auth',
+            operation: 'addStockMovement',
+          },
+        })
+        throw error
+      }
 
       const { data, error } = await supabase
         .from('stock_movements')
@@ -47,7 +92,28 @@ export const useAddStockMovement = () => {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'stock_movements',
+            operation: 'insert',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'insert',
+              error_code: error.code,
+              error_hint: error.hint,
+            },
+            stock_movement: {
+              movement_type: movement.movement_type,
+              quantity: movement.quantity,
+            },
+          },
+        })
+        throw error
+      }
       return data
     },
     onSuccess: (data) => {
@@ -55,6 +121,13 @@ export const useAddStockMovement = () => {
       queryClient.invalidateQueries({ queryKey: ['stock_movements', data.wine_id] })
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Stock movement added successfully',
+        level: 'info',
+      })
+
       notifications.show({
         title: t('wines:notifications.stockMovementAdded.title'),
         message: t('wines:notifications.stockMovementAdded.message'),
@@ -77,6 +150,13 @@ export const useUpdateStockMovement = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...movement }: UpdateStockMovement & { id: string }) => {
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Updating stock movement',
+        level: 'info',
+        data: { id, movementType: movement.movement_type, quantity: movement.quantity },
+      })
+
       const { data, error } = await supabase
         .from('stock_movements')
         .update(movement)
@@ -84,7 +164,24 @@ export const useUpdateStockMovement = () => {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'stock_movements',
+            operation: 'update',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'update',
+              error_code: error.code,
+              error_hint: error.hint,
+            },
+          },
+        })
+        throw error
+      }
       return data
     },
     onSuccess: (data) => {
@@ -92,6 +189,13 @@ export const useUpdateStockMovement = () => {
       queryClient.invalidateQueries({ queryKey: ['stock_movements', data.wine_id] })
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Stock movement updated successfully',
+        level: 'info',
+      })
+
       notifications.show({
         title: t('wines:notifications.stockMovementUpdated.title'),
         message: t('wines:notifications.stockMovementUpdated.message'),
@@ -114,12 +218,36 @@ export const useDeleteStockMovement = () => {
 
   return useMutation({
     mutationFn: async ({ id, wineId }: { id: string; wineId: string }) => {
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Deleting stock movement',
+        level: 'info',
+        data: { id, wineId },
+      })
+
       const { error } = await supabase
         .from('stock_movements')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'stock_movements',
+            operation: 'delete',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'delete',
+              error_code: error.code,
+              error_hint: error.hint,
+            },
+          },
+        })
+        throw error
+      }
       return wineId
     },
     onSuccess: (wineId) => {
@@ -127,6 +255,13 @@ export const useDeleteStockMovement = () => {
       queryClient.invalidateQueries({ queryKey: ['stock_movements', wineId] })
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       queryClient.invalidateQueries({ queryKey: ['wines', wineId] })
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Stock movement deleted successfully',
+        level: 'info',
+      })
+
       notifications.show({
         title: t('wines:notifications.stockMovementDeleted.title'),
         message: t('wines:notifications.stockMovementDeleted.message'),

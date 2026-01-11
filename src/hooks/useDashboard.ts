@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import * as Sentry from '@sentry/react'
 
 export interface DashboardStats {
   totalBottles: number
@@ -20,11 +21,26 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
+      Sentry.addBreadcrumb({
+        category: 'data.query',
+        message: 'Fetching dashboard statistics',
+        level: 'info',
+      })
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
-      if (!user) throw new Error('Not authenticated')
+      if (!user) {
+        const error = new Error('Not authenticated')
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'auth',
+            operation: 'getDashboardStats',
+          },
+        })
+        throw error
+      }
 
       // Fetch wines
       const { data: wines, error: winesError } = await supabase
@@ -32,7 +48,24 @@ export const useDashboardStats = () => {
         .select('*')
         .eq('user_id', user.id)
 
-      if (winesError) throw winesError
+      if (winesError) {
+        Sentry.captureException(winesError, {
+          tags: {
+            errorType: 'supabase_query',
+            table: 'wines',
+            operation: 'select',
+          },
+          contexts: {
+            supabase: {
+              table: 'wines',
+              operation: 'select',
+              error_code: winesError.code,
+              error_hint: winesError.hint,
+            },
+          },
+        })
+        throw winesError
+      }
 
       // Fetch tasting notes with wine names
       const { data: tastingNotes, error: notesError } = await supabase
@@ -42,7 +75,24 @@ export const useDashboardStats = () => {
         .order('tasted_at', { ascending: false })
         .limit(5)
 
-      if (notesError) throw notesError
+      if (notesError) {
+        Sentry.captureException(notesError, {
+          tags: {
+            errorType: 'supabase_query',
+            table: 'tasting_notes',
+            operation: 'select',
+          },
+          contexts: {
+            supabase: {
+              table: 'tasting_notes',
+              operation: 'select',
+              error_code: notesError.code,
+              error_hint: notesError.hint,
+            },
+          },
+        })
+        throw notesError
+      }
 
       // Calculate statistics
       const totalBottles = wines?.reduce((sum, wine) => sum + (wine.quantity || 0), 0) || 0
