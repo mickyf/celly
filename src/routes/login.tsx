@@ -9,7 +9,10 @@ import {
   Button,
   Stack,
   Tabs,
+  Anchor,
+  Group,
 } from '@mantine/core'
+import { Link } from '@tanstack/react-router'
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { supabase } from '../lib/supabase'
@@ -143,6 +146,15 @@ function Login() {
                   required
                   {...loginForm.getInputProps('password')}
                 />
+                <Group justify="flex-end" mt="-xs">
+                  <Anchor
+                    component={Link}
+                    to="/forgot-password"
+                    size="sm"
+                  >
+                    {t('tabs.forgotPassword')}
+                  </Anchor>
+                </Group>
                 <Button type="submit" fullWidth loading={submitting}>
                   {t('buttons.signIn')}
                 </Button>
