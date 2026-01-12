@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PairingRouteImport } from './routes/pairing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WinesIndexRouteImport } from './routes/wines/index'
 import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
@@ -21,6 +23,11 @@ import { Route as WineriesIdIndexRouteImport } from './routes/wineries/$id/index
 import { Route as WinesIdEditRouteImport } from './routes/wines/$id/edit'
 import { Route as WineriesIdEditRouteImport } from './routes/wineries/$id/edit'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PairingRoute = PairingRouteImport.update({
   id: '/pairing',
   path: '/pairing',
@@ -29,6 +36,11 @@ const PairingRoute = PairingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -79,8 +91,10 @@ const WineriesIdEditRoute = WineriesIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries': typeof WineriesIndexRoute
@@ -92,8 +106,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries': typeof WineriesIndexRoute
@@ -106,8 +122,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries/': typeof WineriesIndexRoute
@@ -121,8 +139,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/pairing'
+    | '/reset-password'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries'
@@ -134,8 +154,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/pairing'
+    | '/reset-password'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries'
@@ -147,8 +169,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/pairing'
+    | '/reset-password'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries/'
@@ -161,8 +185,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PairingRoute: typeof PairingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   WineriesAddRoute: typeof WineriesAddRoute
   WinesAddRoute: typeof WinesAddRoute
   WineriesIndexRoute: typeof WineriesIndexRoute
@@ -175,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pairing': {
       id: '/pairing'
       path: '/pairing'
@@ -187,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -257,8 +297,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PairingRoute: PairingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   WineriesAddRoute: WineriesAddRoute,
   WinesAddRoute: WinesAddRoute,
   WineriesIndexRoute: WineriesIndexRoute,
