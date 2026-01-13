@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from 'react'
-import { Modal, Button, Group, Stack, Alert } from '@mantine/core'
+import { useRef, useState, useEffect, useCallback } from 'react'
+import { Modal, Button, Group, Alert } from '@mantine/core'
 import { IconAlertCircle, IconCamera, IconCameraRotate } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
@@ -18,7 +18,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
 
-  const startCamera = async (mode: 'user' | 'environment' = facingMode) => {
+  const startCamera = useCallback(async (mode: 'user' | 'environment' = facingMode) => {
     try {
       setError(null)
 
@@ -47,9 +47,9 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
       console.error('Error accessing camera:', err)
       setError(t('common:camera.cameraError'))
     }
-  }
+  }, [facingMode, stream, t])
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop())
       setStream(null)
@@ -57,7 +57,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
     if (videoRef.current) {
       videoRef.current.srcObject = null
     }
-  }
+  }, [stream])
 
   const handleCapture = () => {
     if (!videoRef.current || !canvasRef.current) return
@@ -111,88 +111,138 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
 
   useEffect(() => {
     if (opened && !capturedImage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       startCamera()
     }
 
     return () => {
       stopCamera()
     }
-  }, [opened])
+  }, [opened, capturedImage, startCamera, stopCamera])
 
   return (
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={t('common:camera.cameraTitle')}
-      size="lg"
-      centered
+      fullScreen
+      withCloseButton={false}
+      transitionProps={{ transition: 'fade', duration: 200 }}
+      styles={{
+        body: {
+          padding: 0,
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#000',
+        },
+      }}
     >
-      <Stack gap="md">
+      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
         {error && (
-          <Alert icon={<IconAlertCircle size={16} />} color="red">
-            {error}
-          </Alert>
+          <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', zIndex: 10 }}>
+            <Alert icon={<IconAlertCircle size={16} />} color="red">
+              {error}
+            </Alert>
+          </div>
         )}
 
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}>
-          {capturedImage ? (
-            <img
-              src={capturedImage}
-              alt="Captured"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          ) : (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          )}
-        </div>
+        {capturedImage ? (
+          <img
+            src={capturedImage}
+            alt="Captured"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
 
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-        {!error && (
-          <Group justify="center" gap="md">
-            {capturedImage ? (
-              <>
-                <Button
-                  variant="default"
-                  onClick={handleRetake}
-                  leftSection={<IconCamera size={18} />}
-                >
-                  {t('common:camera.retakePhoto')}
-                </Button>
-                <Button onClick={handleConfirm}>
-                  {t('common:buttons.save')}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="default"
-                  onClick={handleSwitchCamera}
-                  leftSection={<IconCameraRotate size={18} />}
-                >
-                  {t('common:camera.switchCamera')}
-                </Button>
-                <Button
-                  onClick={handleCapture}
-                  leftSection={<IconCamera size={18} />}
-                >
-                  {t('common:camera.capturePhoto')}
-                </Button>
-              </>
-            )}
-          </Group>
-        )}
+        <div style={{
+          position: 'absolute',
+          bottom: '40px',
+          left: 0,
+          right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px',
+          padding: '0 20px',
+        }}>
+          {!error && (
+            <Group justify="center" gap="xl" style={{ width: '100%' }}>
+              {capturedImage ? (
+                <>
+                  <Button
+                    variant="white"
+                    color="dark"
+                    size="lg"
+                    radius="xl"
+                    onClick={handleRetake}
+                    leftSection={<IconCamera size={20} />}
+                  >
+                    {t('common:camera.retakePhoto')}
+                  </Button>
+                  <Button
+                    size="lg"
+                    radius="xl"
+                    onClick={handleConfirm}
+                  >
+                    {t('common:buttons.save')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="transparent"
+                    color="white"
+                    onClick={handleSwitchCamera}
+                  >
+                    <IconCameraRotate size={32} />
+                  </Button>
 
-        <Button variant="subtle" onClick={handleClose}>
-          {t('common:camera.closeCamera')}
-        </Button>
-      </Stack>
+                  <Button
+                    onClick={handleCapture}
+                    size="xl"
+                    radius="xl"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      padding: 0,
+                      border: '4px solid white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    }}
+                  >
+                    <div style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                    }} />
+                  </Button>
+
+                  <div style={{ width: '32px' }} /> {/* Spacer to balance Switch button */}
+                </>
+              )}
+            </Group>
+          )}
+
+          <Button
+            variant="subtle"
+            color="white"
+            onClick={handleClose}
+          >
+            {t('common:camera.closeCamera')}
+          </Button>
+        </div>
+      </div>
     </Modal>
   )
 }
