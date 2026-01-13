@@ -30,10 +30,10 @@
 - ~~add Sentry.io tunneling to prevent adblocker blocks, maybe leveraging Supabase Edge Functions~~
 - ~~route AI API request via Supabase Edge Function to not expose the API key~~
 - ~~Login page: password forget~~
+- ~~image capture (camera) in full screen~~
 - Settings per User
 - AI API key per user
 - Branding: icon and logo
 - PWA: App manifest with icon
 - AI enrichment with image of wine bottle
-- image capture (camera) in full screen
 - MCP server for adding a wine or winery
