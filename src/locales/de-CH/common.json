@@ -31,7 +31,8 @@
     "dashboard": "Dashboard",
     "myWines": "Meine Weine",
     "wineries": "Weingüter",
-    "foodPairing": "Food Pairing"
+    "foodPairing": "Food Pairing",
+    "settings": "Einstellungen"
   },
   "plurals": {
     "wine": "Wein",

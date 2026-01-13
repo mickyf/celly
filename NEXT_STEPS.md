@@ -31,9 +31,9 @@
 - ~~route AI API request via Supabase Edge Function to not expose the API key~~
 - ~~Login page: password forget~~
 - ~~image capture (camera) in full screen~~
-- Settings per User
-- AI API key per user
+- ~~Settings per User~~
+- ~~AI API key per user~~
+- AI enrichment with image of wine bottle
 - Branding: icon and logo
 - PWA: App manifest with icon
-- AI enrichment with image of wine bottle
 - MCP server for adding a wine or winery

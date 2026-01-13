@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PairingRouteImport } from './routes/pairing'
 import { Route as LoginRouteImport } from './routes/login'
@@ -23,6 +24,11 @@ import { Route as WineriesIdIndexRouteImport } from './routes/wineries/$id/index
 import { Route as WinesIdEditRouteImport } from './routes/wines/$id/edit'
 import { Route as WineriesIdEditRouteImport } from './routes/wineries/$id/edit'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries': typeof WineriesIndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries': typeof WineriesIndexRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pairing': typeof PairingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
   '/wineries/': typeof WineriesIndexRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pairing'
     | '/reset-password'
+    | '/settings'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pairing'
     | '/reset-password'
+    | '/settings'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pairing'
     | '/reset-password'
+    | '/settings'
     | '/wineries/add'
     | '/wines/add'
     | '/wineries/'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PairingRoute: typeof PairingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
   WineriesAddRoute: typeof WineriesAddRoute
   WinesAddRoute: typeof WinesAddRoute
   WineriesIndexRoute: typeof WineriesIndexRoute
@@ -201,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PairingRoute: PairingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
   WineriesAddRoute: WineriesAddRoute,
   WinesAddRoute: WinesAddRoute,
   WineriesIndexRoute: WineriesIndexRoute,

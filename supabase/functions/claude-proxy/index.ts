@@ -48,19 +48,32 @@ serve(async (req) => {
       return Response.json({ msg: 'No JWT provided' }, { status: 401 })
     }
     const token = authHeader.replace('Bearer ', '')
-    const { data, error } = await supabase.auth.getClaims(token)
-    const userEmail = data?.claims?.email
-    if (!userEmail || error) {
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    const userId = claimsData?.claims?.sub
+    if (!userId || claimsError) {
       return Response.json({ msg: 'Invalid JWT' }, { status: 401 })
     }
 
-    // Get Claude API key from environment
-    const claudeApiKey = Deno.env.get("CLAUDE_API_KEY")
+    // Get Claude API key from user settings first
+    const { data: userSettings, error: settingsError } = await supabase
+      .from('user_settings')
+      .select('value')
+      .eq('user_id', userId)
+      .eq('key', 'claude_api_key')
+      .single()
+
+    let claudeApiKey = userSettings?.value as string | undefined
+
+    // Fallback to environment variable if no user-specific key is found
+    if (!claudeApiKey) {
+      claudeApiKey = Deno.env.get("CLAUDE_API_KEY")
+    }
+
     if (!claudeApiKey) {
       return new Response(
-        JSON.stringify({ error: "Claude API key not configured on server" }),
+        JSON.stringify({ error: "Claude API key not configured. Please set your own key in Settings." }),
         {
-          status: 500,
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       )

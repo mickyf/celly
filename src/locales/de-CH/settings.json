@@ -1,0 +1,13 @@
+{
+    "claude": {
+        "title": "Claude AI API",
+        "description": "Um KI-Funktionen wie die Wein-Anreicherung und Empfehlungen zum Food Pairing zu nutzen, kannst du deinen eigenen Claude-API-Schlüssel angeben.",
+        "fallbackInfo": "Wenn du keinen Schlüssel angibst, wird die Anwendung versuchen, den serverweiten Standardschlüssel zu verwenden, sofern dieser konfiguriert ist.",
+        "label": "Claude API-Schlüssel",
+        "getApiKey": "API-Schlüssel von Anthropic anfordern"
+    },
+    "about": {
+        "title": "Über Celly",
+        "description": "Celly ist dein persönlicher Assistent für deinen Weinkeller. Verwalte deine Sammlung, erhalte KI-gestützte Einblicke und finde die perfekten Food-Pairings."
+    }
+}
