@@ -8,6 +8,7 @@ import {
   IconHome,
   IconLogin,
   IconLogout,
+  IconSettings,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -54,72 +55,77 @@ function RootLayout() {
   return (
     <AppErrorBoundary>
       <AppShell
-      header={{ height: 60 }}
-      navbar={{
-        width: 250,
-        breakpoint: 'sm',
-        collapsed: { mobile: !opened },
-      }}
-      padding="md"
-    >
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Anchor component={Link} to="/" underline="never" c="inherit">
-              <Group gap="xs">
-                <IconBottle size={28} stroke={1.5} />
-                <Title order={3}>Celly</Title>
-              </Group>
-            </Anchor>
+        header={{ height: 60 }}
+        navbar={{
+          width: 250,
+          breakpoint: 'sm',
+          collapsed: { mobile: !opened },
+        }}
+        padding="md"
+      >
+        <AppShell.Header>
+          <Group h="100%" px="md" justify="space-between">
+            <Group>
+              <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+              <Anchor component={Link} to="/" underline="never" c="inherit">
+                <Group gap="xs">
+                  <IconBottle size={28} stroke={1.5} />
+                  <Title order={3}>Celly</Title>
+                </Group>
+              </Anchor>
+            </Group>
+            <LanguageSelector />
           </Group>
-          <LanguageSelector />
-        </Group>
-      </AppShell.Header>
+        </AppShell.Header>
 
-      <AppShell.Navbar p="md">
-        {user ? (
-          <>
+        <AppShell.Navbar p="md">
+          {user ? (
+            <>
+              <NavLink
+                href="/"
+                label={t('nav.dashboard')}
+                leftSection={<IconHome size={24} stroke={1.5} />}
+              />
+              <NavLink
+                href="/wines"
+                label={t('nav.myWines')}
+                leftSection={<IconBottle size={24} stroke={1.5} />}
+              />
+              <NavLink
+                href="/wineries"
+                label={t('nav.wineries')}
+                leftSection={<IconBuilding size={24} stroke={1.5} />}
+              />
+              <NavLink
+                href="/pairing"
+                label={t('nav.foodPairing')}
+                leftSection={<IconChefHat size={24} stroke={1.5} />}
+              />
+              <NavLink
+                href="/settings"
+                label={t('nav.settings')}
+                leftSection={<IconSettings size={24} stroke={1.5} />}
+              />
+              <NavLink
+                label={t('actions.signOut')}
+                leftSection={<IconLogout size={24} stroke={1.5} />}
+                onClick={handleSignOut}
+                style={{ marginTop: 'auto' }}
+              />
+            </>
+          ) : (
             <NavLink
-              href="/"
-              label={t('nav.dashboard')}
-              leftSection={<IconHome size={24} stroke={1.5} />}
+              href="/login"
+              label={t('actions.signIn')}
+              leftSection={<IconLogin size={20} stroke={1.5} />}
             />
-            <NavLink
-              href="/wines"
-              label={t('nav.myWines')}
-              leftSection={<IconBottle size={24} stroke={1.5} />}
-            />
-            <NavLink
-              href="/wineries"
-              label={t('nav.wineries')}
-              leftSection={<IconBuilding size={24} stroke={1.5} />}
-            />
-            <NavLink
-              href="/pairing"
-              label={t('nav.foodPairing')}
-              leftSection={<IconChefHat size={24} stroke={1.5} />}
-            />
-            <NavLink
-              label={t('actions.signOut')}
-              leftSection={<IconLogout size={24} stroke={1.5} />}
-              onClick={handleSignOut}
-              style={{ marginTop: 'auto' }}
-            />
-          </>
-        ) : (
-          <NavLink
-            href="/login"
-            label={t('actions.signIn')}
-            leftSection={<IconLogin size={20} stroke={1.5} />}
-          />
-        )}
-      </AppShell.Navbar>
+          )}
+        </AppShell.Navbar>
 
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell>
     </AppErrorBoundary>
   )
 }

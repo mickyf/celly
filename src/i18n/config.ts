@@ -9,6 +9,7 @@ import enWines from '../locales/en/wines.json'
 import enWineries from '../locales/en/wineries.json'
 import enPairing from '../locales/en/pairing.json'
 import enAuth from '../locales/en/auth.json'
+import enSettings from '../locales/en/settings.json'
 
 import deCommon from '../locales/de-CH/common.json'
 import deDashboard from '../locales/de-CH/dashboard.json'
@@ -16,6 +17,7 @@ import deWines from '../locales/de-CH/wines.json'
 import deWineries from '../locales/de-CH/wineries.json'
 import dePairing from '../locales/de-CH/pairing.json'
 import deAuth from '../locales/de-CH/auth.json'
+import deSettings from '../locales/de-CH/settings.json'
 
 i18n
   .use(LanguageDetector)
@@ -29,6 +31,7 @@ i18n
         wineries: enWineries,
         pairing: enPairing,
         auth: enAuth,
+        settings: enSettings,
       },
       'de-CH': {
         common: deCommon,
@@ -37,6 +40,7 @@ i18n
         wineries: deWineries,
         pairing: dePairing,
         auth: deAuth,
+        settings: deSettings,
       },
     },
     fallbackLng: 'en',
