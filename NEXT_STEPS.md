@@ -5,7 +5,8 @@
 - ~~fix image not completely displayed~~
 - ~~make language Swiss-German de-ch default~~
 - ~~fix wrong language returned on food pairing recomendations~~
-- Winery AI Enrichment doesn't work well
+- ~~Winery AI Enrichment doesn't work well~~
+- move image upload to the top of the form
 
 ## New Features
 - ~~add cancel buttons to add and edit~~
