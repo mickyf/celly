@@ -19,6 +19,7 @@ export interface PairingResponse {
 }
 
 export interface WineEnrichmentData {
+  name?: string
   grapes?: string[]
   vintage?: number
   drinkingWindow?: {
@@ -66,7 +67,20 @@ interface WineEnrichmentRequest {
   }>
 }
 
-async function callClaudeProxy<T>(request: FoodPairingRequest | WineEnrichmentRequest): Promise<T> {
+interface WineEnrichmentFromImageRequest {
+  type: 'wine-enrichment-from-image'
+  base64Image: string
+  imageMediaType: string
+  existingWineries?: Array<{
+    id: string
+    name: string
+    country_code: string
+  }>
+}
+
+async function callClaudeProxy<T>(
+  request: FoodPairingRequest | WineEnrichmentRequest | WineEnrichmentFromImageRequest
+): Promise<T> {
   // Use Supabase's built-in functions.invoke() method
   // This automatically includes the auth token from the current session
   const { data, error } = await supabase.functions.invoke('claude-proxy', {
@@ -239,6 +253,68 @@ export async function enrichWineData(
             error instanceof Error
               ? error.message
               : 'Failed to enrich wine data with AI',
+        }
+      }
+    }
+  )
+}
+
+export async function enrichWineFromImage(
+  file: File,
+  existingWineries?: Array<{ id: string; name: string; country_code: string }>
+): Promise<WineEnrichmentResponse> {
+  return Sentry.startSpan(
+    {
+      name: 'claude.enrichWineFromImage',
+      op: 'ai.request',
+      attributes: {
+        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.request.file_size': file.size,
+        'ai.request.file_type': file.type,
+      },
+    },
+    async (span) => {
+      try {
+        Sentry.addBreadcrumb({
+          category: 'ai.request',
+          message: 'Requesting wine enrichment from image',
+          level: 'info',
+          data: {
+            fileSize: file.size,
+            fileType: file.type,
+            wineriesCount: existingWineries?.length || 0,
+          },
+        })
+
+        // Convert file to base64
+        const base64Image = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            const result = reader.result as string
+            const base64 = result.split(',')[1]
+            resolve(base64)
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        const request: WineEnrichmentFromImageRequest = {
+          type: 'wine-enrichment-from-image',
+          base64Image,
+          imageMediaType: file.type,
+          existingWineries,
+        }
+
+        const result = await callClaudeProxy<WineEnrichmentResponse>(request)
+
+        span.setStatus({ code: 1, message: 'ok' })
+        return result
+      } catch (error) {
+        span.setStatus({ code: 2, message: 'error' })
+        Sentry.captureException(error)
+        return {
+          enrichmentData: null,
+          error: error instanceof Error ? error.message : 'Failed to identify wine from photo',
         }
       }
     }

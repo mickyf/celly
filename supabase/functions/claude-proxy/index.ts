@@ -9,6 +9,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
+// Valid country codes
+const WINE_COUNTRIES = [
+  "FR", "IT", "ES", "US", "AU", "AR", "CL", "DE", "PT", "NZ", "ZA", "AT",
+  "GR", "HU", "RO", "BG", "HR", "SI", "CH", "GB", "CA", "BR", "UY", "MX",
+  "CN", "JP", "IN", "IL", "LB", "TR", "MA", "TN", "EG", "GE", "AM", "CY",
+]
+
 interface FoodPairingRequest {
   type: "food-pairing"
   menu: string
@@ -34,7 +41,21 @@ interface WineEnrichmentRequest {
   }>
 }
 
-type ClaudeProxyRequest = FoodPairingRequest | WineEnrichmentRequest
+interface WineEnrichmentFromImageRequest {
+  type: "wine-enrichment-from-image"
+  base64Image: string
+  imageMediaType: string
+  existingWineries?: Array<{
+    id: string
+    name: string
+    country_code: string
+  }>
+}
+
+type ClaudeProxyRequest =
+  | FoodPairingRequest
+  | WineEnrichmentRequest
+  | WineEnrichmentFromImageRequest
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -95,6 +116,11 @@ serve(async (req) => {
       })
     } else if (requestBody.type === "wine-enrichment") {
       const result = await handleWineEnrichment(anthropic, requestBody)
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    } else if (requestBody.type === "wine-enrichment-from-image") {
+      const result = await handleWineEnrichmentFromImage(anthropic, requestBody)
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
@@ -214,13 +240,6 @@ async function handleWineEnrichment(
 ) {
   const { wineName, existingVintage, existingWineries } = request
   const currentYear = new Date().getFullYear()
-
-  // Valid country codes
-  const WINE_COUNTRIES = [
-    "FR", "IT", "ES", "US", "AU", "AR", "CL", "DE", "PT", "NZ", "ZA", "AT",
-    "GR", "HU", "RO", "BG", "HR", "SI", "CH", "GB", "CA", "BR", "UY", "MX",
-    "CN", "JP", "IN", "IL", "LB", "TR", "MA", "TN", "EG", "GE", "AM", "CY",
-  ]
 
   // Format existing wineries list
   const wineriesListText =
@@ -354,6 +373,183 @@ Important guidelines:
         countryCode: parsedResponse.winery.countryCode.toUpperCase(),
       }
       // Include matched ID if provided and valid
+      if (
+        parsedResponse.winery.matchedExistingId &&
+        existingWineries?.some((w) => w.id === parsedResponse.winery.matchedExistingId)
+      ) {
+        enrichmentData.winery.matchedExistingId =
+          parsedResponse.winery.matchedExistingId
+      }
+    }
+  }
+
+  // Validate price
+  if (
+    parsedResponse.price &&
+    typeof parsedResponse.price === "number" &&
+    parsedResponse.price > 0 &&
+    parsedResponse.price <= 100000
+  ) {
+    enrichmentData.price = parsedResponse.price
+  }
+
+  // Validate food pairings
+  if (
+    parsedResponse.foodPairings &&
+    typeof parsedResponse.foodPairings === "string" &&
+    parsedResponse.foodPairings.trim().length > 0
+  ) {
+    enrichmentData.foodPairings = parsedResponse.foodPairings.trim()
+  }
+
+  return { enrichmentData }
+}
+
+async function handleWineEnrichmentFromImage(
+  anthropic: Anthropic,
+  request: WineEnrichmentFromImageRequest
+) {
+  const { base64Image, imageMediaType, existingWineries } = request
+  const currentYear = new Date().getFullYear()
+
+  // Format existing wineries list
+  const wineriesListText =
+    existingWineries && existingWineries.length > 0
+      ? `\n\nExisting wineries in the user's collection:\n${existingWineries
+        .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
+        .join("\n")}`
+      : ""
+
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-5-20250929",
+    max_tokens: 1536,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: imageMediaType as any,
+              data: base64Image,
+            },
+          },
+          {
+            type: "text",
+            text: `You are a wine expert. I need you to identify the wine bottle in this photo and provide structured data about it.${wineriesListText}
+
+Please identify the wine and provide:
+1. Exact wine name (including producer/brand and specific label name)
+2. Grape varieties used in this wine
+3. Vintage year (if clearly visible or identifiable from the label)
+4. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
+5. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
+6. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate)
+7. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines. Use Swiss Standard German, NOT dialect.
+8. IMPORTANT: If the winery matches one of the existing wineries above, include the matchedExistingId field with that winery's ID
+
+Return your response as a JSON object with this exact structure:
+{
+  "name": "Château Margaux",
+  "grapes": ["Cabernet Sauvignon", "Merlot"],
+  "vintage": 2015,
+  "drinkingWindow": {
+    "start": 2020,
+    "end": 2035
+  },
+  "winery": {
+    "name": "Château Margaux",
+    "countryCode": "FR",
+    "matchedExistingId": "uuid-if-matched-existing-winery"
+  },
+  "price": 150.00,
+  "foodPairings": "Gegrilltes Rindfleisch, gereifter Käse wie Gruyère oder Comté...",
+  "confidence": "high",
+  "explanation": "Brief explanation of your identification and confidence level"
+}
+
+Important guidelines:
+- Only include fields you can confidently identify
+- Vintage should be between 1800 and 2030
+- Country codes must be valid ISO 3166-1 alpha-2 codes: ${WINE_COUNTRIES.join(", ")}
+- price should be a reasonable retail price estimate in USD
+- foodPairings MUST be in Swiss Standard German (Schweizer Hochdeutsch), NOT dialect. Use "ss" instead of "ß".
+- Confidence should be "high" for specific, well-known wines, "medium" for regional wines, "low" if unsure
+- If you cannot identify the wine at all, return confidence: "low" with minimal data`,
+          },
+        ],
+      },
+    ],
+  })
+
+  // Parse the response
+  const responseText =
+    message.content[0].type === "text" ? message.content[0].text : ""
+
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    return {
+      enrichmentData: null,
+      error: "Failed to parse enrichment response from Claude",
+    }
+  }
+
+  const parsedResponse = JSON.parse(jsonMatch[0])
+
+  // Validate the response data
+  const enrichmentData: any = {
+    name: parsedResponse.name || "",
+    confidence: parsedResponse.confidence || "low",
+    explanation: parsedResponse.explanation || "No explanation provided",
+  }
+
+  // Validate grapes
+  if (
+    parsedResponse.grapes &&
+    Array.isArray(parsedResponse.grapes) &&
+    parsedResponse.grapes.length > 0
+  ) {
+    enrichmentData.grapes = parsedResponse.grapes
+  }
+
+  // Validate vintage
+  if (
+    parsedResponse.vintage &&
+    typeof parsedResponse.vintage === "number" &&
+    parsedResponse.vintage >= 1800 &&
+    parsedResponse.vintage <= 2030
+  ) {
+    enrichmentData.vintage = parsedResponse.vintage
+  }
+
+  // Validate drinking window
+  if (
+    parsedResponse.drinkingWindow &&
+    typeof parsedResponse.drinkingWindow.start === "number" &&
+    typeof parsedResponse.drinkingWindow.end === "number" &&
+    parsedResponse.drinkingWindow.start < parsedResponse.drinkingWindow.end
+  ) {
+    enrichmentData.drinkingWindow = {
+      start: parsedResponse.drinkingWindow.start,
+      end: parsedResponse.drinkingWindow.end,
+    }
+  }
+
+  // Validate winery
+  if (
+    parsedResponse.winery &&
+    parsedResponse.winery.name &&
+    parsedResponse.winery.countryCode
+  ) {
+    const validCountryCode = WINE_COUNTRIES.includes(
+      parsedResponse.winery.countryCode.toUpperCase()
+    )
+    if (validCountryCode) {
+      enrichmentData.winery = {
+        name: parsedResponse.winery.name,
+        countryCode: parsedResponse.winery.countryCode.toUpperCase(),
+      }
       if (
         parsedResponse.winery.matchedExistingId &&
         existingWineries?.some((w) => w.id === parsedResponse.winery.matchedExistingId)

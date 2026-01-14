@@ -33,7 +33,8 @@
 - ~~image capture (camera) in full screen~~
 - ~~Settings per User~~
 - ~~AI API key per user~~
-- AI enrichment with image of wine bottle
+- ~~AI enrichment with image of wine bottle~~
 - Branding: icon and logo
 - PWA: App manifest with icon
 - MCP server for adding a wine or winery
+- add location of wine in cellar, e.g. cellar 1, shelf 2, position 3

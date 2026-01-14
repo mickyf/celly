@@ -17,8 +17,10 @@ import { IconUpload, IconPhoto, IconX, IconCamera } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries } from '../hooks/useWineries'
+import { useEnrichWineFromImage } from '../hooks/useWineEnrichment'
 import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
+import { IconSparkles } from '@tabler/icons-react'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
@@ -50,6 +52,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
     wine?.photo_url || null
   )
   const [cameraOpened, setCameraOpened] = useState(false)
+  const enrichFromImage = useEnrichWineFromImage()
 
   const wineryOptions = useMemo(
     () =>
@@ -126,6 +129,28 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       setPhotoPreview(reader.result as string)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleIdentifyFromPhoto = async () => {
+    if (!photoFile) return
+
+    try {
+      const data = await enrichFromImage.mutateAsync({ file: photoFile })
+      if (data) {
+        form.setValues({
+          name: data.name || form.values.name,
+          winery_id: data.winery?.matchedExistingId || form.values.winery_id,
+          grapes: data.grapes || form.values.grapes,
+          vintage: data.vintage || form.values.vintage,
+          price: data.price ? Number(data.price) : form.values.price,
+          drink_window_start: data.drinkingWindow?.start || form.values.drink_window_start,
+          drink_window_end: data.drinkingWindow?.end || form.values.drink_window_end,
+          food_pairings: data.foodPairings || form.values.food_pairings,
+        })
+      }
+    } catch (error) {
+      console.error('Identification failed:', error)
+    }
   }
 
   const handleSubmit = (values: WineFormValues) => {
@@ -264,18 +289,28 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                   fit="contain"
                   radius="md"
                 />
-                <Button
-                  variant="subtle"
-                  color="red"
-                  size="xs"
-                  mt="sm"
-                  onClick={() => {
-                    setPhotoFile(null)
-                    setPhotoPreview(null)
-                  }}
-                >
-                  {t('wines:form.buttons.removePhoto')}
-                </Button>
+                <Group grow mt="sm">
+                  <Button
+                    variant="light"
+                    color="grape"
+                    leftSection={<IconSparkles size={18} />}
+                    onClick={handleIdentifyFromPhoto}
+                    loading={enrichFromImage.isPending}
+                  >
+                    {t('wines:enrichment.identifyFromPhoto')}
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    color="red"
+                    size="xs"
+                    onClick={() => {
+                      setPhotoFile(null)
+                      setPhotoPreview(null)
+                    }}
+                  >
+                    {t('wines:form.buttons.removePhoto')}
+                  </Button>
+                </Group>
               </div>
             ) : (
               <Stack gap="md">
