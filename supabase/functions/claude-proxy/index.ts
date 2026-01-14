@@ -34,28 +34,24 @@ interface WineEnrichmentRequest {
   type: "wine-enrichment"
   wineName: string
   existingVintage?: number | null
-  existingWineries?: Array<{
-    id: string
-    name: string
-    country_code: string
-  }>
 }
 
 interface WineEnrichmentFromImageRequest {
   type: "wine-enrichment-from-image"
   base64Image: string
   imageMediaType: string
-  existingWineries?: Array<{
-    id: string
-    name: string
-    country_code: string
-  }>
+}
+
+interface WineryEnrichmentRequest {
+  type: "winery-enrichment"
+  wineryName: string
 }
 
 type ClaudeProxyRequest =
   | FoodPairingRequest
   | WineEnrichmentRequest
   | WineEnrichmentFromImageRequest
+  | WineryEnrichmentRequest
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -238,16 +234,8 @@ async function handleWineEnrichment(
   anthropic: Anthropic,
   request: WineEnrichmentRequest
 ) {
-  const { wineName, existingVintage, existingWineries } = request
+  const { wineName, existingVintage } = request
   const currentYear = new Date().getFullYear()
-
-  // Format existing wineries list
-  const wineriesListText =
-    existingWineries && existingWineries.length > 0
-      ? `\n\nExisting wineries in the user's collection:\n${existingWineries
-        .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
-        .join("\n")}`
-      : ""
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -257,7 +245,7 @@ async function handleWineEnrichment(
         role: "user",
         content: `You are a wine expert. I need you to identify this wine and provide structured data about it.
 
-Wine name: ${wineName}${existingVintage ? ` (vintage: ${existingVintage})` : ""}${wineriesListText}
+Wine name: ${wineName}${existingVintage ? ` (vintage: ${existingVintage})` : ""}
 
 Please identify the wine and provide:
 1. Grape varieties used in this wine
@@ -266,7 +254,6 @@ Please identify the wine and provide:
 4. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
 5. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
 6. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
-7. IMPORTANT: If the winery matches one of the existing wineries above (considering variations like "Château" vs "Chateau", "&" vs "and", etc.), include the matchedExistingId field with that winery's ID
 
 Return your response as a JSON object with this exact structure:
 {
@@ -278,8 +265,7 @@ Return your response as a JSON object with this exact structure:
   },
   "winery": {
     "name": "Château Example",
-    "countryCode": "FR",
-    "matchedExistingId": "uuid-if-matched-existing-winery"
+    "countryCode": "FR"
   },
   "price": 150.00,
   "foodPairings": "Gegrilltes Rindfleisch, gereifter Käse wie Gruyère oder Comté, Lammbraten, Schmorgerichte, Pilzrisotto",
@@ -298,9 +284,7 @@ Important guidelines:
 - Only include price if you can make a reasonable estimate based on the wine's quality, vintage, and reputation
 - foodPairings MUST be in Swiss Standard German (Schweizer Hochdeutsch), NOT dialect. Use standard German grammar and vocabulary as used in Switzerland. Key differences from German German: use "ss" instead of "ß" (e.g., "Rindfleisch" not "Rindfleisch"), prefer Swiss terminology (e.g., "Rindfleisch" for beef, "Käse" for cheese). It should be a comma-separated list of dishes and ingredients (e.g., "Gegrilltes Rindfleisch, gereifter Käse, Lammbraten, Schmorgerichte"). Base recommendations on the wine's grape varieties and traditional pairings.
 - Confidence should be "high" for specific, well-known wines, "medium" for regional wines, "low" for generic varieties
-- If you cannot identify the wine at all, return confidence: "low" with minimal data
-- For winery matching: Consider variations in spelling, punctuation, abbreviations, etc. For example, "Domaine de la Romanée-Conti" matches "Domaine de la Romanee Conti", "Château Margaux" matches "Chateau Margaux", "Smith & Sons" matches "Smith and Sons"
-- Only include matchedExistingId if you're confident the winery is the same, accounting for spelling variations`,
+- If you cannot identify the wine at all, return confidence: "low" with minimal data`,
       },
     ],
   })
@@ -372,14 +356,6 @@ Important guidelines:
         name: parsedResponse.winery.name,
         countryCode: parsedResponse.winery.countryCode.toUpperCase(),
       }
-      // Include matched ID if provided and valid
-      if (
-        parsedResponse.winery.matchedExistingId &&
-        existingWineries?.some((w) => w.id === parsedResponse.winery.matchedExistingId)
-      ) {
-        enrichmentData.winery.matchedExistingId =
-          parsedResponse.winery.matchedExistingId
-      }
     }
   }
 
@@ -409,16 +385,8 @@ async function handleWineEnrichmentFromImage(
   anthropic: Anthropic,
   request: WineEnrichmentFromImageRequest
 ) {
-  const { base64Image, imageMediaType, existingWineries } = request
+  const { base64Image, imageMediaType } = request
   const currentYear = new Date().getFullYear()
-
-  // Format existing wineries list
-  const wineriesListText =
-    existingWineries && existingWineries.length > 0
-      ? `\n\nExisting wineries in the user's collection:\n${existingWineries
-        .map((w, idx) => `${idx + 1}. "${w.name}" (${w.country_code}) [ID: ${w.id}]`)
-        .join("\n")}`
-      : ""
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -437,7 +405,7 @@ async function handleWineEnrichmentFromImage(
           },
           {
             type: "text",
-            text: `You are a wine expert. I need you to identify the wine bottle in this photo and provide structured data about it.${wineriesListText}
+            text: `You are a wine expert. I need you to identify the wine bottle in this photo and provide structured data about it.
 
 Please identify the wine and provide:
 1. Exact wine name (including producer/brand and specific label name)
@@ -447,7 +415,6 @@ Please identify the wine and provide:
 5. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
 6. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate)
 7. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines. Use Swiss Standard German, NOT dialect.
-8. IMPORTANT: If the winery matches one of the existing wineries above, include the matchedExistingId field with that winery's ID
 
 Return your response as a JSON object with this exact structure:
 {
@@ -550,13 +517,6 @@ Important guidelines:
         name: parsedResponse.winery.name,
         countryCode: parsedResponse.winery.countryCode.toUpperCase(),
       }
-      if (
-        parsedResponse.winery.matchedExistingId &&
-        existingWineries?.some((w) => w.id === parsedResponse.winery.matchedExistingId)
-      ) {
-        enrichmentData.winery.matchedExistingId =
-          parsedResponse.winery.matchedExistingId
-      }
     }
   }
 
@@ -577,6 +537,73 @@ Important guidelines:
     parsedResponse.foodPairings.trim().length > 0
   ) {
     enrichmentData.foodPairings = parsedResponse.foodPairings.trim()
+  }
+
+  return { enrichmentData }
+}
+
+async function handleWineryEnrichment(
+  anthropic: Anthropic,
+  request: WineryEnrichmentRequest
+) {
+  const { wineryName } = request
+
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-5-20250929",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: `You are a wine expert.I need you to identify this winery and provide structured data about it.
+
+Winery name: ${wineryName}
+
+Please identify the winery and provide:
+  1. Valid ISO 3166 - 1 alpha - 2 country code(e.g., FR, IT, ES, US)
+  2. Confidence that this is a real winery
+
+Return your response as a JSON object with this exact structure:
+  {
+    "countryCode": "FR",
+      "confidence": "high",
+        "explanation": "Famous winery in Bordeaux, France"
+  }
+
+Important guidelines:
+  - Country codes must be valid ISO 3166 - 1 alpha - 2 codes: ${WINE_COUNTRIES.join(", ")}
+  - Confidence should be "high" for known wineries, "low" if you can't identify it`,
+      },
+    ],
+  })
+
+  // Parse the response
+  const responseText =
+    message.content[0].type === "text" ? message.content[0].text : ""
+
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    return {
+      enrichmentData: null,
+      error: "Failed to parse enrichment response from Claude",
+    }
+  }
+
+  const parsedResponse = JSON.parse(jsonMatch[0])
+
+  // Validate the response data
+  const enrichmentData: any = {
+    confidence: parsedResponse.confidence || "low",
+    explanation: parsedResponse.explanation || "No explanation provided",
+  }
+
+  // Validate country code
+  if (parsedResponse.countryCode) {
+    const validCountryCode = WINE_COUNTRIES.includes(
+      parsedResponse.countryCode.toUpperCase()
+    )
+    if (validCountryCode) {
+      enrichmentData.countryCode = parsedResponse.countryCode.toUpperCase()
+    }
   }
 
   return { enrichmentData }

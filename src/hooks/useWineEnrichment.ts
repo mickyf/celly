@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
+import Fuse from 'fuse.js'
 import { enrichWineData, enrichWineFromImage } from '../lib/claude'
 import { useAddWinery } from './useWineries'
 import { useUpdateWine } from './useWines'
@@ -80,12 +81,11 @@ export const useEnrichWine = () => {
               w.country_code !== null
           )
 
-          // Call AI enrichment with existing wineries list
+          // Call AI enrichment
           // (AI errors are tracked in claude.ts)
           const { enrichmentData, error } = await enrichWineData(
             wine.name,
-            wine.vintage,
-            validWineries
+            wine.vintage
           )
 
           if (error || !enrichmentData) {
@@ -158,15 +158,38 @@ export const useEnrichWine = () => {
 
           // Handle winery matching and creation
           if (needsWinery && enrichmentData.winery) {
-            const { name, countryCode, matchedExistingId } = enrichmentData.winery
+            const { name, countryCode } = enrichmentData.winery
 
-            // Check if AI matched an existing winery
-            if (matchedExistingId) {
-              // AI found a match - use the existing winery
-              updateData.winery_id = matchedExistingId
+            // Initialize Fuse for fuzzy searching
+            const fuse = new Fuse(validWineries, {
+              keys: ['name'],
+              threshold: 0.3, // Match logic: lower is stricter. 0.3 handles "Château" vs "Chateau" well
+              includeScore: true
+            })
+
+            const searchResults = fuse.search(name)
+            const bestMatch = searchResults.length > 0 ? searchResults[0].item : null
+
+            // Log matching result for debugging
+            if (searchResults.length > 0) {
+              Sentry.addBreadcrumb({
+                category: 'ai.enrichment',
+                message: 'Fuzzy matched winery',
+                level: 'info',
+                data: {
+                  aiName: name,
+                  matchedName: bestMatch?.name,
+                  score: searchResults[0].score
+                }
+              })
+            }
+
+            if (bestMatch) {
+              // Found a fuzzy match - use the existing winery
+              updateData.winery_id = bestMatch.id
               fieldsUpdated.push(t('wines:form.labels.winery'))
             } else {
-              // AI didn't find a match - create new winery
+              // No match found - create new winery
               try {
                 const newWinery = await addWinery.mutateAsync({
                   name,
@@ -257,6 +280,7 @@ export const useEnrichWine = () => {
 
 export const useEnrichWineFromImage = () => {
   const { t } = useTranslation(['wines'])
+  const addWinery = useAddWinery()
 
   return useMutation({
     mutationFn: async ({ file }: { file: File }) => {
@@ -283,20 +307,73 @@ export const useEnrichWineFromImage = () => {
             .select('id, name, country_code')
             .order('name', { ascending: true })
 
+          // Filter wineries with valid country codes
           const validWineries = (existingWineries || []).filter(
             (w): w is { id: string; name: string; country_code: string } =>
               w.country_code !== null
           )
 
           const { enrichmentData, error } = await enrichWineFromImage(
-            file,
-            validWineries
+            file
           )
 
           if (error || !enrichmentData) {
             const err = new Error(error || t('wines:enrichment.errors.noData'))
             Sentry.captureException(err)
             throw err
+          }
+
+          // Perform winery matching if we have a winery component
+          if (enrichmentData.winery && enrichmentData.winery.name) {
+            const { name, countryCode } = enrichmentData.winery
+
+            // Initialize Fuse for fuzzy searching
+            const fuse = new Fuse(validWineries, {
+              keys: ['name'],
+              threshold: 0.3,
+              includeScore: true
+            })
+
+            const searchResults = fuse.search(name)
+
+            if (searchResults.length > 0) {
+              const bestMatch = searchResults[0].item
+              // Inject the matched ID into the response
+              enrichmentData.winery.matchedExistingId = bestMatch.id
+
+              Sentry.addBreadcrumb({
+                category: 'ai.enrichment',
+                message: 'Fuzzy matched winery from image',
+                level: 'info',
+                data: {
+                  aiName: name,
+                  matchedName: bestMatch.name,
+                  score: searchResults[0].score
+                }
+              })
+            } else {
+              // No match found - create new winery
+              try {
+                const newWinery = await addWinery.mutateAsync({
+                  name,
+                  country_code: countryCode,
+                })
+                enrichmentData.winery.matchedExistingId = newWinery.id
+
+                Sentry.addBreadcrumb({
+                  category: 'ai.enrichment',
+                  message: 'Created new winery from image enrichment',
+                  level: 'info',
+                  data: {
+                    wineryName: name,
+                    wineryId: newWinery.id
+                  }
+                })
+              } catch (error) {
+                // If winery creation fails, continue without it
+                console.error('Failed to create winery:', error)
+              }
+            }
           }
 
           if (enrichmentData.confidence === 'low') {
@@ -416,8 +493,7 @@ export const useBulkEnrichWines = () => {
                   // Call AI enrichment
                   const { enrichmentData, error } = await enrichWineData(
                     wine.name,
-                    wine.vintage,
-                    validWineries
+                    wine.vintage
                   )
 
                   if (error || !enrichmentData) {
@@ -464,10 +540,20 @@ export const useBulkEnrichWines = () => {
 
                   // Handle winery matching and creation
                   if (needsWinery && enrichmentData.winery) {
-                    const { name, countryCode, matchedExistingId } = enrichmentData.winery
+                    const { name, countryCode } = enrichmentData.winery
 
-                    if (matchedExistingId) {
-                      updateData.winery_id = matchedExistingId
+                    // Initialize Fuse for fuzzy searching
+                    const fuse = new Fuse(validWineries, {
+                      keys: ['name'],
+                      threshold: 0.3,
+                      includeScore: true
+                    })
+
+                    const searchResults = fuse.search(name)
+                    const bestMatch = searchResults.length > 0 ? searchResults[0].item : null
+
+                    if (bestMatch) {
+                      updateData.winery_id = bestMatch.id
                     } else {
                       try {
                         const newWinery = await addWinery.mutateAsync({
