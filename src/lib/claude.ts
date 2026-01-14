@@ -37,8 +37,19 @@ export interface WineEnrichmentData {
   explanation: string
 }
 
+export interface WineryEnrichmentData {
+  countryCode: string
+  confidence: 'high' | 'medium' | 'low'
+  explanation: string
+}
+
 export interface WineEnrichmentResponse {
   enrichmentData: WineEnrichmentData | null
+  error?: string
+}
+
+export interface WineryEnrichmentResponse {
+  enrichmentData: WineryEnrichmentData | null
   error?: string
 }
 
@@ -60,26 +71,21 @@ interface WineEnrichmentRequest {
   type: 'wine-enrichment'
   wineName: string
   existingVintage?: number | null
-  existingWineries?: Array<{
-    id: string
-    name: string
-    country_code: string
-  }>
 }
 
 interface WineEnrichmentFromImageRequest {
   type: 'wine-enrichment-from-image'
   base64Image: string
   imageMediaType: string
-  existingWineries?: Array<{
-    id: string
-    name: string
-    country_code: string
-  }>
+}
+
+interface WineryEnrichmentRequest {
+  type: 'winery-enrichment'
+  wineryName: string
 }
 
 async function callClaudeProxy<T>(
-  request: FoodPairingRequest | WineEnrichmentRequest | WineEnrichmentFromImageRequest
+  request: FoodPairingRequest | WineEnrichmentRequest | WineEnrichmentFromImageRequest | WineryEnrichmentRequest
 ): Promise<T> {
   // Use Supabase's built-in functions.invoke() method
   // This automatically includes the auth token from the current session
@@ -183,8 +189,7 @@ export async function getFoodPairing(
 
 export async function enrichWineData(
   wineName: string,
-  existingVintage?: number | null,
-  existingWineries?: Array<{ id: string; name: string; country_code: string }>
+  existingVintage?: number | null
 ): Promise<WineEnrichmentResponse> {
   return Sentry.startSpan(
     {
@@ -194,7 +199,6 @@ export async function enrichWineData(
         'ai.model': 'claude-sonnet-4-5-20250929',
         'ai.request.wine_name': wineName,
         'ai.request.has_vintage': !!existingVintage,
-        'ai.request.wineries_count': existingWineries?.length || 0,
       },
     },
     async (span) => {
@@ -206,7 +210,6 @@ export async function enrichWineData(
           data: {
             wineName,
             hasVintage: !!existingVintage,
-            wineriesCount: existingWineries?.length || 0,
           },
         })
 
@@ -214,7 +217,6 @@ export async function enrichWineData(
           type: 'wine-enrichment',
           wineName,
           existingVintage,
-          existingWineries,
         }
 
         const result = await callClaudeProxy<WineEnrichmentResponse>(request)
@@ -242,7 +244,6 @@ export async function enrichWineData(
             request: {
               wine_name: wineName,
               has_vintage: !!existingVintage,
-              wineries_count: existingWineries?.length || 0,
             },
           },
         })
@@ -260,8 +261,7 @@ export async function enrichWineData(
 }
 
 export async function enrichWineFromImage(
-  file: File,
-  existingWineries?: Array<{ id: string; name: string; country_code: string }>
+  file: File
 ): Promise<WineEnrichmentResponse> {
   return Sentry.startSpan(
     {
@@ -282,7 +282,6 @@ export async function enrichWineFromImage(
           data: {
             fileSize: file.size,
             fileType: file.type,
-            wineriesCount: existingWineries?.length || 0,
           },
         })
 
@@ -302,7 +301,6 @@ export async function enrichWineFromImage(
           type: 'wine-enrichment-from-image',
           base64Image,
           imageMediaType: file.type,
-          existingWineries,
         }
 
         const result = await callClaudeProxy<WineEnrichmentResponse>(request)
@@ -315,6 +313,62 @@ export async function enrichWineFromImage(
         return {
           enrichmentData: null,
           error: error instanceof Error ? error.message : 'Failed to identify wine from photo',
+        }
+      }
+    }
+  )
+}
+
+export async function enrichWineryData(
+  wineryName: string
+): Promise<WineryEnrichmentResponse> {
+  return Sentry.startSpan(
+    {
+      name: 'claude.enrichWineryData',
+      op: 'ai.request',
+      attributes: {
+        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.request.winery_name': wineryName,
+      },
+    },
+    async (span) => {
+      try {
+        Sentry.addBreadcrumb({
+          category: 'ai.request',
+          message: 'Requesting winery enrichment from Claude',
+          level: 'info',
+          data: {
+            wineryName,
+          },
+        })
+
+        const request: WineryEnrichmentRequest = {
+          type: 'winery-enrichment',
+          wineryName,
+        }
+
+        const result = await callClaudeProxy<WineryEnrichmentResponse>(request)
+
+        span.setStatus({ code: 1, message: 'ok' })
+        return result
+      } catch (error) {
+        span.setStatus({ code: 2, message: 'error' })
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'claude_api_error',
+            component: 'ClaudeAPI',
+            operation: 'enrichWineryData',
+          },
+          contexts: {
+            request: {
+              winery_name: wineryName,
+            },
+          },
+        })
+
+        return {
+          enrichmentData: null,
+          error: error instanceof Error ? error.message : 'Failed to enrich winery data',
         }
       }
     }
