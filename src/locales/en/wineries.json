@@ -66,5 +66,12 @@
   },
   "errors": {
     "hasWines": "Cannot delete winery with {{count}} associated wine(s). Please remove or reassign wines first."
+  },
+  "enrichment": {
+    "button": "Enrich",
+    "loading": "Enriching...",
+    "success": "Winery enriched with AI data",
+    "noData": "Could not identify winery",
+    "error": "Failed to enrich winery"
   }
 }
