@@ -175,10 +175,12 @@
   },
   "enrichment": {
     "button": "Mit KI anreichern",
+    "identifyFromPhoto": "Vom Foto identifizieren",
     "success": {
       "title": "Wein angereichert",
       "message": "{{count}} Felder aktualisiert: {{fields}}"
     },
+    "successIdentified": "Identifiziert als {{name}}",
     "wineryCreated": {
       "title": "Weingut erstellt",
       "message": "Ein neues Weingut wurde zu Ihrer Sammlung hinzugefügt"

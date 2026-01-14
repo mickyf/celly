@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
-import { enrichWineData } from '../lib/claude'
+import { enrichWineData, enrichWineFromImage } from '../lib/claude'
 import { useAddWinery } from './useWineries'
 import { useUpdateWine } from './useWines'
 import { supabase } from '../lib/supabase'
@@ -68,17 +68,17 @@ export const useEnrichWine = () => {
             throw error
           }
 
-      // Fetch existing wineries for AI matching
-      const { data: existingWineries } = await supabase
-        .from('wineries')
-        .select('id, name, country_code')
-        .order('name', { ascending: true })
+          // Fetch existing wineries for AI matching
+          const { data: existingWineries } = await supabase
+            .from('wineries')
+            .select('id, name, country_code')
+            .order('name', { ascending: true })
 
-      // Filter wineries with valid country codes
-      const validWineries = (existingWineries || []).filter(
-        (w): w is { id: string; name: string; country_code: string } =>
-          w.country_code !== null
-      )
+          // Filter wineries with valid country codes
+          const validWineries = (existingWineries || []).filter(
+            (w): w is { id: string; name: string; country_code: string } =>
+              w.country_code !== null
+          )
 
           // Call AI enrichment with existing wineries list
           // (AI errors are tracked in claude.ts)
@@ -106,81 +106,81 @@ export const useEnrichWine = () => {
             throw err
           }
 
-      // Show low confidence warning
-      if (enrichmentData.confidence === 'low') {
-        notifications.show({
-          title: t('wines:enrichment.lowConfidence.title'),
-          message: t('wines:enrichment.lowConfidence.message'),
-          color: 'yellow',
-          autoClose: 8000,
-        })
-      }
-
-      // Prepare update data
-      const updateData: Partial<Wine> = {}
-      const fieldsUpdated: string[] = []
-      let wineryCreated = false
-
-      // Update grapes if needed
-      if (
-        needsGrapes &&
-        enrichmentData.grapes &&
-        enrichmentData.grapes.length > 0
-      ) {
-        updateData.grapes = enrichmentData.grapes
-        fieldsUpdated.push(t('wines:form.labels.grapeVarieties'))
-      }
-
-      // Update vintage if needed
-      if (needsVintage && enrichmentData.vintage) {
-        updateData.vintage = enrichmentData.vintage
-        fieldsUpdated.push(t('wines:form.labels.vintage'))
-      }
-
-      // Update drinking window if needed
-      if (needsDrinkWindow && enrichmentData.drinkingWindow) {
-        updateData.drink_window_start = enrichmentData.drinkingWindow.start
-        updateData.drink_window_end = enrichmentData.drinkingWindow.end
-        fieldsUpdated.push(t('wines:form.sections.drinkingWindow'))
-      }
-
-      // Update price if needed
-      if (needsPrice && enrichmentData.price) {
-        updateData.price = enrichmentData.price
-        fieldsUpdated.push(t('wines:form.labels.pricePerBottle'))
-      }
-
-      // Update food pairings if needed
-      if (needsFoodPairings && enrichmentData.foodPairings) {
-        updateData.food_pairings = enrichmentData.foodPairings
-        fieldsUpdated.push(t('wines:form.labels.foodPairings'))
-      }
-
-      // Handle winery matching and creation
-      if (needsWinery && enrichmentData.winery) {
-        const { name, countryCode, matchedExistingId } = enrichmentData.winery
-
-        // Check if AI matched an existing winery
-        if (matchedExistingId) {
-          // AI found a match - use the existing winery
-          updateData.winery_id = matchedExistingId
-          fieldsUpdated.push(t('wines:form.labels.winery'))
-        } else {
-          // AI didn't find a match - create new winery
-          try {
-            const newWinery = await addWinery.mutateAsync({
-              name,
-              country_code: countryCode,
+          // Show low confidence warning
+          if (enrichmentData.confidence === 'low') {
+            notifications.show({
+              title: t('wines:enrichment.lowConfidence.title'),
+              message: t('wines:enrichment.lowConfidence.message'),
+              color: 'yellow',
+              autoClose: 8000,
             })
-            updateData.winery_id = newWinery.id
-            fieldsUpdated.push(t('wines:form.labels.winery'))
-            wineryCreated = true
-          } catch (error) {
-            // If winery creation fails, continue without it
-            console.error('Failed to create winery:', error)
           }
-        }
-      }
+
+          // Prepare update data
+          const updateData: Partial<Wine> = {}
+          const fieldsUpdated: string[] = []
+          let wineryCreated = false
+
+          // Update grapes if needed
+          if (
+            needsGrapes &&
+            enrichmentData.grapes &&
+            enrichmentData.grapes.length > 0
+          ) {
+            updateData.grapes = enrichmentData.grapes
+            fieldsUpdated.push(t('wines:form.labels.grapeVarieties'))
+          }
+
+          // Update vintage if needed
+          if (needsVintage && enrichmentData.vintage) {
+            updateData.vintage = enrichmentData.vintage
+            fieldsUpdated.push(t('wines:form.labels.vintage'))
+          }
+
+          // Update drinking window if needed
+          if (needsDrinkWindow && enrichmentData.drinkingWindow) {
+            updateData.drink_window_start = enrichmentData.drinkingWindow.start
+            updateData.drink_window_end = enrichmentData.drinkingWindow.end
+            fieldsUpdated.push(t('wines:form.sections.drinkingWindow'))
+          }
+
+          // Update price if needed
+          if (needsPrice && enrichmentData.price) {
+            updateData.price = enrichmentData.price
+            fieldsUpdated.push(t('wines:form.labels.pricePerBottle'))
+          }
+
+          // Update food pairings if needed
+          if (needsFoodPairings && enrichmentData.foodPairings) {
+            updateData.food_pairings = enrichmentData.foodPairings
+            fieldsUpdated.push(t('wines:form.labels.foodPairings'))
+          }
+
+          // Handle winery matching and creation
+          if (needsWinery && enrichmentData.winery) {
+            const { name, countryCode, matchedExistingId } = enrichmentData.winery
+
+            // Check if AI matched an existing winery
+            if (matchedExistingId) {
+              // AI found a match - use the existing winery
+              updateData.winery_id = matchedExistingId
+              fieldsUpdated.push(t('wines:form.labels.winery'))
+            } else {
+              // AI didn't find a match - create new winery
+              try {
+                const newWinery = await addWinery.mutateAsync({
+                  name,
+                  country_code: countryCode,
+                })
+                updateData.winery_id = newWinery.id
+                fieldsUpdated.push(t('wines:form.labels.winery'))
+                wineryCreated = true
+              } catch (error) {
+                // If winery creation fails, continue without it
+                console.error('Failed to create winery:', error)
+              }
+            }
+          }
 
           // Check if any fields were actually updated
           if (fieldsUpdated.length === 0) {
@@ -255,6 +255,83 @@ export const useEnrichWine = () => {
   })
 }
 
+export const useEnrichWineFromImage = () => {
+  const { t } = useTranslation(['wines'])
+
+  return useMutation({
+    mutationFn: async ({ file }: { file: File }) => {
+      return Sentry.startSpan(
+        {
+          name: 'wine.enrichmentFromImage',
+          op: 'ai.enrichment',
+          attributes: {
+            'file.size': file.size,
+            'file.type': file.type,
+          },
+        },
+        async (span) => {
+          Sentry.addBreadcrumb({
+            category: 'ai.enrichment',
+            message: 'Starting wine enrichment from image',
+            level: 'info',
+            data: { fileSize: file.size, fileType: file.type },
+          })
+
+          // Fetch existing wineries for AI matching
+          const { data: existingWineries } = await supabase
+            .from('wineries')
+            .select('id, name, country_code')
+            .order('name', { ascending: true })
+
+          const validWineries = (existingWineries || []).filter(
+            (w): w is { id: string; name: string; country_code: string } =>
+              w.country_code !== null
+          )
+
+          const { enrichmentData, error } = await enrichWineFromImage(
+            file,
+            validWineries
+          )
+
+          if (error || !enrichmentData) {
+            const err = new Error(error || t('wines:enrichment.errors.noData'))
+            Sentry.captureException(err)
+            throw err
+          }
+
+          if (enrichmentData.confidence === 'low') {
+            notifications.show({
+              title: t('wines:enrichment.lowConfidence.title'),
+              message: t('wines:enrichment.lowConfidence.message'),
+              color: 'yellow',
+              autoClose: 8000,
+            })
+          }
+
+          span.setStatus({ code: 1, message: 'ok' })
+          return enrichmentData
+        }
+      )
+    },
+    onSuccess: (data) => {
+      notifications.show({
+        title: t('wines:enrichment.success.title'),
+        message: t('wines:enrichment.successIdentified', { name: data.name }),
+        color: 'green',
+        autoClose: 5000,
+      })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:enrichment.errors.title'),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
 export const useBulkEnrichWines = () => {
   const { t } = useTranslation(['wines'])
   const queryClient = useQueryClient()
@@ -293,16 +370,16 @@ export const useBulkEnrichWines = () => {
             errors: [],
           }
 
-      // Fetch existing wineries once for all enrichments
-      const { data: existingWineries } = await supabase
-        .from('wineries')
-        .select('id, name, country_code')
-        .order('name', { ascending: true })
+          // Fetch existing wineries once for all enrichments
+          const { data: existingWineries } = await supabase
+            .from('wineries')
+            .select('id, name, country_code')
+            .order('name', { ascending: true })
 
-      const validWineries = (existingWineries || []).filter(
-        (w): w is { id: string; name: string; country_code: string } =>
-          w.country_code !== null
-      )
+          const validWineries = (existingWineries || []).filter(
+            (w): w is { id: string; name: string; country_code: string } =>
+              w.country_code !== null
+          )
 
           // Process wines sequentially to avoid rate limits
           for (let i = 0; i < wines.length; i++) {

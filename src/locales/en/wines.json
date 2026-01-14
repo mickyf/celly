@@ -175,10 +175,12 @@
   },
   "enrichment": {
     "button": "Enrich with AI",
+    "identifyFromPhoto": "Identify from Photo",
     "success": {
       "title": "Wine enriched",
       "message": "Updated {{count}} fields: {{fields}}"
     },
+    "successIdentified": "Identified as {{name}}",
     "wineryCreated": {
       "title": "Winery created",
       "message": "A new winery was added to your collection"
