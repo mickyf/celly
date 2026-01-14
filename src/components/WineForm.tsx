@@ -163,6 +163,98 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         <Paper shadow="sm" p="lg" radius="md" withBorder>
           <Stack gap="md">
             <Text fw={700} size="lg">
+              {t('wines:form.sections.photo')}
+            </Text>
+
+            {photoPreview ? (
+              <div>
+                <Image
+                  src={photoPreview}
+                  alt="Wine bottle"
+                  height={200}
+                  fit="contain"
+                  radius="md"
+                />
+                <Group grow mt="sm">
+                  <Button
+                    variant="light"
+                    color="grape"
+                    leftSection={<IconSparkles size={18} />}
+                    onClick={handleIdentifyFromPhoto}
+                    loading={enrichFromImage.isPending}
+                  >
+                    {t('wines:enrichment.identifyFromPhoto')}
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    color="red"
+                    size="xs"
+                    onClick={() => {
+                      setPhotoFile(null)
+                      setPhotoPreview(null)
+                    }}
+                  >
+                    {t('wines:form.buttons.removePhoto')}
+                  </Button>
+                </Group>
+              </div>
+            ) : (
+              <Stack gap="md">
+                <Dropzone
+                  onDrop={handlePhotoDrop}
+                  accept={IMAGE_MIME_TYPE}
+                  maxSize={5 * 1024 ** 2}
+                  multiple={false}
+                >
+                  <Group
+                    justify="center"
+                    gap="xl"
+                    mih={220}
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <Dropzone.Accept>
+                      <IconUpload size={52} stroke={1.5} />
+                    </Dropzone.Accept>
+                    <Dropzone.Reject>
+                      <IconX size={52} stroke={1.5} />
+                    </Dropzone.Reject>
+                    <Dropzone.Idle>
+                      <IconPhoto size={52} stroke={1.5} />
+                    </Dropzone.Idle>
+
+                    <div>
+                      <Text size="xl" inline>
+                        {t('common:camera.photoDrop')}
+                      </Text>
+                      <Text size="sm" c="dimmed" inline mt={7}>
+                        {t('common:camera.photoSize')}
+                      </Text>
+                    </div>
+                  </Group>
+                </Dropzone>
+
+                <Button
+                  variant="light"
+                  leftSection={<IconCamera size={18} />}
+                  onClick={() => setCameraOpened(true)}
+                  fullWidth
+                >
+                  {t('common:camera.takePhoto')}
+                </Button>
+              </Stack>
+            )}
+          </Stack>
+        </Paper>
+
+        <CameraCapture
+          opened={cameraOpened}
+          onClose={() => setCameraOpened(false)}
+          onCapture={handleCameraCapture}
+        />
+
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+          <Stack gap="md">
+            <Text fw={700} size="lg">
               {t('wines:form.sections.basicInfo')}
             </Text>
 
@@ -273,98 +365,6 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
             />
           </Stack>
         </Paper>
-
-        <Paper shadow="sm" p="lg" radius="md" withBorder>
-          <Stack gap="md">
-            <Text fw={700} size="lg">
-              {t('wines:form.sections.photo')}
-            </Text>
-
-            {photoPreview ? (
-              <div>
-                <Image
-                  src={photoPreview}
-                  alt="Wine bottle"
-                  height={200}
-                  fit="contain"
-                  radius="md"
-                />
-                <Group grow mt="sm">
-                  <Button
-                    variant="light"
-                    color="grape"
-                    leftSection={<IconSparkles size={18} />}
-                    onClick={handleIdentifyFromPhoto}
-                    loading={enrichFromImage.isPending}
-                  >
-                    {t('wines:enrichment.identifyFromPhoto')}
-                  </Button>
-                  <Button
-                    variant="subtle"
-                    color="red"
-                    size="xs"
-                    onClick={() => {
-                      setPhotoFile(null)
-                      setPhotoPreview(null)
-                    }}
-                  >
-                    {t('wines:form.buttons.removePhoto')}
-                  </Button>
-                </Group>
-              </div>
-            ) : (
-              <Stack gap="md">
-                <Dropzone
-                  onDrop={handlePhotoDrop}
-                  accept={IMAGE_MIME_TYPE}
-                  maxSize={5 * 1024 ** 2}
-                  multiple={false}
-                >
-                  <Group
-                    justify="center"
-                    gap="xl"
-                    mih={220}
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    <Dropzone.Accept>
-                      <IconUpload size={52} stroke={1.5} />
-                    </Dropzone.Accept>
-                    <Dropzone.Reject>
-                      <IconX size={52} stroke={1.5} />
-                    </Dropzone.Reject>
-                    <Dropzone.Idle>
-                      <IconPhoto size={52} stroke={1.5} />
-                    </Dropzone.Idle>
-
-                    <div>
-                      <Text size="xl" inline>
-                        {t('common:camera.photoDrop')}
-                      </Text>
-                      <Text size="sm" c="dimmed" inline mt={7}>
-                        {t('common:camera.photoSize')}
-                      </Text>
-                    </div>
-                  </Group>
-                </Dropzone>
-
-                <Button
-                  variant="light"
-                  leftSection={<IconCamera size={18} />}
-                  onClick={() => setCameraOpened(true)}
-                  fullWidth
-                >
-                  {t('common:camera.takePhoto')}
-                </Button>
-              </Stack>
-            )}
-          </Stack>
-        </Paper>
-
-        <CameraCapture
-          opened={cameraOpened}
-          onClose={() => setCameraOpened(false)}
-          onCapture={handleCameraCapture}
-        />
       </Stack>
 
       <Group
