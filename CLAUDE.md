@@ -521,8 +521,12 @@ npx supabase db pull
 
 ### 3. Deploy Edge Functions
 ```bash
+
+# Deploy the Sentry tunnel function
+npx supabase functions deploy sentry-tunnel --no-verify-jwt
+
 # Deploy the Claude proxy function
-npx supabase functions deploy claude-proxy
+npx supabase functions deploy claude-proxy --no-verify-jwt
 
 # Set Claude API key as a secret
 npx supabase secrets set CLAUDE_API_KEY=sk-ant-your-key-here
