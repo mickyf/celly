@@ -1,9 +1,10 @@
-import { createFileRoute, Navigate, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { WineForm, type WineFormValues } from '../../../components/WineForm'
 import { useWine, useUpdateWine, useUploadWinePhoto } from '../../../hooks/useWines'
+import { useWineLocations, useAddWineLocation, useUpdateWineLocation, useDeleteWineLocation } from '../../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../../components/PageHeader'
 import type { BreadcrumbItem } from '../../../components/Breadcrumb'
@@ -30,7 +31,6 @@ function EditWine() {
   const { id } = Route.useParams()
   const search = Route.useSearch()
   const navigate = useNavigate()
-  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading } = useWine(id)
@@ -68,22 +68,54 @@ function EditWine() {
     })
   }, [])
 
+  const { data: existingLocations } = useWineLocations(id)
+  const addLocation = useAddWineLocation()
+  const updateLocation = useUpdateWineLocation()
+  const deleteLocation = useDeleteWineLocation()
+
   const handleSubmit = async (values: WineFormValues, photo?: File) => {
     try {
+      // Extract locations from values
+      const { locations, ...wineValues } = values
+
       // Update the wine
       await updateWine.mutateAsync({
         id,
-        name: values.name,
-        winery_id: values.winery_id,
-        grapes: values.grapes,
-        vintage: values.vintage,
-        quantity: values.quantity,
-        price: values.price,
-        bottle_size: values.bottle_size,
-        drink_window_start: values.drink_window_start,
-        drink_window_end: values.drink_window_end,
-        food_pairings: values.food_pairings,
+        ...wineValues,
       })
+
+      // Sync locations using existingLocations from useWineLocations hook
+      if (existingLocations) {
+        const locationsToDelete = existingLocations.filter(
+          (existing) => !locations.find((l) => l.id === existing.id)
+        )
+        const locationsToUpdate = locations.filter((l) => l.id)
+        const locationsToAdd = locations.filter((l) => !l.id)
+
+        await Promise.all([
+          ...locationsToDelete.map((l) =>
+            deleteLocation.mutateAsync({ id: l.id, wineId: id })
+          ),
+          ...locationsToUpdate.map((l) =>
+            updateLocation.mutateAsync({
+              id: l.id!,
+              cellar_id: l.cellar_id,
+              shelf: l.shelf,
+              row: l.row,
+              column: l.column,
+              quantity: l.quantity,
+              wine_id: id,
+            })
+          ),
+          ...locationsToAdd.map((l) =>
+            addLocation.mutateAsync({
+              ...l,
+              wine_id: id,
+              user_id: '', // Hook will handle this
+            })
+          ),
+        ])
+      }
 
       // If there's a new photo, upload it
       if (photo) {
@@ -99,7 +131,7 @@ function EditWine() {
         })
       }
 
-      router.history.back()
+      navigate({ to: '/wines/$id', params: { id } })
     } catch (error) {
       console.error('Error updating wine:', error)
     }

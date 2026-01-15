@@ -88,7 +88,8 @@
       "removePhoto": "Remove Photo",
       "addWine": "Add Wine",
       "updateWine": "Update Wine",
-      "addCellar": "Add Cellar"
+      "addCellar": "Add Cellar",
+      "addLocation": "Add Another Location"
     },
     "validation": {
       "nameRequired": "Name is required",
@@ -279,5 +280,12 @@
       "title": "Error",
       "message": "Something went wrong"
     }
+  },
+  "overview": {
+    "title": "Cellar Overview",
+    "unpositionedWines": "Unpositioned Wines",
+    "unpositionedWinesDesc": "These wines are in this cellar but don't have a specific shelf, row, or column assigned yet.",
+    "emptyTitle": "No Cellars",
+    "emptyMessage": "You haven't added any cellars yet. Add a cellar in the wine form to get started."
   }
 }

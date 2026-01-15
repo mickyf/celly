@@ -12,18 +12,18 @@ import {
   Select,
   Textarea,
   ActionIcon,
+  Modal,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
-import { IconUpload, IconPhoto, IconX, IconCamera } from '@tabler/icons-react'
+import { IconUpload, IconPhoto, IconX, IconCamera, IconTrash, IconPlus, IconSparkles } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries, useAddWinery } from '../hooks/useWineries'
 import { useEnrichWineFromImage } from '../hooks/useWineEnrichment'
 import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
-import { IconSparkles, IconPlus } from '@tabler/icons-react'
 import { useCellars, useAddCellar } from '../hooks/useCellars'
-import { Modal } from '@mantine/core'
+import { useWineLocations } from '../hooks/useWineLocations'
 import { getCountryOptions } from '../constants/countries'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -46,10 +46,14 @@ export interface WineFormValues {
   drink_window_start: number | null
   drink_window_end: number | null
   food_pairings: string | null
-  cellar_id: string | null
-  shelf: number | null
-  row: number | null
-  column: number | null
+  locations: {
+    id?: string
+    cellar_id: string
+    shelf: number | null
+    row: number | null
+    column: number | null
+    quantity: number
+  }[]
 }
 
 export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
@@ -102,19 +106,19 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       drink_window_start: wine?.drink_window_start || null,
       drink_window_end: wine?.drink_window_end || null,
       food_pairings: wine?.food_pairings || null,
-      cellar_id: wine?.cellar_id || null,
-      shelf: wine?.shelf || null,
-      row: wine?.row || null,
-      column: wine?.column || null,
+      locations: [],
     },
     transformValues: (values: WineFormValues) => ({
       ...values,
       price: (typeof values.price === 'string' && values.price === '') ? null : values.price,
       drink_window_start: (typeof values.drink_window_start === 'string' && values.drink_window_start === '') ? null : values.drink_window_start,
       drink_window_end: (typeof values.drink_window_end === 'string' && values.drink_window_end === '') ? null : values.drink_window_end,
-      shelf: (typeof values.shelf === 'string' && values.shelf === '') ? null : values.shelf,
-      row: (typeof values.row === 'string' && values.row === '') ? null : values.row,
-      column: (typeof values.column === 'string' && values.column === '') ? null : values.column,
+      locations: values.locations.map(l => ({
+        ...l,
+        shelf: (typeof l.shelf === 'string' && l.shelf === '') ? null : l.shelf,
+        row: (typeof l.row === 'string' && l.row === '') ? null : l.row,
+        column: (typeof l.column === 'string' && l.column === '') ? null : l.column,
+      }))
     }),
     validate: {
       name: (value) => (value.trim().length > 0 ? null : t('wines:form.validation.nameRequired')),
@@ -207,16 +211,51 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
     }
   }
 
-  const handleAddCellar = async () => {
+  const { data: existingLocations } = useWineLocations(wine?.id)
+
+  useMemo(() => {
+    if (existingLocations && existingLocations.length > 0) {
+      form.setFieldValue('locations', existingLocations.map(l => ({
+        id: l.id,
+        cellar_id: l.cellar_id,
+        shelf: l.shelf,
+        row: l.row,
+        column: l.column,
+        quantity: l.quantity
+      })))
+    } else if (!wine && cellarOptions.length > 0 && form.values.locations.length === 0) {
+      // Add one empty location for new wines
+      form.insertListItem('locations', {
+        cellar_id: cellarOptions[0].value,
+        shelf: null,
+        row: null,
+        column: null,
+        quantity: 1
+      })
+    }
+  }, [existingLocations, cellarOptions.length])
+
+  const handleAddCellar = async (index?: number) => {
     if (!newCellarName.trim()) return
     try {
       const result = await addCellar.mutateAsync({ name: newCellarName })
-      form.setFieldValue('cellar_id', result.id)
+      if (typeof index === 'number') {
+        form.setFieldValue(`locations.${index}.cellar_id`, result.id)
+      } else {
+        // Fallback for identification or other uses
+      }
       setNewCellarName('')
       setCellarModalOpened(false)
     } catch (error) {
       console.error('Failed to add cellar:', error)
     }
+  }
+
+  const [activeLocationIndex, setActiveLocationIndex] = useState<number | null>(null)
+
+  const openAddCellarModal = (index: number) => {
+    setActiveLocationIndex(index)
+    setCellarModalOpened(true)
   }
 
   return (
@@ -234,7 +273,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
             onChange={(e) => setNewCellarName(e.currentTarget.value)}
             required
           />
-          <Button onClick={handleAddCellar} loading={addCellar.isPending}>
+          <Button onClick={() => handleAddCellar(activeLocationIndex ?? undefined)} loading={addCellar.isPending}>
             {t('common:buttons.save', { defaultValue: 'Save' })}
           </Button>
         </Stack>
@@ -489,51 +528,93 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
           </Paper>
           <Paper shadow="sm" p="lg" radius="md" withBorder>
             <Stack gap="md">
-              <Text fw={700} size="lg">
-                {t('wines:form.sections.location')}
-              </Text>
+              <Stack gap="md">
+                {form.values.locations.map((_, index) => (
+                  <Paper key={index} withBorder p="sm" radius="md" bg="gray.0">
+                    <Stack gap="sm">
+                      <Group justify="space-between" align="center">
+                        <Text fw={600} size="sm">
+                          {t('wines:form.labels.location')} {index + 1}
+                        </Text>
+                        {form.values.locations.length > 1 && (
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            onClick={() => form.removeListItem('locations', index)}
+                          >
+                            <IconTrash size={16} />
+                          </ActionIcon>
+                        )}
+                      </Group>
 
-              <Group align="flex-end">
-                <Select
-                  label={t('wines:form.labels.cellar')}
-                  placeholder={t('wines:form.placeholders.cellar')}
-                  data={cellarOptions}
-                  searchable
-                  clearable
-                  {...form.getInputProps('cellar_id')}
-                  style={{ flex: 1 }}
-                />
-                <ActionIcon
+                      <Group align="flex-end">
+                        <Select
+                          label={t('wines:form.labels.cellar')}
+                          placeholder={t('wines:form.placeholders.cellar')}
+                          data={cellarOptions}
+                          searchable
+                          clearable
+                          {...form.getInputProps(`locations.${index}.cellar_id`)}
+                          style={{ flex: 1 }}
+                        />
+                        <ActionIcon
+                          variant="subtle"
+                          size="lg"
+                          onClick={() => openAddCellarModal(index)}
+                          title={t('wines:form.buttons.addCellar')}
+                          mb={4}
+                        >
+                          <IconPlus size={20} />
+                        </ActionIcon>
+                      </Group>
+
+                      <Group grow align="flex-end">
+                        <NumberInput
+                          label={t('wines:form.labels.shelf')}
+                          placeholder={t('wines:form.placeholders.shelf')}
+                          min={0}
+                          {...form.getInputProps(`locations.${index}.shelf`)}
+                        />
+                        <NumberInput
+                          label={t('wines:form.labels.row')}
+                          placeholder={t('wines:form.placeholders.row')}
+                          min={0}
+                          {...form.getInputProps(`locations.${index}.row`)}
+                        />
+                        <NumberInput
+                          label={t('wines:form.labels.column')}
+                          placeholder={t('wines:form.placeholders.column')}
+                          min={0}
+                          {...form.getInputProps(`locations.${index}.column`)}
+                        />
+                        <NumberInput
+                          label={t('wines:form.labels.quantity')}
+                          placeholder={t('wines:form.placeholders.quantity')}
+                          min={1}
+                          required
+                          {...form.getInputProps(`locations.${index}.quantity`)}
+                          w={80}
+                        />
+                      </Group>
+                    </Stack>
+                  </Paper>
+                ))}
+
+                <Button
                   variant="subtle"
-                  size="lg"
-                  onClick={() => setCellarModalOpened(true)}
-                  title={t('wines:form.buttons.addCellar')}
-                  mb={4}
+                  leftSection={<IconPlus size={16} />}
+                  onClick={() => form.insertListItem('locations', {
+                    cellar_id: cellarOptions[0]?.value || '',
+                    shelf: null,
+                    row: null,
+                    column: null,
+                    quantity: 1
+                  })}
+                  fullWidth
                 >
-                  <IconPlus size={20} />
-                </ActionIcon>
-              </Group>
-
-              <Group grow>
-                <NumberInput
-                  label={t('wines:form.labels.shelf')}
-                  placeholder={t('wines:form.placeholders.shelf')}
-                  min={0}
-                  {...form.getInputProps('shelf')}
-                />
-                <NumberInput
-                  label={t('wines:form.labels.row')}
-                  placeholder={t('wines:form.placeholders.row')}
-                  min={0}
-                  {...form.getInputProps('row')}
-                />
-                <NumberInput
-                  label={t('wines:form.labels.column')}
-                  placeholder={t('wines:form.placeholders.column')}
-                  min={0}
-                  {...form.getInputProps('column')}
-                />
-              </Group>
+                  {t('wines:form.buttons.addLocation', { defaultValue: 'Add Another Location' })}
+                </Button>
+              </Stack>
             </Stack>
           </Paper>
         </Stack>

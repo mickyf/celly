@@ -9,6 +9,7 @@ import {
   IconLogin,
   IconLogout,
   IconSettings,
+  IconGridDots,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -90,6 +91,11 @@ function RootLayout() {
                 href="/wines"
                 label={t('nav.myWines')}
                 leftSection={<IconBottle size={24} stroke={1.5} />}
+              />
+              <NavLink
+                href="/cellars"
+                label={t('nav.cellarOverview')}
+                leftSection={<IconGridDots size={24} stroke={1.5} />}
               />
               <NavLink
                 href="/wineries"
