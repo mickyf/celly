@@ -88,7 +88,8 @@
       "removePhoto": "Foto entfernen",
       "addWine": "Wein hinzufügen",
       "updateWine": "Wein aktualisieren",
-      "addCellar": "Keller hinzufügen"
+      "addCellar": "Keller hinzufügen",
+      "addLocation": "Weiteren Lagerort hinzufügen"
     },
     "validation": {
       "nameRequired": "Name ist erforderlich",
@@ -279,5 +280,12 @@
       "title": "Fehler",
       "message": "Etwas ist schiefgelaufen"
     }
+  },
+  "overview": {
+    "title": "Keller-Übersicht",
+    "unpositionedWines": "Nicht platzierte Weine",
+    "unpositionedWinesDesc": "Diese Weine befinden sich in diesem Keller, haben aber noch kein spezifisches Regal, keine Reihe oder Spalte zugewiesen.",
+    "emptyTitle": "Keine Keller",
+    "emptyMessage": "Sie haben noch keine Keller hinzugefügt. Fügen Sie im Weinformular einen Keller hinzu, um zu beginnen."
   }
 }

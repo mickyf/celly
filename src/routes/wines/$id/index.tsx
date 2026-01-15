@@ -26,7 +26,7 @@ import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useWine, useDeleteWine } from '../../../hooks/useWines'
 import { useWinery } from '../../../hooks/useWineries'
-import { useCellars } from '../../../hooks/useCellars'
+import { useWineLocations } from '../../../hooks/useWineLocations'
 import {
   useTastingNotes,
   useAddTastingNote,
@@ -78,11 +78,11 @@ function WineDetail() {
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
   const { data: winery } = useWinery(wine?.winery_id || '')
-  const { data: cellars } = useCellars()
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
+  const { data: locations } = useWineLocations(id)
   const { data: stockMovements, isLoading: movementsLoading } = useStockMovements(id)
   const deleteWine = useDeleteWine()
-  const addNote = useAddTastingNote()
+  const addNoteMutation = useAddTastingNote()
   const updateNote = useUpdateTastingNote()
   const deleteNote = useDeleteTastingNote()
   const addStockMovement = useAddStockMovement()
@@ -126,10 +126,6 @@ function WineDetail() {
     useDisclosure(false)
   const [editingNote, setEditingNote] = useState<TastingNote | null>(null)
 
-  const cellar = useMemo(() => {
-    if (!wine?.cellar_id || !cellars) return null
-    return cellars.find(c => c.id === wine.cellar_id)
-  }, [wine?.cellar_id, cellars])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -145,7 +141,7 @@ function WineDetail() {
   }
 
   const handleAddNote = async (values: TastingNoteFormValues) => {
-    await addNote.mutateAsync({
+    await addNoteMutation.mutateAsync({
       wine_id: id,
       user_id: '', // will be replaced later
       rating: values.rating,
@@ -393,29 +389,38 @@ function WineDetail() {
                   </div>
                 )}
 
-                {(cellar || wine.shelf || wine.row || wine.column) && (
+                {locations && locations.length > 0 && (
                   <div>
                     <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                       {t('wines:form.sections.location')}
                     </Text>
-                    <Group mt="xs" gap="xs">
-                      {cellar && (
-                        <Badge color="blue" variant="light" size="lg">
-                          {cellar.name}
-                        </Badge>
-                      )}
-                      {(wine.shelf || wine.row || wine.column) && (
-                        <Text size="sm">
-                          {[
-                            wine.shelf && `${t('wines:form.labels.shelf')}: ${wine.shelf}`,
-                            wine.row && `${t('wines:form.labels.row')}: ${wine.row}`,
-                            wine.column && `${t('wines:form.labels.column')}: ${wine.column}`,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </Text>
-                      )}
-                    </Group>
+                    <Stack gap="xs" mt="xs">
+                      {locations.map((loc) => (
+                        <Paper key={loc.id} withBorder p="xs" radius="sm" bg="gray.0">
+                          <Group justify="space-between">
+                            <Stack gap={2}>
+                              <Text size="sm" fw={600}>
+                                {loc.cellar?.name || t('wines:form.labels.location')}
+                              </Text>
+                              {(loc.shelf || loc.row || loc.column) && (
+                                <Text size="xs" c="dimmed">
+                                  {[
+                                    loc.shelf && `${t('wines:form.labels.shelf')}: ${loc.shelf}`,
+                                    loc.row && `${t('wines:form.labels.row')}: ${loc.row}`,
+                                    loc.column && `${t('wines:form.labels.column')}: ${loc.column}`,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(', ')}
+                                </Text>
+                              )}
+                            </Stack>
+                            <Badge color="blue" variant="light">
+                              {t('common:counts.bottles', { count: loc.quantity })}
+                            </Badge>
+                          </Group>
+                        </Paper>
+                      ))}
+                    </Stack>
                   </div>
                 )}
               </Stack>
@@ -517,7 +522,7 @@ function WineDetail() {
           note={editingNote || undefined}
           onSubmit={editingNote ? handleUpdateNote : handleAddNote}
           onCancel={handleCloseNoteModal}
-          isLoading={addNote.isPending || updateNote.isPending}
+          isLoading={addNoteMutation.isPending || updateNote.isPending}
         />
       </Modal>
 

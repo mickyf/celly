@@ -17,6 +17,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WinesIndexRouteImport } from './routes/wines/index'
 import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
+import { Route as CellarsIndexRouteImport } from './routes/cellars/index'
 import { Route as WinesAddRouteImport } from './routes/wines/add'
 import { Route as WineriesAddRouteImport } from './routes/wineries/add'
 import { Route as WinesIdIndexRouteImport } from './routes/wines/$id/index'
@@ -64,6 +65,11 @@ const WineriesIndexRoute = WineriesIndexRouteImport.update({
   path: '/wineries/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CellarsIndexRoute = CellarsIndexRouteImport.update({
+  id: '/cellars/',
+  path: '/cellars/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WinesAddRoute = WinesAddRouteImport.update({
   id: '/wines/add',
   path: '/wines/add',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/cellars': typeof CellarsIndexRoute
   '/wineries': typeof WineriesIndexRoute
   '/wines': typeof WinesIndexRoute
   '/wineries/$id/edit': typeof WineriesIdEditRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/cellars': typeof CellarsIndexRoute
   '/wineries': typeof WineriesIndexRoute
   '/wines': typeof WinesIndexRoute
   '/wineries/$id/edit': typeof WineriesIdEditRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/cellars/': typeof CellarsIndexRoute
   '/wineries/': typeof WineriesIndexRoute
   '/wines/': typeof WinesIndexRoute
   '/wineries/$id/edit': typeof WineriesIdEditRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/cellars'
     | '/wineries'
     | '/wines'
     | '/wineries/$id/edit'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/cellars'
     | '/wineries'
     | '/wines'
     | '/wineries/$id/edit'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/cellars/'
     | '/wineries/'
     | '/wines/'
     | '/wineries/$id/edit'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   WineriesAddRoute: typeof WineriesAddRoute
   WinesAddRoute: typeof WinesAddRoute
+  CellarsIndexRoute: typeof CellarsIndexRoute
   WineriesIndexRoute: typeof WineriesIndexRoute
   WinesIndexRoute: typeof WinesIndexRoute
   WineriesIdEditRoute: typeof WineriesIdEditRoute
@@ -270,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WineriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cellars/': {
+      id: '/cellars/'
+      path: '/cellars'
+      fullPath: '/cellars'
+      preLoaderRoute: typeof CellarsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wines/add': {
       id: '/wines/add'
       path: '/wines/add'
@@ -324,6 +344,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   WineriesAddRoute: WineriesAddRoute,
   WinesAddRoute: WinesAddRoute,
+  CellarsIndexRoute: CellarsIndexRoute,
   WineriesIndexRoute: WineriesIndexRoute,
   WinesIndexRoute: WinesIndexRoute,
   WineriesIdEditRoute: WineriesIdEditRoute,

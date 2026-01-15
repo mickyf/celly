@@ -30,6 +30,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "myWines": "Meine Weine",
+    "cellarOverview": "Keller-Übersicht",
     "wineries": "Weingüter",
     "foodPairing": "Food Pairing",
     "settings": "Einstellungen"
@@ -67,6 +68,7 @@
   "breadcrumbs": {
     "home": "Home",
     "myWines": "Meine Weine",
+    "cellarOverview": "Keller-Übersicht",
     "wineries": "Weingüter",
     "addWine": "Neuen Wein hinzufügen",
     "addWinery": "Neues Weingut hinzufügen",

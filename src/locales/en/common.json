@@ -30,6 +30,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "myWines": "My Wines",
+    "cellarOverview": "Cellar Overview",
     "wineries": "Wineries",
     "foodPairing": "Food Pairing",
     "settings": "Settings"
@@ -67,6 +68,7 @@
   "breadcrumbs": {
     "home": "Home",
     "myWines": "My Wines",
+    "cellarOverview": "Cellar Overview",
     "wineries": "Wineries",
     "addWine": "Add New Wine",
     "addWinery": "Add New Winery",

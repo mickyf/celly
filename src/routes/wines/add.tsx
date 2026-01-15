@@ -1,9 +1,10 @@
-import { createFileRoute, Navigate, useRouter, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { WineForm, type WineFormValues } from '../../components/WineForm'
 import { useAddWine, useUploadWinePhoto } from '../../hooks/useWines'
+import { useAddWineLocation } from '../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/PageHeader'
 import type { BreadcrumbItem } from '../../components/Breadcrumb'
@@ -14,12 +15,12 @@ export const Route = createFileRoute('/wines/add')({
 
 function AddWine() {
   const { t } = useTranslation(['wines', 'common'])
-  const router = useRouter()
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const addWine = useAddWine()
   const uploadPhoto = useUploadWinePhoto()
+  const addLocation = useAddWineLocation()
 
   // Generate breadcrumbs
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
@@ -41,24 +42,31 @@ function AddWine() {
     try {
       let photoUrl: string | null = null
 
+      // Extract locations from values
+      const { locations, ...wineValues } = values
+
       // First create the wine
       const wine = await addWine.mutateAsync({
-        name: values.name,
-        winery_id: values.winery_id,
-        grapes: values.grapes,
-        vintage: values.vintage,
-        quantity: values.quantity,
-        price: values.price,
-        bottle_size: values.bottle_size,
-        drink_window_start: values.drink_window_start,
-        drink_window_end: values.drink_window_end,
-        food_pairings: values.food_pairings,
+        ...wineValues,
         photo_url: photoUrl,
         user_id: '',
       })
 
+      if (!wine.id) throw new Error('Failed to create wine')
+
+      // Save locations
+      await Promise.all(
+        locations.map((loc) =>
+          addLocation.mutateAsync({
+            ...loc,
+            wine_id: wine.id,
+            user_id: '', // Hook will replace this with real user ID
+          })
+        )
+      )
+
       // If there's a photo, upload it and update the wine
-      if (photo && wine.id) {
+      if (photo) {
         photoUrl = await uploadPhoto.mutateAsync({
           file: photo,
           wineId: wine.id,
@@ -72,11 +80,7 @@ function AddWine() {
       }
 
       // Navigate to the newly created wine detail page
-      if (wine.id) {
-        navigate({ to: '/wines/$id', params: { id: wine.id } })
-      } else {
-        router.history.back()
-      }
+      navigate({ to: '/wines/$id', params: { id: wine.id } })
     } catch (error) {
       console.error('Error adding wine:', error)
     }

@@ -164,11 +164,63 @@ export type Database = {
         }
         Relationships: []
       }
+      wine_locations: {
+        Row: {
+          cellar_id: string
+          column: number | null
+          created_at: string | null
+          id: string
+          quantity: number
+          row: number | null
+          shelf: number | null
+          updated_at: string | null
+          user_id: string
+          wine_id: string
+        }
+        Insert: {
+          cellar_id: string
+          column?: number | null
+          created_at?: string | null
+          id?: string
+          quantity?: number
+          row?: number | null
+          shelf?: number | null
+          updated_at?: string | null
+          user_id: string
+          wine_id: string
+        }
+        Update: {
+          cellar_id?: string
+          column?: number | null
+          created_at?: string | null
+          id?: string
+          quantity?: number
+          row?: number | null
+          shelf?: number | null
+          updated_at?: string | null
+          user_id?: string
+          wine_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wine_locations_cellar_id_fkey"
+            columns: ["cellar_id"]
+            isOneToOne: false
+            referencedRelation: "cellars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wine_locations_wine_id_fkey"
+            columns: ["wine_id"]
+            isOneToOne: false
+            referencedRelation: "wines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wines: {
         Row: {
           bottle_size: string | null
-          cellar_id: string | null
-          column: number | null
           created_at: string | null
           drink_window_end: number | null
           drink_window_start: number | null
@@ -179,8 +231,6 @@ export type Database = {
           photo_url: string | null
           price: number | null
           quantity: number | null
-          row: number | null
-          shelf: number | null
           updated_at: string | null
           user_id: string
           vintage: number | null
@@ -188,8 +238,6 @@ export type Database = {
         }
         Insert: {
           bottle_size?: string | null
-          cellar_id?: string | null
-          column?: number | null
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null
@@ -200,8 +248,6 @@ export type Database = {
           photo_url?: string | null
           price?: number | null
           quantity?: number | null
-          row?: number | null
-          shelf?: number | null
           updated_at?: string | null
           user_id: string
           vintage?: number | null
@@ -209,8 +255,6 @@ export type Database = {
         }
         Update: {
           bottle_size?: string | null
-          cellar_id?: string | null
-          column?: number | null
           created_at?: string | null
           drink_window_end?: number | null
           drink_window_start?: number | null
@@ -221,8 +265,6 @@ export type Database = {
           photo_url?: string | null
           price?: number | null
           quantity?: number | null
-          row?: number | null
-          shelf?: number | null
           updated_at?: string | null
           user_id?: string
           vintage?: number | null
@@ -234,13 +276,6 @@ export type Database = {
             columns: ["winery_id"]
             isOneToOne: false
             referencedRelation: "wineries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wines_cellar_id_fkey"
-            columns: ["cellar_id"]
-            isOneToOne: false
-            referencedRelation: "cellars"
             referencedColumns: ["id"]
           },
         ]
