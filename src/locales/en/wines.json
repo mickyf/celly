@@ -16,6 +16,7 @@
       "pricePerBottle": "Price per Bottle",
       "drinkingWindow": "Drinking Window",
       "foodPairings": "Food Pairings",
+      "location": "Location",
       "tastingNotes": "Tasting Notes",
       "addTastingNote": "Add Tasting Note"
     },
@@ -39,6 +40,7 @@
     "sections": {
       "basicInfo": "Basic Information",
       "drinkingWindow": "Drinking Window",
+      "location": "Location",
       "photo": "Photo"
     },
     "labels": {
@@ -51,7 +53,12 @@
       "bottleSize": "Bottle Size",
       "startYear": "Start Year",
       "endYear": "End Year",
-      "foodPairings": "Food Pairings"
+      "foodPairings": "Food Pairings",
+      "cellar": "Cellar",
+      "cellarName": "Cellar Name",
+      "shelf": "Shelf",
+      "row": "Row",
+      "column": "Column"
     },
     "placeholders": {
       "wineName": "e.g., Château Margaux",
@@ -63,7 +70,12 @@
       "bottleSize": "Select bottle size",
       "startYear": "e.g., 2025",
       "endYear": "e.g., 2035",
-      "foodPairings": "e.g., Grilled steak, aged cheese, roasted lamb..."
+      "foodPairings": "e.g., Grilled steak, aged cheese, roasted lamb...",
+      "cellar": "Select cellar",
+      "cellarName": "e.g., Main Cellar",
+      "shelf": "e.g., 2",
+      "row": "e.g., 3",
+      "column": "e.g., 4"
     },
     "descriptions": {
       "winery": "Associate this wine with a winery",
@@ -75,7 +87,8 @@
     "buttons": {
       "removePhoto": "Remove Photo",
       "addWine": "Add Wine",
-      "updateWine": "Update Wine"
+      "updateWine": "Update Wine",
+      "addCellar": "Add Cellar"
     },
     "validation": {
       "nameRequired": "Name is required",

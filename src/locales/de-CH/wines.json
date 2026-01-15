@@ -16,6 +16,7 @@
       "pricePerBottle": "Preis pro Flasche",
       "drinkingWindow": "Trinkfenster",
       "foodPairings": "Kulinarische Empfehlungen",
+      "location": "Lagerort",
       "tastingNotes": "Degustationsnotizen",
       "addTastingNote": "Degustationsnotiz hinzufügen"
     },
@@ -39,6 +40,7 @@
     "sections": {
       "basicInfo": "Grundinformationen",
       "drinkingWindow": "Trinkfenster",
+      "location": "Lagerort",
       "photo": "Foto"
     },
     "labels": {
@@ -51,7 +53,12 @@
       "bottleSize": "Flaschengrösse",
       "startYear": "Startjahr",
       "endYear": "Endjahr",
-      "foodPairings": "Kulinarische Empfehlungen"
+      "foodPairings": "Kulinarische Empfehlungen",
+      "cellar": "Keller",
+      "cellarName": "Keller Name",
+      "shelf": "Regal",
+      "row": "Reihe",
+      "column": "Spalte"
     },
     "placeholders": {
       "wineName": "z.B. Château Margaux",
@@ -63,7 +70,12 @@
       "bottleSize": "Flaschengrösse auswählen",
       "startYear": "z.B. 2025",
       "endYear": "z.B. 2035",
-      "foodPairings": "z.B. Gegrilltes Steak, gereifter Käse, gebratenes Lamm..."
+      "foodPairings": "z.B. Gegrilltes Steak, gereifter Käse, gebratenes Lamm...",
+      "cellar": "Keller auswählen",
+      "cellarName": "z.B. Hauptkeller",
+      "shelf": "z.B. 2",
+      "row": "z.B. 3",
+      "column": "z.B. 4"
     },
     "descriptions": {
       "winery": "Diesen Wein einem Weingut zuordnen",
@@ -75,7 +87,8 @@
     "buttons": {
       "removePhoto": "Foto entfernen",
       "addWine": "Wein hinzufügen",
-      "updateWine": "Wein aktualisieren"
+      "updateWine": "Wein aktualisieren",
+      "addCellar": "Keller hinzufügen"
     },
     "validation": {
       "nameRequired": "Name ist erforderlich",
