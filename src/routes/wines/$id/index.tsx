@@ -26,6 +26,7 @@ import { supabase } from '../../../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useWine, useDeleteWine } from '../../../hooks/useWines'
 import { useWinery } from '../../../hooks/useWineries'
+import { useCellars } from '../../../hooks/useCellars'
 import {
   useTastingNotes,
   useAddTastingNote,
@@ -77,6 +78,7 @@ function WineDetail() {
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
   const { data: winery } = useWinery(wine?.winery_id || '')
+  const { data: cellars } = useCellars()
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
   const { data: stockMovements, isLoading: movementsLoading } = useStockMovements(id)
   const deleteWine = useDeleteWine()
@@ -123,6 +125,11 @@ function WineDetail() {
   const [deleteNoteOpened, { open: openDeleteNote, close: closeDeleteNote }] =
     useDisclosure(false)
   const [editingNote, setEditingNote] = useState<TastingNote | null>(null)
+
+  const cellar = useMemo(() => {
+    if (!wine?.cellar_id || !cellars) return null
+    return cellars.find(c => c.id === wine.cellar_id)
+  }, [wine?.cellar_id, cellars])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -383,6 +390,32 @@ function WineDetail() {
                     <Text size="sm" mt="xs" style={{ whiteSpace: 'pre-line' }}>
                       {wine.food_pairings}
                     </Text>
+                  </div>
+                )}
+
+                {(cellar || wine.shelf || wine.row || wine.column) && (
+                  <div>
+                    <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                      {t('wines:form.sections.location')}
+                    </Text>
+                    <Group mt="xs" gap="xs">
+                      {cellar && (
+                        <Badge color="blue" variant="light" size="lg">
+                          {cellar.name}
+                        </Badge>
+                      )}
+                      {(wine.shelf || wine.row || wine.column) && (
+                        <Text size="sm">
+                          {[
+                            wine.shelf && `${t('wines:form.labels.shelf')}: ${wine.shelf}`,
+                            wine.row && `${t('wines:form.labels.row')}: ${wine.row}`,
+                            wine.column && `${t('wines:form.labels.column')}: ${wine.column}`,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </Text>
+                      )}
+                    </Group>
                   </div>
                 )}
               </Stack>

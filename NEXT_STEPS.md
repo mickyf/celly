@@ -6,7 +6,7 @@
 - ~~make language Swiss-German de-ch default~~
 - ~~fix wrong language returned on food pairing recomendations~~
 - ~~Winery AI Enrichment doesn't work well~~
-- move image upload to the top of the form
+- ~~move image upload to the top of the form~~
 
 ## New Features
 - ~~add cancel buttons to add and edit~~
@@ -35,7 +35,7 @@
 - ~~Settings per User~~
 - ~~AI API key per user~~
 - ~~AI enrichment with image of wine bottle~~
+- ~~add location of wine in cellar, e.g. cellar 1, shelf 2, position 3~~
 - Branding: icon and logo
 - PWA: App manifest with icon
 - MCP server for adding a wine or winery
-- add location of wine in cellar, e.g. cellar 1, shelf 2, position 3
