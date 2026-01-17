@@ -33,6 +33,10 @@ npx supabase stop           # Stop local Supabase
 npx supabase status         # Check Supabase status
 npx supabase db reset       # Reset database and apply migrations
 npx supabase migration new <name>  # Create new migration
+
+# MCP Server commands
+cd mcp-server && npm install && npm run build  # Build MCP server
+cd mcp-server && npm run dev                   # Watch mode for development
 ```
 
 ## Architecture
@@ -47,6 +51,7 @@ npx supabase migration new <name>  # Create new migration
 - **Internationalization**: react-i18next with English and German (Swiss) translations
 - **Error Tracking**: Sentry for error monitoring and performance tracking
 - **PWA Support**: Installable app with offline capabilities via Vite PWA plugin
+- **MCP Server**: Model Context Protocol server for AI assistant integration
 
 ### Internationalization (i18n)
 
@@ -627,6 +632,70 @@ When adding new features or text:
 4. Reference keys: `t('form.fields.name.label')`
 5. For pluralization: use `t('key', { count: n })` with separate singular/plural keys
 6. Keep namespaces focused: common (buttons, errors), wines (wine-specific), dashboard, etc.
+
+### MCP Server Integration
+
+**Overview**:
+The Model Context Protocol (MCP) server enables AI assistants like Claude Desktop to interact with Celly through natural language. Users can view their wine collection and add wines conversationally.
+
+**Architecture** (`mcp-server/`):
+- Standalone Node.js application using `@modelcontextprotocol/sdk`
+- Communicates with Supabase REST API using authenticated user tokens
+- Runs as stdio transport for Claude Desktop integration
+- TypeScript source in `src/`, compiled to `dist/`
+
+**Setup**:
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
+**Configuration**:
+MCP server requires three environment variables:
+- `SUPABASE_URL` - Supabase instance URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+- `USER_AUTH_TOKEN` - User's auth token from Supabase auth
+
+**Claude Desktop Integration**:
+Add to `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "celly": {
+      "command": "node",
+      "args": ["/absolute/path/to/celly/mcp-server/dist/index.js"],
+      "env": {
+        "SUPABASE_URL": "http://127.0.0.1:54321",
+        "SUPABASE_ANON_KEY": "your-key",
+        "USER_AUTH_TOKEN": "your-token"
+      }
+    }
+  }
+}
+```
+
+**Resources**:
+- `celly://wines` - Wine collection organized by drinking status
+- `celly://wines/{id}` - Individual wine details with tasting notes
+
+**Tools**:
+- `add_wine` - Add new wine with name, vintage, grapes, quantity, drinking window, price, etc.
+
+**Security**:
+- All requests authenticated via user token
+- Row Level Security (RLS) enforced by Supabase
+- No admin privileges or cross-user access
+
+**Files**:
+- `mcp-server/src/index.ts` - Main server with resource/tool handlers
+- `mcp-server/src/client.ts` - Supabase REST API client
+- `mcp-server/src/resources.ts` - Resource formatters (markdown)
+- `mcp-server/src/tools.ts` - Tool implementations
+- `mcp-server/src/config.ts` - Environment configuration
+- `mcp-server/src/types.ts` - TypeScript interfaces
+
+See [mcp-server/README.md](mcp-server/README.md) for detailed documentation.
 
 ## Known Constraints
 
