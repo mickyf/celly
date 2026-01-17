@@ -18,7 +18,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
 
-  const startCamera = useCallback(async (mode: 'user' | 'environment' = facingMode) => {
+  const startCamera = useCallback(async (mode: 'user' | 'environment') => {
     try {
       setError(null)
 
@@ -38,7 +38,19 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream
-        videoRef.current.play()
+        // Wait for metadata to load before playing
+        await new Promise<void>((resolve) => {
+          if (videoRef.current) {
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play().catch(err => {
+                console.error('Error playing video:', err)
+              })
+              resolve()
+            }
+          } else {
+            resolve()
+          }
+        })
       }
 
       setStream(mediaStream)
@@ -47,7 +59,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
       console.error('Error accessing camera:', err)
       setError(t('common:camera.cameraError'))
     }
-  }, [facingMode, stream, t])
+  }, [stream, t])
 
   const stopCamera = useCallback(() => {
     if (stream) {
@@ -79,7 +91,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
 
   const handleRetake = () => {
     setCapturedImage(null)
-    startCamera()
+    startCamera(facingMode)
   }
 
   const handleConfirm = () => {
@@ -111,14 +123,17 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
 
   useEffect(() => {
     if (opened && !capturedImage) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      startCamera()
+      startCamera(facingMode)
     }
 
     return () => {
-      stopCamera()
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
     }
-  }, [opened, capturedImage, startCamera, stopCamera])
+    // Only run when modal opens/closes or image is captured
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, capturedImage])
 
   return (
     <Modal
