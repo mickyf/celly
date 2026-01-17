@@ -12,7 +12,7 @@ export default defineConfig({
 
     // PWA plugin
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Celly - Wine Cellar Manager',
