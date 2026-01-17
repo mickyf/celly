@@ -1,5 +1,5 @@
 import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor } from '@mantine/core'
-import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
+import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown, IconGitMerge } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
@@ -15,6 +15,7 @@ interface WineCardProps {
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
+  onMerge?: (id: string) => void
 }
 
 export function WineCard({
@@ -24,6 +25,7 @@ export function WineCard({
   onView,
   onEdit,
   onDelete,
+  onMerge,
 }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
 
@@ -154,9 +156,20 @@ export function WineCard({
             </Button>
           )}
 
-          {onEdit && (
+          {onMerge && (
             <Button
               ml="auto"
+              variant="light"
+              color="blue"
+              leftSection={<IconGitMerge size={16} />}
+              onClick={() => onMerge(wine.id)}
+              pr={0}
+            />
+          )}
+
+          {onEdit && (
+            <Button
+              ml={onMerge ? undefined : "auto"}
               variant="light"
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}

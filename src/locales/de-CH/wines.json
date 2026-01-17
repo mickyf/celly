@@ -276,10 +276,26 @@
       "title": "Bestandsbewegung gelöscht",
       "message": "Bestandsänderung wurde entfernt"
     },
+    "winesMerged": {
+      "title": "Weine zusammengeführt",
+      "message": "{{quantity}} Flasche(n) zusammengeführt - Total jetzt {{total}}"
+    },
     "error": {
       "title": "Fehler",
       "message": "Etwas ist schiefgelaufen"
     }
+  },
+  "errors": {
+    "cannotMergeSameWine": "Ein Wein kann nicht mit sich selbst zusammengeführt werden. Bitte wählen Sie einen anderen Wein aus."
+  },
+  "merge": {
+    "title": "Weine zusammenführen",
+    "description": "Zwei Weineinträge mit gleichem Namen und Jahrgang kombinieren. Alle Degustationsnotizen, Bestandsbewegungen und Standorte werden zum Ziel-Wein übertragen. Die Mengen werden summiert.",
+    "source": "Quell-Wein",
+    "targetLabel": "Ziel-Wein",
+    "targetPlaceholder": "Wählen Sie den Ziel-Wein aus",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Daten werden zum Ziel-Wein verschoben, die Mengen werden kombiniert und der Quell-Wein wird gelöscht.",
+    "confirmButton": "Weine zusammenführen"
   },
   "overview": {
     "title": "Keller-Übersicht",

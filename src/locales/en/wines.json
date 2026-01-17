@@ -276,10 +276,26 @@
       "title": "Stock movement deleted",
       "message": "Stock change has been removed"
     },
+    "winesMerged": {
+      "title": "Wines merged",
+      "message": "Merged {{quantity}} bottle(s) - total now {{total}}"
+    },
     "error": {
       "title": "Error",
       "message": "Something went wrong"
     }
+  },
+  "errors": {
+    "cannotMergeSameWine": "Cannot merge a wine with itself. Please select a different wine."
+  },
+  "merge": {
+    "title": "Merge Wines",
+    "description": "Combine two wine entries with the same name and vintage. All tasting notes, stock movements, and locations will be transferred to the target wine. Quantities will be summed.",
+    "source": "Source Wine",
+    "targetLabel": "Target Wine",
+    "targetPlaceholder": "Select the wine to merge into",
+    "warning": "This action cannot be undone. All data will be moved to the target wine, quantities will be combined, and the source wine will be deleted.",
+    "confirmButton": "Merge Wines"
   },
   "overview": {
     "title": "Cellar Overview",

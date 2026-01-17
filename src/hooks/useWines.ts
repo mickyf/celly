@@ -373,3 +373,175 @@ export const useUploadWinePhoto = () => {
     },
   })
 }
+
+export const useMergeWines = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ sourceId, targetId }: { sourceId: string; targetId: string }) => {
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Merging wines',
+        level: 'info',
+        data: { sourceId, targetId },
+      })
+
+      // Validate that source and target are different
+      if (sourceId === targetId) {
+        const error = new Error(t('wines:errors.cannotMergeSameWine'))
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'validation',
+            operation: 'mergeWines',
+          },
+        })
+        throw error
+      }
+
+      // Get both wines to combine quantities and handle photo
+      const { data: sourceWine, error: sourceError } = await supabase
+        .from('wines')
+        .select('*')
+        .eq('id', sourceId)
+        .single()
+
+      if (sourceError) throw sourceError
+
+      const { data: targetWine, error: targetError } = await supabase
+        .from('wines')
+        .select('*')
+        .eq('id', targetId)
+        .single()
+
+      if (targetError) throw targetError
+
+      // Update tasting notes from source to target
+      const { error: tastingNotesError } = await supabase
+        .from('tasting_notes')
+        .update({ wine_id: targetId })
+        .eq('wine_id', sourceId)
+
+      if (tastingNotesError) {
+        Sentry.captureException(tastingNotesError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'tasting_notes',
+            operation: 'update',
+          },
+        })
+        throw tastingNotesError
+      }
+
+      // Update stock movements from source to target
+      const { error: stockMovementsError } = await supabase
+        .from('stock_movements')
+        .update({ wine_id: targetId })
+        .eq('wine_id', sourceId)
+
+      if (stockMovementsError) {
+        Sentry.captureException(stockMovementsError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'stock_movements',
+            operation: 'update',
+          },
+        })
+        throw stockMovementsError
+      }
+
+      // Update wine locations from source to target
+      const { error: wineLocationsError } = await supabase
+        .from('wine_locations')
+        .update({ wine_id: targetId })
+        .eq('wine_id', sourceId)
+
+      if (wineLocationsError) {
+        Sentry.captureException(wineLocationsError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'wine_locations',
+            operation: 'update',
+          },
+        })
+        throw wineLocationsError
+      }
+
+      // Update target wine quantity (sum of both) and photo if target doesn't have one
+      const newQuantity = (targetWine.quantity || 0) + (sourceWine.quantity || 0)
+      const updateData: UpdateWine = { quantity: newQuantity }
+
+      // If target doesn't have a photo but source does, use source's photo
+      if (!targetWine.photo_url && sourceWine.photo_url) {
+        updateData.photo_url = sourceWine.photo_url
+      }
+
+      const { error: updateError } = await supabase
+        .from('wines')
+        .update(updateData)
+        .eq('id', targetId)
+
+      if (updateError) {
+        Sentry.captureException(updateError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'wines',
+            operation: 'update',
+          },
+        })
+        throw updateError
+      }
+
+      // Delete the source wine (CASCADE will handle related records if any remain)
+      const { error: deleteError } = await supabase
+        .from('wines')
+        .delete()
+        .eq('id', sourceId)
+
+      if (deleteError) {
+        Sentry.captureException(deleteError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'wines',
+            operation: 'delete',
+          },
+        })
+        throw deleteError
+      }
+
+      return {
+        movedQuantity: sourceWine.quantity || 0,
+        totalQuantity: newQuantity,
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+      queryClient.invalidateQueries({ queryKey: ['tasting_notes'] })
+      queryClient.invalidateQueries({ queryKey: ['stock_movements'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Wines merged successfully',
+        level: 'info',
+        data: { totalQuantity: data.totalQuantity },
+      })
+
+      notifications.show({
+        title: t('wines:notifications.winesMerged.title'),
+        message: t('wines:notifications.winesMerged.message', {
+          quantity: data.movedQuantity,
+          total: data.totalQuantity
+        }),
+        color: 'green',
+      })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.error.title'),
+        message: error.message,
+        color: 'red',
+      })
+    },
+  })
+}
