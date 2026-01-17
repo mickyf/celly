@@ -24,21 +24,11 @@ export function initializeSentry() {
       // Browser performance monitoring
       Sentry.browserTracingIntegration(),
 
-      // React-specific integrations
-      Sentry.replayIntegration({
-        maskAllText: true, // Privacy: mask user-entered text
-        blockAllMedia: true, // Privacy: block images/videos
-      }),
-
       // HTTP breadcrumbs
       Sentry.httpClientIntegration({
         failedRequestStatusCodes: [400, 599], // Track 4xx and 5xx errors
       }),
     ],
-
-    // Session Replay sample rates
-    replaysSessionSampleRate: isDevelopment ? 1.0 : 0.1, // 100% dev, 10% prod
-    replaysOnErrorSampleRate: 1.0, // Always capture on error
 
     // Release tracking (set by Vite plugin)
     release: import.meta.env.VITE_SENTRY_RELEASE,

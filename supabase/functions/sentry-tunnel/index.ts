@@ -20,7 +20,7 @@ serve(async (req) => {
     // Das Envelope-Format enthält die Header in der ersten Zeile
     const firstLine = body.split("\n")[0];
     const header = JSON.parse(firstLine);
-    
+
     // Validierung der Projekt-ID aus dem Envelope-Header oder der DSN
     const dsn = new URL(header.dsn);
     const projectId = dsn.pathname.replace("/", "");
@@ -32,14 +32,22 @@ serve(async (req) => {
     // Konstruiere die Sentry Ingest URL
     const sentryUrl = `https://${SENTRY_HOST}/api/${projectId}/envelope/`;
 
+    // Prepare headers for Sentry API
+    const sentryHeaders: Record<string, string> = {
+      "Content-Type": "application/x-sentry-envelope",
+    };
+
+    // Forward X-Sentry-Auth if present in the original request
+    const sentryAuth = req.headers.get("x-sentry-auth");
+    if (sentryAuth) {
+      sentryHeaders["X-Sentry-Auth"] = sentryAuth;
+    }
+
     // Weiterleitung an Sentry mit allen notwendigen Headern
     const response = await fetch(sentryUrl, {
       method: "POST",
       body: body,
-      headers: {
-        "Content-Type": req.headers.get("content-type") || "application/x-sentry-envelope",
-        "X-Sentry-Auth": req.headers.get("x-sentry-auth") || "",
-      },
+      headers: sentryHeaders,
     });
 
     return new Response(response.body, {
