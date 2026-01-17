@@ -218,7 +218,7 @@ All user-facing text uses translation keys. Components import `useTranslation` a
 **Architecture** (`src/lib/sentry.ts`):
 - Sentry SDK integrated for error monitoring and performance tracking
 - Initialized before React renders in `src/main.tsx`
-- Events proxied through Supabase Edge Function (`supabase/functions/sentry-tunnel/`) to avoid ad-blockers
+- Events proxied through Supabase Edge Function (`supabase/functions/sentry-proxy/`) to avoid ad-blockers
 - Optional integration - app works without Sentry DSN configured
 
 **Configuration** (`src/config/environment.ts`):
@@ -659,8 +659,8 @@ npx supabase db pull
 ### 3. Deploy Edge Functions
 ```bash
 
-# Deploy the Sentry tunnel function
-npx supabase functions deploy sentry-tunnel --no-verify-jwt
+# Deploy the Sentry proxy function
+npx supabase functions deploy sentry-proxy --no-verify-jwt
 
 # Deploy the Claude proxy function
 npx supabase functions deploy claude-proxy --no-verify-jwt
