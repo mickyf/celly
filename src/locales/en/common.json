@@ -90,6 +90,10 @@
     "US": "United States",
     "ZA": "South Africa"
   },
+  "pwa": {
+    "updateAvailable": "New version available! Reload to update?",
+    "offlineReady": "App ready to work offline"
+  },
   "errors": {
     "boundary": {
       "title": "Something went wrong",

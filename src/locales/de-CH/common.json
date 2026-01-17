@@ -90,6 +90,10 @@
     "US": "Vereinigte Staaten",
     "ZA": "Südafrika"
   },
+  "pwa": {
+    "updateAvailable": "Neue Version verfügbar! Neu laden, um zu aktualisieren?",
+    "offlineReady": "App ist bereit für Offline-Nutzung"
+  },
   "errors": {
     "boundary": {
       "title": "Ein Fehler ist aufgetreten",
