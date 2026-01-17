@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" fill="#9b59b6" rx="64"/>
+  <g transform="translate(140, 120)">
+    <!-- Wine glass stem and base -->
+    <path d="M 116 280 L 116 330 L 80 330 L 80 340 L 152 340 L 152 330 L 116 330 Z" fill="#ffffff"/>
+
+    <!-- Wine glass bowl -->
+    <path d="M 60 100 L 60 180 Q 60 240 116 260 Q 172 240 172 180 L 172 100 Z" fill="none" stroke="#ffffff" stroke-width="8"/>
+
+    <!-- Wine in glass -->
+    <path d="M 68 140 L 68 180 Q 68 220 116 236 Q 164 220 164 180 L 164 140 Z" fill="#e8d5f0" opacity="0.6"/>
+
+    <!-- Grapes -->
+    <circle cx="116" cy="30" r="20" fill="#e8d5f0"/>
+    <circle cx="90" cy="50" r="18" fill="#e8d5f0"/>
+    <circle cx="142" cy="50" r="18" fill="#e8d5f0"/>
+    <circle cx="100" cy="75" r="16" fill="#e8d5f0"/>
+    <circle cx="132" cy="75" r="16" fill="#e8d5f0"/>
+
+    <!-- Grape stem -->
+    <path d="M 116 10 Q 116 0 120 0 Q 124 0 124 10 L 124 25" stroke="#e8d5f0" stroke-width="3" fill="none"/>
+  </g>
+</svg>

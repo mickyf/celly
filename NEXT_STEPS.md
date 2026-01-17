@@ -37,5 +37,5 @@
 - ~~AI enrichment with image of wine bottle~~
 - ~~add location of wine in cellar, e.g. cellar 1, shelf 2, position 3~~
 - Branding: icon and logo
-- PWA: App manifest with icon
+- ~~PWA: App manifest with icon~~
 - MCP server for adding a wine or winery

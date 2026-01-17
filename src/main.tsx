@@ -3,8 +3,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MantineProvider, createTheme } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
+import { registerSW } from 'virtual:pwa-register'
 import App from './App.tsx'
-import './i18n/config'
+import i18n from './i18n/config'
 
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
@@ -33,6 +34,18 @@ const theme = createTheme({
 
 // Initialize Sentry before React renders
 initializeSentry()
+
+// Register service worker for PWA
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm(i18n.t('common:pwa.updateAvailable'))) {
+      updateSW(true)
+    }
+  },
+  onOfflineReady() {
+    console.log(i18n.t('common:pwa.offlineReady'))
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

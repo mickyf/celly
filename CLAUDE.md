@@ -24,6 +24,9 @@ npm run preview
 # Generate TypeScript types from Supabase schema
 npm run gen-types
 
+# Generate PWA icons from SVG source
+npm run gen-icons
+
 # Supabase commands
 npx supabase start          # Start local Supabase (Docker required)
 npx supabase stop           # Stop local Supabase
@@ -43,6 +46,7 @@ npx supabase migration new <name>  # Create new migration
 - **AI Integration**: Anthropic Claude Sonnet 4.5 API
 - **Internationalization**: react-i18next with English and German (Swiss) translations
 - **Error Tracking**: Sentry for error monitoring and performance tracking
+- **PWA Support**: Installable app with offline capabilities via Vite PWA plugin
 
 ### Internationalization (i18n)
 
@@ -301,6 +305,47 @@ import '@mantine/charts/styles.css'
 ```typescript
 import './i18n/config' // Must import to initialize i18next
 ```
+
+### Progressive Web App (PWA)
+
+**Configuration** (`vite.config.ts`):
+- Uses `vite-plugin-pwa` for automatic service worker generation
+- Manifest auto-generated from configuration
+- Auto-update strategy with user prompt for new versions
+- Offline support with Workbox runtime caching
+
+**Assets** (`public/`):
+- `app-icon.svg` - Source SVG icon (grape/wine glass design)
+- `pwa-192x192.png`, `pwa-512x512.png` - App icons for Android/Chrome
+- `apple-touch-icon.png` - iOS home screen icon (180x180)
+- `favicon.png` - Browser favicon (32x32)
+
+**Icon Generation**:
+Icons are generated from SVG using the `sharp` library:
+```bash
+npm run gen-icons  # Regenerate all PWA icons from app-icon.svg
+```
+
+**Service Worker Registration** (`src/main.tsx`):
+- Service worker registered via `virtual:pwa-register`
+- Update prompt shows when new version is available
+- Offline-ready notification in console
+
+**Manifest Configuration**:
+- Name: "Celly - Wine Cellar Manager"
+- Theme color: `#9b59b6` (grape purple)
+- Display mode: `standalone` (full-screen app experience)
+- Orientation: `portrait` (optimized for mobile)
+
+**Caching Strategy**:
+- Static assets (JS, CSS, HTML, images) precached on install
+- Supabase API responses cached with NetworkFirst strategy (24-hour expiration)
+- Cache name: `supabase-cache`
+
+**Installation**:
+- Chrome/Edge (desktop): Install icon in address bar
+- Chrome (Android): "Add to Home Screen" in menu
+- Safari (iOS): Share → "Add to Home Screen"
 
 ## Environment Setup
 
