@@ -32,10 +32,14 @@ serve(async (req) => {
     // Konstruiere die Sentry Ingest URL
     const sentryUrl = `https://${SENTRY_HOST}/api/${projectId}/envelope/`;
 
-    // Weiterleitung an Sentry
+    // Weiterleitung an Sentry mit allen notwendigen Headern
     const response = await fetch(sentryUrl, {
       method: "POST",
       body: body,
+      headers: {
+        "Content-Type": req.headers.get("content-type") || "application/x-sentry-envelope",
+        "X-Sentry-Auth": req.headers.get("x-sentry-auth") || "",
+      },
     });
 
     return new Response(response.body, {
