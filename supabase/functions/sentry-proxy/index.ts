@@ -1,4 +1,4 @@
-// supabase/functions/sentry-tunnel/index.ts
+// supabase/functions/sentry-proxy/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const SENTRY_HOST = "1fd537c434b91841719c2cbc79a9b4db@o4510690789359616.ingest.de.sentry.io"; // Ersetze dies durch deinen Sentry Host
