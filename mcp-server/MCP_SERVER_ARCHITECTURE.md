@@ -1,8 +1,8 @@
 # MCP Server Architecture for Celly
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Date:** 2026-01-17
-**Status:** Design Proposal
+**Status:** Design Proposal - Minimal MVP Scope
 
 ## Executive Summary
 
@@ -11,9 +11,9 @@ This document outlines the architecture for integrating a **Model Context Protoc
 ### Key Benefits
 
 - **Natural Language Interface**: Users can manage their wine collection through conversational AI
-- **Hands-free Operations**: Add wines, tasting notes, and stock movements during tastings
-- **AI-Powered Insights**: Leverage existing Claude API integrations for food pairings and enrichment
+- **Hands-free Operations**: Add wines and query collection during tastings
 - **Secure & Type-Safe**: Reuses existing authentication, RLS, and TypeScript types
+- **Extensible Foundation**: Initial MVP focuses on core operations with clear path for future enhancements
 
 ---
 
@@ -38,9 +38,8 @@ This document outlines the architecture for integrating a **Model Context Protoc
                 │ HTTP/REST calls
                 │
 ┌───────────────▼─────────────────────────────────┐
-│       Supabase Edge Functions (Existing)        │
+│       Supabase Edge Functions                   │
 │  - mcp-server-proxy (new)                       │
-│  - claude-proxy (existing)                      │
 └───────────────┬─────────────────────────────────┘
                 │
                 │ Supabase Client SDK
@@ -56,12 +55,11 @@ This document outlines the architecture for integrating a **Model Context Protoc
 **Option A: MCP Server → Edge Function Gateway** ✅ **RECOMMENDED**
 
 **Advantages:**
-- ✅ Reuses existing business logic (hooks, validators)
 - ✅ RLS security remains intact
 - ✅ No direct database access from MCP server
-- ✅ Supports user-specific Claude API keys (from `user_settings`)
-- ✅ Consistent error handling and observability (Sentry)
+- ✅ Consistent error handling
 - ✅ Easy to maintain and extend
+- ✅ Can leverage existing Edge Functions for future AI features
 
 **Trade-offs:**
 - ⚠️ Extra HTTP hop (minimal latency ~50-100ms)
@@ -81,61 +79,76 @@ This document outlines the architecture for integrating a **Model Context Protoc
 
 ## 2. MCP Resources (Read-Only Data)
 
-Resources provide contextual data to the AI assistant.
+Resources provide contextual data to the AI assistant. This minimal implementation focuses on core wine collection access.
 
 ### 2.1 Wine Collection Resources
 
 | Resource URI | Description | Returns |
 |-------------|-------------|---------|
-| `wines://collection` | All wines in user's collection | Array of wines with full details |
-| `wines://wine/{id}` | Single wine details | Wine with tasting notes, location, stock movements |
-| `wines://ready-to-drink` | Wines in current drinking window | Filtered wines (drink_window_start <= current_year <= drink_window_end) |
-| `wines://search?query={query}` | Search wines | Wines matching name, winery, or grapes |
+| `wines://collection` | All wines in user's collection | Array of wines with full details (name, winery, grapes, vintage, quantity, price, drinking window, bottle size, food pairings, photo URL) |
+| `wines://wine/{id}` | Single wine details | Single wine with related data (tasting notes, wine locations, stock movements) |
 
-### 2.2 Winery Resources
-
-| Resource URI | Description | Returns |
-|-------------|-------------|---------|
-| `wineries://list` | All wineries | Array of wineries with wine counts |
-| `wineries://winery/{id}/wines` | Wines from specific winery | Winery details + associated wines |
-
-### 2.3 Statistics Resources
-
-| Resource URI | Description | Returns |
-|-------------|-------------|---------|
-| `stats://dashboard` | Aggregated collection stats | Total bottles, total value, wines by country, etc. |
-
-### 2.4 Cellar Resources
-
-| Resource URI | Description | Returns |
-|-------------|-------------|---------|
-| `cellars://locations` | All cellar locations | Cellars with occupancy and wine locations |
+**Notes:**
+- Both resources respect Row Level Security (RLS) - only return data for authenticated user
+- Resources can optionally accept parameters (e.g., `winery_id` filter for collection)
+- Claude Desktop AI can use these resources to answer queries about the wine collection
 
 ---
 
 ## 3. MCP Tools (Write Operations)
 
-Tools allow the AI to perform actions on behalf of the user.
+Tools allow the AI to perform actions on behalf of the user. This minimal implementation focuses on the single most essential write operation.
 
 ### 3.1 Wine Management Tools
 
 #### `add_wine`
 
-Add a new wine to the collection.
+Add a new wine to the collection. This is the only write operation in the MVP implementation.
 
 **Input Schema:**
 ```typescript
 {
   name: string                    // Required: Wine name
-  winery_name?: string            // Optional: Winery name (auto-matched or created)
+  winery_id?: string              // Optional: Winery ID (must exist in database)
   grapes?: string[]               // Optional: Grape varieties
-  vintage?: number                // Optional: Year (1800-2030)
-  quantity: number                // Required: Initial stock quantity
-  price?: number                  // Optional: Price per bottle (CHF)
-  drink_window_start?: number     // Optional: Drinking window start year
-  drink_window_end?: number       // Optional: Drinking window end year
-  bottle_size?: string            // Optional: e.g., "750ml", "1.5L"
-  food_pairings?: string          // Optional: Comma-separated pairings
+  vintage?: number                // Optional: Year (1900-2035)
+  quantity?: number               // Optional: Initial stock quantity (defaults to 1, minimum 1)
+  price?: number                  // Optional: Price per bottle (CHF, minimum 0)
+  drink_window_start?: number     // Optional: Drinking window start year (minimum 1900)
+  drink_window_end?: number       // Optional: Drinking window end year (must be >= start)
+  bottle_size?: string            // Optional: e.g., "75cl", "150cl", "37.5cl"
+  food_pairings?: string          // Optional: Free-text food pairings description
+  photo_url?: string              // Optional: URL to wine photo in Supabase Storage
+}
+```
+
+**Validation:**
+- `name`: Required, must be non-empty after trim
+- `vintage`: If provided, must be 1900-2035
+- `quantity`: If provided, must be >= 1 (defaults to 1 if not specified)
+- `price`: If provided, must be >= 0
+- `drink_window_start`: If provided, must be >= 1900
+- `drink_window_end`: If provided, must be >= drink_window_start
+- `winery_id`: If provided, must reference an existing winery (foreign key constraint)
+
+**Returns:**
+```typescript
+{
+  id: string                      // Generated UUID
+  user_id: string                 // Auto-populated from JWT token
+  name: string
+  winery_id: string | null
+  grapes: string[]                // Defaults to empty array
+  vintage: number | null
+  quantity: number                // Defaults to 1
+  price: number | null
+  drink_window_start: number | null
+  drink_window_end: number | null
+  bottle_size: string | null
+  food_pairings: string | null
+  photo_url: string | null
+  created_at: string              // ISO timestamp
+  updated_at: string              // ISO timestamp
 }
 ```
 
@@ -143,256 +156,88 @@ Add a new wine to the collection.
 ```json
 {
   "name": "Barolo Riserva",
-  "winery_name": "Marchesi di Barolo",
+  "winery_id": "abc-123-winery-id",
   "grapes": ["Nebbiolo"],
   "vintage": 2015,
   "quantity": 6,
   "price": 85.50,
   "drink_window_start": 2025,
-  "drink_window_end": 2035
+  "drink_window_end": 2035,
+  "bottle_size": "75cl",
+  "food_pairings": "Red meat, aged cheeses, truffle dishes"
 }
 ```
 
-#### `update_wine`
-
-Update an existing wine.
-
-**Input Schema:**
-```typescript
-{
-  id: string                      // Required: Wine ID
-  name?: string
-  winery_id?: string
-  grapes?: string[]
-  vintage?: number
-  quantity?: number
-  price?: number
-  drink_window_start?: number
-  drink_window_end?: number
-  bottle_size?: string
-  food_pairings?: string
-}
-```
-
-#### `delete_wine`
-
-Delete a wine from the collection.
-
-**Input Schema:**
-```typescript
-{
-  id: string                      // Required: Wine ID
-}
-```
-
-### 3.2 Tasting Note Tools
-
-#### `add_tasting_note`
-
-Add a tasting note with rating.
-
-**Input Schema:**
-```typescript
-{
-  wine_id: string                 // Required: Wine ID
-  rating: number                  // Required: 1-5 stars
-  notes: string                   // Required: Tasting notes
-  tasted_at?: string              // Optional: ISO date (defaults to today)
-}
-```
-
-**Example:**
-```json
-{
-  "wine_id": "abc123",
-  "rating": 4,
-  "notes": "Complex bouquet with notes of cherry, leather, and tobacco. Well-balanced tannins.",
-  "tasted_at": "2026-01-17"
-}
-```
-
-### 3.3 Stock Management Tools
-
-#### `add_stock_movement`
-
-Add stock movement (in/out) with automatic quantity updates.
-
-**Input Schema:**
-```typescript
-{
-  wine_id: string                 // Required: Wine ID
-  movement_type: "in" | "out"     // Required: Movement type
-  quantity: number                // Required: Quantity (positive integer)
-  notes?: string                  // Optional: Movement notes
-  movement_date?: string          // Optional: ISO date (defaults to today)
-}
-```
-
-**Example:**
-```json
-{
-  "wine_id": "abc123",
-  "movement_type": "out",
-  "quantity": 2,
-  "notes": "Consumed at dinner party",
-  "movement_date": "2026-01-17"
-}
-```
-
-### 3.4 Location Management Tools
-
-#### `update_wine_location`
-
-Update wine's physical location in cellar.
-
-**Input Schema:**
-```typescript
-{
-  wine_id: string                 // Required: Wine ID
-  cellar_id: string               // Required: Cellar ID
-  shelf?: number                  // Optional: Shelf number
-  row?: number                    // Optional: Row number
-  column?: number                 // Optional: Column number
-}
-```
-
-### 3.5 AI-Powered Tools
-
-#### `enrich_wine`
-
-Auto-fill missing wine data using AI (reuses existing `wine-enrichment` from claude-proxy).
-
-**Input Schema:**
-```typescript
-{
-  wine_id: string                 // Required: Wine ID to enrich
-}
-```
-
-**Behavior:**
-- Fetches existing wine data
-- Calls Claude API to fill missing fields (grapes, vintage, drinking window, winery, price, food pairings)
-- Auto-matches or creates winery
-- Returns confidence levels: "high" | "medium" | "low"
-
-#### `find_food_pairing`
-
-Get AI-powered food pairing recommendations (reuses existing `food-pairing` from claude-proxy).
-
-**Input Schema:**
-```typescript
-{
-  menu: string                    // Required: Menu or dish description
-  wine_ids?: string[]             // Optional: Limit to specific wines (defaults to all)
-  language?: "en" | "de-CH"       // Optional: Response language (defaults to user setting)
-}
-```
-
-**Returns:**
-```typescript
-{
-  recommendations: [
-    {
-      wine_id: string
-      wine_name: string
-      pairing_score: number       // 1-100
-      explanation: string
-    }
-  ]
-}
-```
-
-**Example:**
-```json
-{
-  "menu": "Rindsfilet mit Trüffelsauce und Kartoffelgratin",
-  "language": "de-CH"
-}
-```
-
-#### `identify_wine_from_description`
-
-**NEW TOOL** - Identify and potentially create wine from natural language description.
-
-**Input Schema:**
-```typescript
-{
-  description: string             // Required: Free-text wine description
-  auto_create?: boolean           // Optional: Auto-create if confident (default: false)
-}
-```
-
-**Example:**
-```json
-{
-  "description": "I just bought a 2019 Château Margaux, Premier Grand Cru Classé, 6 bottles at CHF 450 each",
-  "auto_create": true
-}
-```
-
-**Behavior:**
-1. Parses description using Claude API
-2. Extracts: name, winery, vintage, quantity, price, region
-3. Auto-matches existing winery or creates new one
-4. If `auto_create: true` and confidence is high, creates wine record
-5. Returns parsed data + wine_id if created
+**Notes:**
+- Only the wine name is required - all other fields are optional
+- The tool automatically populates `user_id` from the authenticated JWT token
+- Wine is created with RLS policies ensuring the user can only see their own wines
+- The AI assistant can parse natural language descriptions (e.g., "I bought a 2019 Château Margaux") and extract the appropriate fields
 
 ---
 
 ## 4. Implementation Plan
 
-### Phase 1: Foundation (MVP) - Week 1
+### Phase 1: Foundation (MVP) - Initial Implementation
+
+This minimal implementation focuses on core functionality with a clear path for future enhancements.
 
 **Deliverables:**
-1. ✅ MCP Server package setup (`/mcp-server/`)
+
+1. **MCP Server Package Setup** (`/mcp-server/`)
    - TypeScript project with shared types from frontend
    - Depends on `@modelcontextprotocol/sdk`
    - Configuration for stdio transport
+   - Auth middleware for JWT validation
 
-2. ✅ New Edge Function: `mcp-server-proxy`
-   - Route incoming MCP tool calls to appropriate Supabase queries
+2. **New Edge Function: `mcp-server-proxy`**
+   - Route incoming MCP requests to Supabase database
    - JWT authentication middleware
-   - User API key support (from `user_settings`)
+   - Handle three operations:
+     - `add_wine` - Insert wine with user_id from JWT
+     - `list_wines` - Query wines with optional winery filter (via resource read)
+     - `get_wine` - Query single wine by ID (via resource read)
+   - Input validation for all operations
+   - Error handling with descriptive messages
 
-3. ✅ Core Tools (3-5 tools)
-   - `list_wines()` - Resource handler
-   - `get_wine(id)` - Resource handler
-   - `add_wine(data)` - Tool handler
-   - `add_tasting_note(data)` - Tool handler
+3. **Core Implementation**
+   - **Resources:**
+     - `wines://collection` - Fetch all wines for authenticated user (with optional winery_id filter)
+     - `wines://wine/{id}` - Fetch single wine with relations (tasting_notes, wine_locations, stock_movements)
+   - **Tools:**
+     - `add_wine(data)` - Create new wine with validation
 
-4. ✅ Documentation
+4. **Documentation**
    - Setup instructions for Claude Desktop
-   - MCP server configuration file
-   - Testing guide
+   - MCP server configuration file example
+   - Testing guide with example prompts
+   - Clear roadmap for future enhancements
 
-### Phase 2: AI Integration - Week 2
+### Future Phases
 
-**Deliverables:**
-5. ✅ AI-Powered Tools
-   - `find_food_pairing()` - Proxy to existing `claude-proxy`
-   - `enrich_wine()` - Proxy to existing `claude-proxy`
-   - `identify_wine_from_description()` - New Claude API integration
+The initial MVP provides a foundation for incremental feature additions:
 
-6. ✅ Error Handling & Observability
-   - Sentry instrumentation
-   - Error normalization
-   - User-friendly error messages
+**Phase 2: Additional Write Operations**
+- `update_wine` - Modify existing wine details
+- `delete_wine` - Remove wine from collection
+- `add_tasting_note` - Add rating and notes after tasting
 
-### Phase 3: Advanced Features - Week 3
+**Phase 3: Stock & Location Management**
+- `add_stock_movement` - Track bottles in/out
+- `update_wine_location` - Organize wines in cellars
+- Cellar resources for location management
 
-**Deliverables:**
-7. ✅ Stock & Location Management
-   - `add_stock_movement()`
-   - `update_wine_location()`
-   - Cellar resources
+**Phase 4: AI Integration**
+- `enrich_wine` - Auto-fill missing data using Claude API
+- `find_food_pairing` - AI-powered pairing recommendations
+- `identify_wine_from_description` - Parse natural language wine descriptions
+- Image recognition for wine labels
 
-8. ✅ Smart Search & Filtering
-   - Enhanced search with fuzzy matching
-   - Complex queries (e.g., "wines under CHF 50 ready to drink")
-
-9. ✅ Bulk Operations
-   - `bulk_enrich_wines()` with progress reporting
-   - `bulk_update_locations()`
+**Phase 5: Advanced Features**
+- Search and filtering resources (ready-to-drink, price ranges, etc.)
+- Winery resources and management
+- Statistics and analytics resources
+- Bulk operations with progress tracking
 
 ---
 
@@ -408,18 +253,13 @@ Get AI-powered food pairing recommendations (reuses existing `food-pairing` from
 ├── src/
 │   ├── index.ts              # Server entry point
 │   ├── config.ts             # Configuration (env vars, URLs)
-│   ├── auth.ts               # JWT validation
+│   ├── auth.ts               # JWT validation (future - currently handled by Edge Function)
 │   ├── client.ts             # HTTP client for Edge Function calls
 │   ├── tools/
-│   │   ├── wines.ts          # Wine management tools
-│   │   ├── tastingNotes.ts   # Tasting note tools
-│   │   ├── stock.ts          # Stock movement tools
-│   │   ├── ai.ts             # AI-powered tools
+│   │   ├── wines.ts          # Wine management tools (add_wine only)
 │   │   └── index.ts          # Tool registry
 │   ├── resources/
-│   │   ├── wines.ts          # Wine resources
-│   │   ├── wineries.ts       # Winery resources
-│   │   ├── stats.ts          # Statistics resources
+│   │   ├── wines.ts          # Wine resources (collection, single wine)
 │   │   └── index.ts          # Resource registry
 │   └── types/
 │       └── index.ts          # Shared types (symlink to frontend)
@@ -433,8 +273,8 @@ Get AI-powered food pairing recommendations (reuses existing `food-pairing` from
 **Request Schema:**
 ```typescript
 {
-  tool: string                    // Tool name (e.g., "add_wine")
-  args: Record<string, unknown>   // Tool-specific arguments
+  tool: "add_wine" | "list_wines" | "get_wine"  // Tool/resource name
+  args: Record<string, unknown>                  // Operation-specific arguments
 }
 ```
 
@@ -482,22 +322,135 @@ Deno.serve(async (req) => {
   switch (tool) {
     case 'list_wines':
       return handleListWines(supabaseClient, user.id, args)
+    case 'get_wine':
+      return handleGetWine(supabaseClient, user.id, args)
     case 'add_wine':
       return handleAddWine(supabaseClient, user.id, args)
-    case 'add_tasting_note':
-      return handleAddTastingNote(supabaseClient, user.id, args)
-    // ... more handlers
     default:
       return new Response(JSON.stringify({ error: 'Unknown tool' }), { status: 400 })
   }
 })
 
 async function handleListWines(client, userId, args) {
-  const { data, error } = await client
+  const { winery_id } = args
+
+  let query = client
     .from('wines')
     .select('*, wineries(*)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+
+  // Optional filter by winery
+  if (winery_id) {
+    query = query.eq('winery_id', winery_id)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+  }
+
+  return new Response(JSON.stringify({ success: true, data }), { status: 200 })
+}
+
+async function handleGetWine(client, userId, args) {
+  const { id } = args
+
+  if (!id) {
+    return new Response(JSON.stringify({ error: 'Wine ID required' }), { status: 400 })
+  }
+
+  const { data, error } = await client
+    .from('wines')
+    .select(`
+      *,
+      wineries(*),
+      tasting_notes(*),
+      wine_locations(*, cellars(*)),
+      stock_movements(*)
+    `)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .single()
+
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 404 })
+  }
+
+  return new Response(JSON.stringify({ success: true, data }), { status: 200 })
+}
+
+async function handleAddWine(client, userId, args) {
+  // Validate required fields
+  if (!args.name || typeof args.name !== 'string' || args.name.trim() === '') {
+    return new Response(
+      JSON.stringify({ error: 'Wine name is required' }),
+      { status: 400 }
+    )
+  }
+
+  // Validate numeric fields
+  if (args.vintage !== undefined && (args.vintage < 1900 || args.vintage > 2035)) {
+    return new Response(
+      JSON.stringify({ error: 'Vintage must be between 1900 and 2035' }),
+      { status: 400 }
+    )
+  }
+
+  if (args.quantity !== undefined && args.quantity < 1) {
+    return new Response(
+      JSON.stringify({ error: 'Quantity must be at least 1' }),
+      { status: 400 }
+    )
+  }
+
+  if (args.price !== undefined && args.price < 0) {
+    return new Response(
+      JSON.stringify({ error: 'Price cannot be negative' }),
+      { status: 400 }
+    )
+  }
+
+  if (args.drink_window_start !== undefined && args.drink_window_start < 1900) {
+    return new Response(
+      JSON.stringify({ error: 'Drink window start must be >= 1900' }),
+      { status: 400 }
+    )
+  }
+
+  if (
+    args.drink_window_end !== undefined &&
+    args.drink_window_start !== undefined &&
+    args.drink_window_end < args.drink_window_start
+  ) {
+    return new Response(
+      JSON.stringify({ error: 'Drink window end must be >= start' }),
+      { status: 400 }
+    )
+  }
+
+  // Build wine insert object
+  const wineData = {
+    user_id: userId,
+    name: args.name.trim(),
+    winery_id: args.winery_id || null,
+    grapes: args.grapes || [],
+    vintage: args.vintage || null,
+    quantity: args.quantity !== undefined ? args.quantity : 1,
+    price: args.price || null,
+    drink_window_start: args.drink_window_start || null,
+    drink_window_end: args.drink_window_end || null,
+    bottle_size: args.bottle_size || null,
+    food_pairings: args.food_pairings || null,
+    photo_url: args.photo_url || null,
+  }
+
+  const { data, error } = await client
+    .from('wines')
+    .insert(wineData)
+    .select()
+    .single()
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 })
@@ -653,91 +606,86 @@ main()
 
 ## 6. User Experience Scenarios
 
+These scenarios demonstrate how the minimal MVP provides core functionality while laying the groundwork for future enhancements.
+
 ### Scenario 1: Add Wine During Tasting
 
 **User:** "I just bought a 2019 Château Margaux, 6 bottles for CHF 450 each"
 
 **AI Assistant:**
-1. Calls `add_wine()` tool
-2. Auto-matches winery "Château Margaux" to existing record (or creates new)
-3. Adds wine with quantity=6, price=450
+1. Parses the description to extract: name, vintage, quantity, price
+2. Calls `add_wine()` tool with extracted data
+3. Returns confirmation with created wine details
 
 **Response:** ✓ Added 2019 Château Margaux (6 bottles @ CHF 450/bottle)
 
----
-
-### Scenario 2: Food Pairing for Dinner
-
-**User:** "I'm cooking beef tenderloin with truffle sauce tonight. What pairs well from my collection?"
-
-**AI Assistant:**
-1. Calls `find_food_pairing()` with menu description
-2. Claude API analyzes available wines
-3. Returns top 3 recommendations with scores
-
-**Response:**
-```
-Top Pairings:
-1. 2015 Barolo Riserva (95/100)
-   → Bold tannins complement the beef, earthy notes match truffle
-
-2. 2018 Châteauneuf-du-Pape (88/100)
-   → Rich, full-bodied with earthy complexity
-
-3. 2016 Brunello di Montalcino (85/100)
-   → Structured wine with good acidity to cut through richness
-```
+**Note:** In future phases, AI can auto-match or create wineries. For MVP, the winery_id field would be null unless the user has already created the winery.
 
 ---
 
-### Scenario 3: Inventory Check
+### Scenario 2: Inventory Check
 
-**User:** "What wines should I drink in the next 2 years?"
+**User:** "Show me all the wines in my collection"
 
 **AI Assistant:**
-1. Calls `wines://ready-to-drink` resource
-2. Filters by drinking window (current_year <= drink_window_end <= current_year + 2)
+1. Calls `wines://collection` resource
+2. Returns formatted list with key details
 
 **Response:**
 ```
-8 wines are in their optimal drinking window:
+You have 24 wines in your collection:
 
-1. 2012 Brunello di Montalcino (2020-2026)
-   Location: Cellar A, Shelf 3, Row 2
-   Quantity: 3 bottles
+1. 2019 Château Margaux (6 bottles, CHF 450/bottle)
+   Grapes: Cabernet Sauvignon, Merlot
+   Drinking window: 2025-2040
 
-2. 2015 Pomerol (2022-2027)
-   Location: Cellar A, Shelf 1, Row 5
-   Quantity: 6 bottles
+2. 2015 Barolo Riserva (3 bottles, CHF 85.50/bottle)
+   Grapes: Nebbiolo
+   Drinking window: 2025-2035
+
+3. 2018 Châteauneuf-du-Pape (4 bottles, CHF 65/bottle)
+   Grapes: Grenache, Syrah, Mourvèdre
+   Drinking window: 2023-2030
 
 ...
 ```
 
 ---
 
-### Scenario 4: Tasting Note Entry
+### Scenario 3: Wine Details
 
-**User:** "I just tasted the 2015 Barolo. 4 stars. Complex bouquet with cherry, leather, tobacco. Well-balanced tannins, long finish."
-
-**AI Assistant:**
-1. Searches for "2015 Barolo" in collection
-2. Calls `add_tasting_note()` with extracted rating and notes
-3. Associates with wine ID
-
-**Response:** ✓ Tasting note added for 2015 Barolo Riserva (4/5 stars)
-
----
-
-### Scenario 5: Stock Movement
-
-**User:** "We drank 2 bottles of the Châteauneuf-du-Pape at dinner last night"
+**User:** "Tell me more about the Barolo in my collection"
 
 **AI Assistant:**
-1. Searches for Châteauneuf-du-Pape
-2. Calls `add_stock_movement()` with type="out", quantity=2, movement_date="2026-01-16"
-3. Database trigger automatically decrements wine quantity
+1. Searches collection for "Barolo" (using `wines://collection` resource)
+2. Calls `wines://wine/{id}` resource for matching wine
+3. Returns detailed information including tasting notes, locations, stock history
 
-**Response:** ✓ Removed 2 bottles of 2018 Châteauneuf-du-Pape (4 remaining)
+**Response:**
+```
+2015 Barolo Riserva
+
+Details:
+- Quantity: 3 bottles
+- Price: CHF 85.50/bottle
+- Grapes: Nebbiolo
+- Drinking window: 2025-2035
+- Bottle size: 75cl
+- Food pairings: Red meat, aged cheeses, truffle dishes
+
+Locations:
+- Cellar A, Shelf 3, Row 2: 3 bottles
+
+Tasting Notes:
+- 2026-01-15 (4/5 stars): Complex bouquet with notes of cherry, leather, and tobacco. Well-balanced tannins.
+
+Stock History:
+- 2025-12-01: Added 6 bottles (Purchase)
+- 2026-01-15: Removed 2 bottles (Dinner party)
+- Current: 3 bottles remaining
+```
+
+**Note:** The resource includes related data (tasting notes, locations, stock movements) even though the MVP doesn't provide tools to create them. This allows the AI to provide rich context from data entered via the web UI.
 
 ---
 
@@ -849,30 +797,38 @@ npx supabase functions deploy mcp-server-proxy --no-verify-jwt
 
 ## 10. Future Enhancements
 
-### 10.1 Advanced AI Features
+The minimal MVP provides a solid foundation for incremental feature additions. Future phases can build on this foundation:
 
-- **Image Recognition:** Upload wine label photo, auto-identify and create entry
-- **Natural Language Queries:** "Show me all Bordeaux under CHF 100 ready to drink"
-- **Personalized Recommendations:** Learn user preferences from tasting notes
-- **Inventory Alerts:** Notify when wines enter optimal drinking window
+### 10.1 Additional Write Operations (Phase 2)
 
-### 10.2 Multi-User Support (Optional)
+- **update_wine:** Modify existing wine details
+- **delete_wine:** Remove wine from collection
+- **add_tasting_note:** Add rating and notes after tasting
 
-- **Shared Collections:** Multiple users access same cellar
-- **Permissions:** Owner, viewer, contributor roles
-- **Activity Log:** Track who added/modified wines
+### 10.2 Stock & Location Management (Phase 3)
 
-### 10.3 Import/Export
+- **add_stock_movement:** Track bottles in/out with automatic quantity updates
+- **update_wine_location:** Organize wines in cellars with shelf/row/column coordinates
+- **Cellar resources:** Query cellar locations and occupancy
 
-- **CSV Import:** Bulk wine import via MCP tool
-- **PDF Export:** Generate cellar inventory reports
-- **Integration:** Connect with wine retailers for auto-import
+### 10.3 AI Integration (Phase 4)
 
-### 10.4 Analytics
+- **enrich_wine:** Auto-fill missing data using Claude API (reuse existing `claude-proxy`)
+- **find_food_pairing:** AI-powered pairing recommendations (reuse existing `claude-proxy`)
+- **identify_wine_from_description:** Parse natural language wine descriptions
+- **Image recognition:** Upload wine label photo, auto-identify and create entry
 
-- **Spending Insights:** Track wine budget over time
-- **Drinking Patterns:** Most consumed regions, varieties
-- **Value Tracking:** Monitor collection value appreciation
+### 10.4 Advanced Features (Phase 5)
+
+- **Search & filtering resources:** Ready-to-drink wines, price ranges, completeness filters
+- **Winery resources:** Query wineries and associated wines
+- **Statistics resources:** Dashboard stats (total bottles, value, countries, etc.)
+- **Bulk operations:** Bulk enrichment with progress tracking
+- **Natural language queries:** "Show me all Bordeaux under CHF 100 ready to drink"
+- **Personalized recommendations:** Learn user preferences from tasting notes
+- **Inventory alerts:** Notify when wines enter optimal drinking window
+
+**Note:** Multi-user support and import/export are explicitly out of scope per project constraints documented in CLAUDE.md.
 
 ---
 
@@ -935,66 +891,35 @@ npx supabase functions deploy mcp-server-proxy --no-verify-jwt
 
 ## Appendix B: Edge Function Handler Examples
 
-**Wine Enrichment Handler:**
+The complete implementation of the three core handlers is shown in Section 5.2. For reference, here's the pattern for error handling and response formatting:
 
+**Error Response Helper:**
 ```typescript
-async function handleEnrichWine(client, userId, args) {
-  const { wine_id } = args
-
-  // 1. Fetch wine data
-  const { data: wine, error: fetchError } = await client
-    .from('wines')
-    .select('*, wineries(*)')
-    .eq('id', wine_id)
-    .eq('user_id', userId)
-    .single()
-
-  if (fetchError) {
-    return errorResponse(fetchError.message, 404)
-  }
-
-  // 2. Call existing claude-proxy for enrichment
-  const enrichmentResponse = await fetch(`${SUPABASE_URL}/functions/v1/claude-proxy`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${USER_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      type: 'wine-enrichment',
-      wineName: wine.name,
-      vintage: wine.vintage,
+function errorResponse(message: string, status: number) {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: {
+        message,
+        code: status === 404 ? 'NOT_FOUND' : status === 400 ? 'VALIDATION_ERROR' : 'SERVER_ERROR'
+      }
     }),
-  })
-
-  const enrichmentData = await enrichmentResponse.json()
-
-  // 3. Update wine with enriched data
-  const updates = {}
-  if (!wine.grapes && enrichmentData.grapes) {
-    updates.grapes = enrichmentData.grapes
-  }
-  // ... more field updates
-
-  const { data: updatedWine, error: updateError } = await client
-    .from('wines')
-    .update(updates)
-    .eq('id', wine_id)
-    .eq('user_id', userId)
-    .select()
-    .single()
-
-  if (updateError) {
-    return errorResponse(updateError.message, 500)
-  }
-
-  return successResponse({
-    wine: updatedWine,
-    enriched_fields: Object.keys(updates),
-    confidence: enrichmentData.confidence,
-  })
+    { status }
+  )
 }
 ```
+
+**Success Response Helper:**
+```typescript
+function successResponse(data: any) {
+  return new Response(
+    JSON.stringify({ success: true, data }),
+    { status: 200 }
+  )
+}
+```
+
+These helpers ensure consistent response formatting across all handlers, making it easier for the MCP server to parse and present results to the AI assistant.
 
 ---
 
@@ -1005,7 +930,7 @@ async function handleEnrichWine(client, userId, args) {
 ```typescript
 export const addWineTool = {
   name: 'add_wine',
-  description: 'Add a new wine to the collection. Automatically matches or creates winery.',
+  description: 'Add a new wine to the collection. Only the wine name is required; all other fields are optional.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -1013,9 +938,9 @@ export const addWineTool = {
         type: 'string',
         description: 'Wine name (e.g., "Barolo Riserva")',
       },
-      winery_name: {
+      winery_id: {
         type: 'string',
-        description: 'Winery name (will auto-match existing or create new)',
+        description: 'UUID of existing winery (optional)',
       },
       grapes: {
         type: 'array',
@@ -1024,13 +949,13 @@ export const addWineTool = {
       },
       vintage: {
         type: 'number',
-        description: 'Vintage year (1800-2030)',
-        minimum: 1800,
-        maximum: 2030,
+        description: 'Vintage year (1900-2035)',
+        minimum: 1900,
+        maximum: 2035,
       },
       quantity: {
         type: 'number',
-        description: 'Initial stock quantity',
+        description: 'Initial stock quantity (defaults to 1)',
         minimum: 1,
       },
       price: {
@@ -1041,18 +966,49 @@ export const addWineTool = {
       drink_window_start: {
         type: 'number',
         description: 'Drinking window start year',
+        minimum: 1900,
       },
       drink_window_end: {
         type: 'number',
-        description: 'Drinking window end year',
+        description: 'Drinking window end year (must be >= start)',
       },
       bottle_size: {
         type: 'string',
-        description: 'Bottle size (e.g., "750ml", "1.5L", "3L")',
+        description: 'Bottle size (e.g., "75cl", "150cl", "37.5cl")',
+      },
+      food_pairings: {
+        type: 'string',
+        description: 'Free-text description of food pairings',
+      },
+      photo_url: {
+        type: 'string',
+        description: 'URL to wine photo in Supabase Storage',
       },
     },
-    required: ['name', 'quantity'],
+    required: ['name'],
   },
+}
+```
+
+**Wine Collection Resource Definition:**
+
+```typescript
+export const wineCollectionResource = {
+  uri: 'wines://collection',
+  name: 'Wine Collection',
+  description: 'All wines in the user\'s collection, with optional filtering by winery',
+  mimeType: 'application/json',
+}
+```
+
+**Wine Detail Resource Definition:**
+
+```typescript
+export const wineDetailResource = {
+  uri: 'wines://wine/{id}',
+  name: 'Wine Details',
+  description: 'Detailed information about a specific wine, including tasting notes, locations, and stock movements',
+  mimeType: 'application/json',
 }
 ```
 
@@ -1063,6 +1019,7 @@ export const addWineTool = {
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-17 | Solution Architect | Initial architecture design |
+| 1.1 | 2026-01-17 | Solution Architect | Updated to minimal MVP scope - focused on 3 core operations (add_wine tool, wines://collection and wines://wine/{id} resources) |
 
 ---
 
