@@ -16,6 +16,7 @@ import { IconPlus, IconSearch } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWineries, useDeleteWinery } from '../../hooks/useWineries'
+import { useWines } from '../../hooks/useWines'
 import { WineryCard } from '../../components/WineryCard'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +31,7 @@ function WineryList() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wineries, isLoading } = useWineries()
+  const { data: wines } = useWines()
   const deleteWinery = useDeleteWinery()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [opened, { open, close }] = useDisclosure(false)
@@ -41,6 +43,19 @@ function WineryList() {
       setAuthLoading(false)
     })
   }, [])
+
+  // Create wine count map per winery
+  const wineryWineCountMap = useMemo(() => {
+    if (!wines) return new Map<string, number>()
+    const map = new Map<string, number>()
+
+    for (const wine of wines) {
+      if (wine.winery_id) {
+        map.set(wine.winery_id, (map.get(wine.winery_id) || 0) + 1)
+      }
+    }
+    return map
+  }, [wines])
 
   // Filter wineries by search
   const filteredWineries = useMemo(() => {
@@ -118,6 +133,7 @@ function WineryList() {
                       <WineryCard
                         key={winery.id}
                         winery={winery}
+                        wineCount={wineryWineCountMap.get(winery.id) || 0}
                         onView={() =>
                           navigate({ to: '/wineries/$id', params: { id: winery.id } })
                         }
