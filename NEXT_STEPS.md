@@ -7,6 +7,7 @@
 - ~~fix wrong language returned on food pairing recomendations~~
 - ~~Winery AI Enrichment doesn't work well~~
 - ~~move image upload to the top of the form~~
+- ~~issue with Sentry Replay Events: detail: "invalid event envelope", causes: "missing newline after header or payload"~~
 
 ## New Features
 - ~~add cancel buttons to add and edit~~
