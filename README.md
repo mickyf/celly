@@ -20,6 +20,7 @@ The app is currently hosted under: https://celly.pages.dev/
 - **Internationalization**: Full support for English and Swiss German (de-CH) with Swiss-German as default
 - **Swiss Localization**: CHF currency and Swiss date format (dd.MM.yyyy)
 - **Drinking Window Tracking**: Know which wines are ready to drink, aging, or past their prime
+- **MCP Server Integration**: AI assistants like Claude Desktop can interact with your wine collection through natural language via the [Model Context Protocol](https://modelcontextprotocol.io)
 
 ## Tech Stack
 
@@ -128,7 +129,11 @@ celly/
 │   └── types/              # TypeScript type definitions
 ├── supabase/
 │   ├── migrations/         # Database schema migrations
+│   ├── functions/          # Supabase Edge Functions
 │   └── seed.sql           # Test data
+├── mcp-server/             # Model Context Protocol server
+│   ├── src/                # MCP server TypeScript source
+│   └── README.md          # MCP server documentation
 └── CLAUDE.md              # AI coding assistant guide
 ```
 
@@ -163,7 +168,19 @@ The app supports English and Swiss German:
 
 The food pairing feature uses Claude Sonnet 4.5 to analyze wines in your collection that are currently in their drinking window and recommend optimal pairings for your desired meal or ingredients.
 
-**Note**: The Claude API key is currently used directly in the browser (suitable for local development). For production deployment, move API calls to a backend Edge Function.
+## MCP Server Integration
+
+The Celly MCP server enables AI assistants like Claude Desktop to interact with your wine collection through natural language. See [mcp-server/README.md](mcp-server/README.md) for setup instructions.
+
+**Features:**
+- View your complete wine collection organized by drinking status
+- Get detailed information about specific wines including tasting notes
+- Add new wines to your collection via natural language
+
+**Example interactions:**
+- "Show me my wine collection"
+- "Add a Château Margaux 2015 to my collection"
+- "What wines are ready to drink now?"
 
 ## Deployment
 

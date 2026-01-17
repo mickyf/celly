@@ -1,0 +1,32 @@
+{
+  "name": "celly-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Celly wine cellar management",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "celly-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "wine",
+    "cellar-management",
+    "celly"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}
