@@ -1,5 +1,5 @@
 import { Card, Text, Badge, Group, Button, Stack } from '@mantine/core'
-import { IconTrash, IconEdit, IconEye } from '@tabler/icons-react'
+import { IconTrash, IconEdit, IconEye, IconGitMerge } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../constants/countries'
 import type { Tables } from '../types/database'
@@ -10,9 +10,10 @@ interface WineryCardProps {
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
+  onMerge?: (id: string) => void
 }
 
-export function WineryCard({ winery, wineCount, onView, onEdit, onDelete }: WineryCardProps) {
+export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerge }: WineryCardProps) {
   const { t } = useTranslation(['wineries', 'common'])
   const country = winery.country_code ? getCountryByCode(winery.country_code, t) : null
   const BADGE_GAP = 3;
@@ -51,9 +52,19 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete }: Wine
             </Button>
           )}
 
-          {onEdit && (
+          {onMerge && wineCount > 0 && (
             <Button
               ml="auto"
+              variant="light"
+              color="blue"
+              leftSection={<IconGitMerge size={16} />}
+              onClick={() => onMerge(winery.id)}
+              pr={0}
+            />
+          )}
+          {onEdit && (
+            <Button
+              ml={onMerge && wineCount > 0 ? undefined : "auto"}
               variant="light"
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}

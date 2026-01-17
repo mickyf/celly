@@ -60,11 +60,25 @@
       "title": "Weingut gelöscht",
       "message": "Weingut wurde entfernt"
     },
+    "wineriesMerged": {
+      "title": "Weingüter zusammengeführt",
+      "message": "{{count}} Wein(e) erfolgreich verschoben"
+    },
     "error": {
       "title": "Fehler"
     }
   },
   "errors": {
-    "hasWines": "Weingut mit {{count}} zugeordneten Wein(en) kann nicht gelöscht werden. Bitte entfernen oder weisen Sie die Weine neu zu."
+    "hasWines": "Weingut mit {{count}} zugeordneten Wein(en) kann nicht gelöscht werden. Bitte entfernen oder weisen Sie die Weine neu zu.",
+    "cannotMergeSameWinery": "Ein Weingut kann nicht mit sich selbst zusammengeführt werden. Bitte wählen Sie zwei verschiedene Weingüter aus."
+  },
+  "merge": {
+    "title": "Weingüter zusammenführen",
+    "description": "Alle Weine vom Quell-Weingut werden zum Ziel-Weingut verschoben. Das Quell-Weingut wird gelöscht.",
+    "source": "Quell-Weingut",
+    "targetLabel": "Ziel-Weingut",
+    "targetPlaceholder": "Wählen Sie das Ziel-Weingut aus",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Weine werden zum Ziel-Weingut verschoben und das Quell-Weingut wird gelöscht.",
+    "confirmButton": "Weingüter zusammenführen"
   }
 }

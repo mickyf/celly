@@ -11,15 +11,17 @@ import {
   Center,
   Modal,
   TextInput,
+  Select,
 } from '@mantine/core'
 import { IconPlus, IconSearch } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
-import { useWineries, useDeleteWinery } from '../../hooks/useWineries'
+import { useWineries, useDeleteWinery, useMergeWineries } from '../../hooks/useWineries'
 import { useWines } from '../../hooks/useWines'
 import { WineryCard } from '../../components/WineryCard'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
+import { getCountryByCode } from '../../constants/countries'
 
 export const Route = createFileRoute('/wineries/')({
   component: WineryList,
@@ -33,8 +35,12 @@ function WineryList() {
   const { data: wineries, isLoading } = useWineries()
   const { data: wines } = useWines()
   const deleteWinery = useDeleteWinery()
+  const mergeWineries = useMergeWineries()
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [opened, { open, close }] = useDisclosure(false)
+  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null)
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null)
+  const [deleteOpened, deleteHandlers] = useDisclosure(false)
+  const [mergeOpened, mergeHandlers] = useDisclosure(false)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
@@ -69,16 +75,57 @@ function WineryList() {
 
   const handleDelete = (id: string) => {
     setDeleteId(id)
-    open()
+    deleteHandlers.open()
   }
 
   const confirmDelete = () => {
     if (deleteId) {
       deleteWinery.mutate(deleteId)
-      close()
+      deleteHandlers.close()
       setDeleteId(null)
     }
   }
+
+  const handleMerge = (sourceId: string) => {
+    setMergeSourceId(sourceId)
+    setMergeTargetId(null)
+    mergeHandlers.open()
+  }
+
+  const confirmMerge = () => {
+    if (mergeSourceId && mergeTargetId) {
+      mergeWineries.mutate(
+        { sourceId: mergeSourceId, targetId: mergeTargetId },
+        {
+          onSuccess: () => {
+            mergeHandlers.close()
+            setMergeSourceId(null)
+            setMergeTargetId(null)
+          },
+        }
+      )
+    }
+  }
+
+  // Get merge target options (exclude source winery)
+  const mergeTargetOptions = useMemo(() => {
+    if (!wineries || !mergeSourceId) return []
+    return wineries
+      .filter((w) => w.id !== mergeSourceId)
+      .map((w) => {
+        const country = w.country_code ? getCountryByCode(w.country_code, t) : null
+        const wineCount = wineryWineCountMap.get(w.id) || 0
+        return {
+          value: w.id,
+          label: `${w.name}${country ? ` (${country.flag} ${country.name})` : ''} - ${t('wineries:card.wineCount', { count: wineCount })}`,
+        }
+      })
+  }, [wineries, mergeSourceId, wineryWineCountMap, t])
+
+  const sourceWinery = useMemo(() => {
+    if (!wineries || !mergeSourceId) return null
+    return wineries.find((w) => w.id === mergeSourceId)
+  }, [wineries, mergeSourceId])
 
   if (authLoading) {
     return null
@@ -141,6 +188,7 @@ function WineryList() {
                           navigate({ to: '/wineries/$id/edit', params: { id: winery.id } })
                         }
                         onDelete={handleDelete}
+                        onMerge={handleMerge}
                       />
                     ))}
                   </SimpleGrid>
@@ -160,19 +208,68 @@ function WineryList() {
       </Container>
 
       <Modal
-        opened={opened}
-        onClose={close}
+        opened={deleteOpened}
+        onClose={deleteHandlers.close}
         title={t('common:confirmDelete.title')}
         centered
       >
         <Stack>
           <Text>{t('wineries:detail.confirmDelete')}</Text>
           <Group justify="flex-end">
-            <Button variant="default" onClick={close}>
+            <Button variant="default" onClick={deleteHandlers.close}>
               {t('common:confirmDelete.cancel')}
             </Button>
             <Button color="red" onClick={confirmDelete} loading={deleteWinery.isPending}>
               {t('common:confirmDelete.delete')}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
+        opened={mergeOpened}
+        onClose={mergeHandlers.close}
+        title={t('wineries:merge.title')}
+        centered
+        size="lg"
+      >
+        <Stack>
+          <Text size="sm" c="dimmed">
+            {t('wineries:merge.description')}
+          </Text>
+
+          {sourceWinery && (
+            <Text size="sm">
+              <strong>{t('wineries:merge.source')}:</strong> {sourceWinery.name}{' '}
+              ({t('wineries:card.wineCount', { count: wineryWineCountMap.get(sourceWinery.id) || 0 })})
+            </Text>
+          )}
+
+          <Select
+            label={t('wineries:merge.targetLabel')}
+            placeholder={t('wineries:merge.targetPlaceholder')}
+            data={mergeTargetOptions}
+            value={mergeTargetId}
+            onChange={(value) => setMergeTargetId(value)}
+            searchable
+            required
+          />
+
+          <Text size="xs" c="dimmed">
+            {t('wineries:merge.warning')}
+          </Text>
+
+          <Group justify="flex-end">
+            <Button variant="default" onClick={mergeHandlers.close}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button
+              color="blue"
+              onClick={confirmMerge}
+              loading={mergeWineries.isPending}
+              disabled={!mergeTargetId}
+            >
+              {t('wineries:merge.confirmButton')}
             </Button>
           </Group>
         </Stack>

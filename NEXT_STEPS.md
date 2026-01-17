@@ -40,3 +40,5 @@
 - Branding: icon and logo
 - ~~PWA: App manifest with icon~~
 - MCP server for adding a wine or winery
+- ~~merge 2 wineries together~~
+- ~~merge 2 wines together~~

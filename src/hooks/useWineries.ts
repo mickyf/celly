@@ -361,3 +361,113 @@ export const useDeleteWinery = () => {
     },
   })
 }
+
+export const useMergeWineries = () => {
+  const { t } = useTranslation(['wineries'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ sourceId, targetId }: { sourceId: string; targetId: string }) => {
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Merging wineries',
+        level: 'info',
+        data: { sourceId, targetId },
+      })
+
+      // Validate that source and target are different
+      if (sourceId === targetId) {
+        const error = new Error(t('wineries:errors.cannotMergeSameWinery'))
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'validation',
+            operation: 'mergeWineries',
+          },
+        })
+        throw error
+      }
+
+      // Get wine count for source winery
+      const { count } = await supabase
+        .from('wines')
+        .select('*', { count: 'exact', head: true })
+        .eq('winery_id', sourceId)
+
+      // Update all wines from source winery to target winery
+      const { error: updateError } = await supabase
+        .from('wines')
+        .update({ winery_id: targetId })
+        .eq('winery_id', sourceId)
+
+      if (updateError) {
+        Sentry.captureException(updateError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'wines',
+            operation: 'update',
+          },
+          contexts: {
+            supabase: {
+              table: 'wines',
+              operation: 'update',
+              error_code: updateError.code,
+              error_hint: updateError.hint,
+            },
+          },
+        })
+        throw updateError
+      }
+
+      // Delete the source winery (now that no wines reference it)
+      const { error: deleteError } = await supabase
+        .from('wineries')
+        .delete()
+        .eq('id', sourceId)
+
+      if (deleteError) {
+        Sentry.captureException(deleteError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'wineries',
+            operation: 'delete',
+          },
+          contexts: {
+            supabase: {
+              table: 'wineries',
+              operation: 'delete',
+              error_code: deleteError.code,
+              error_hint: deleteError.hint,
+            },
+          },
+        })
+        throw deleteError
+      }
+
+      return { movedWineCount: count || 0 }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wineries'] })
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Wineries merged successfully',
+        level: 'info',
+        data: { movedWineCount: data.movedWineCount },
+      })
+
+      notifications.show({
+        title: t('wineries:notifications.wineriesMerged.title'),
+        message: t('wineries:notifications.wineriesMerged.message', { count: data.movedWineCount }),
+        color: 'green',
+      })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wineries:notifications.error.title'),
+        message: error.message,
+        color: 'red',
+      })
+    },
+  })
+}

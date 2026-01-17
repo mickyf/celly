@@ -60,12 +60,17 @@
       "title": "Winery deleted",
       "message": "Winery has been removed"
     },
+    "wineriesMerged": {
+      "title": "Wineries merged",
+      "message": "{{count}} wine(s) moved successfully"
+    },
     "error": {
       "title": "Error"
     }
   },
   "errors": {
-    "hasWines": "Cannot delete winery with {{count}} associated wine(s). Please remove or reassign wines first."
+    "hasWines": "Cannot delete winery with {{count}} associated wine(s). Please remove or reassign wines first.",
+    "cannotMergeSameWinery": "Cannot merge a winery with itself. Please select two different wineries."
   },
   "enrichment": {
     "button": "Enrich",
@@ -73,5 +78,14 @@
     "success": "Winery enriched with AI data",
     "noData": "Could not identify winery",
     "error": "Failed to enrich winery"
+  },
+  "merge": {
+    "title": "Merge Wineries",
+    "description": "Move all wines from the source winery to the target winery. The source winery will be deleted.",
+    "source": "Source Winery",
+    "targetLabel": "Target Winery",
+    "targetPlaceholder": "Select the winery to merge into",
+    "warning": "This action cannot be undone. All wines will be moved to the target winery and the source winery will be deleted.",
+    "confirmButton": "Merge Wineries"
   }
 }
