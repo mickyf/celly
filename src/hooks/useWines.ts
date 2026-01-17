@@ -9,20 +9,27 @@ type Wine = Database['public']['Tables']['wines']['Row']
 type NewWine = Database['public']['Tables']['wines']['Insert']
 type UpdateWine = Database['public']['Tables']['wines']['Update']
 
-export const useWines = () => {
+export const useWines = (wineryId?: string) => {
   return useQuery({
-    queryKey: ['wines'],
+    queryKey: wineryId ? ['wines', 'winery', wineryId] : ['wines'],
     queryFn: async () => {
       Sentry.addBreadcrumb({
         category: 'data.query',
-        message: 'Fetching wines',
+        message: wineryId ? 'Fetching wines for winery' : 'Fetching wines',
         level: 'info',
+        data: wineryId ? { wineryId } : undefined,
       })
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('wines')
         .select('*')
         .order('created_at', { ascending: false })
+
+      if (wineryId) {
+        query = query.eq('winery_id', wineryId)
+      }
+
+      const { data, error } = await query
 
       if (error) {
         Sentry.captureException(error, {

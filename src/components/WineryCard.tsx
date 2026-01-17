@@ -2,19 +2,18 @@ import { Card, Text, Badge, Group, Button, Stack } from '@mantine/core'
 import { IconTrash, IconEdit, IconEye } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../constants/countries'
-import { useWineryWineCount } from '../hooks/useWineries'
 import type { Tables } from '../types/database'
 
 interface WineryCardProps {
   winery: Tables<'wineries'>
+  wineCount: number
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
 }
 
-export function WineryCard({ winery, onView, onEdit, onDelete }: WineryCardProps) {
+export function WineryCard({ winery, wineCount, onView, onEdit, onDelete }: WineryCardProps) {
   const { t } = useTranslation(['wineries', 'common'])
-  const { data: wineCount = 0 } = useWineryWineCount(winery.id)
   const country = winery.country_code ? getCountryByCode(winery.country_code, t) : null
   const BADGE_GAP = 3;
 

@@ -17,6 +17,7 @@ import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWinery, useDeleteWinery } from '../../../hooks/useWineries'
 import { useWines } from '../../../hooks/useWines'
+import { useStockMovements } from '../../../hooks/useStockMovements'
 import { WineCard } from '../../../components/WineCard'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
@@ -35,7 +36,8 @@ function WineryDetail() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: winery, isLoading: wineryLoading } = useWinery(id)
-  const { data: wines, isLoading: winesLoading } = useWines()
+  const { data: wineryWines = [], isLoading: winesLoading } = useWines(id)
+  const { data: allStockMovements } = useStockMovements()
   const deleteWinery = useDeleteWinery()
 
   const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false)
@@ -47,11 +49,20 @@ function WineryDetail() {
     })
   }, [])
 
-  // Filter wines for this winery
-  const wineryWines = useMemo(() => {
-    if (!wines) return []
-    return wines.filter((wine) => wine.winery_id === id)
-  }, [wines, id])
+  // Create recent stock movement lookup map
+  const recentStockMovementMap = useMemo(() => {
+    if (!allStockMovements) return new Map()
+    const map = new Map()
+
+    // Stock movements are already sorted by movement_date DESC
+    // First occurrence per wine_id is the most recent
+    for (const movement of allStockMovements) {
+      if (!map.has(movement.wine_id)) {
+        map.set(movement.wine_id, movement)
+      }
+    }
+    return map
+  }, [allStockMovements])
 
   const handleDelete = async () => {
     await deleteWinery.mutateAsync(id)
@@ -142,6 +153,8 @@ function WineryDetail() {
                     <WineCard
                       key={wine.id}
                       wine={wine}
+                      winery={winery}
+                      recentStockMovement={recentStockMovementMap.get(wine.id)}
                       onView={() => navigate({
                         to: '/wines/$id',
                         params: { id: wine.id },

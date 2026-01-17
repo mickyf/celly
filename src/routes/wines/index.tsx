@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWines, useDeleteWine } from '../../hooks/useWines'
 import { useWineries } from '../../hooks/useWineries'
+import { useStockMovements } from '../../hooks/useStockMovements'
 import { useBulkEnrichWines } from '../../hooks/useWineEnrichment'
 import { WineCard } from '../../components/WineCard'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
@@ -59,12 +60,33 @@ function WineList() {
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wines, isLoading } = useWines()
   const { data: wineries } = useWineries()
+  const { data: allStockMovements } = useStockMovements()
   const deleteWine = useDeleteWine()
   const bulkEnrich = useBulkEnrichWines()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [opened, { open, close }] = useDisclosure(false)
   const [enrichModalOpened, { open: openEnrichModal, close: closeEnrichModal }] = useDisclosure(false)
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
+
+  // Create normalized data maps for performance optimization
+  const wineryMap = useMemo(() => {
+    if (!wineries) return new Map()
+    return new Map(wineries.map(w => [w.id, w]))
+  }, [wineries])
+
+  const recentStockMovementMap = useMemo(() => {
+    if (!allStockMovements) return new Map()
+    const map = new Map()
+
+    // Stock movements are already sorted by movement_date DESC
+    // First occurrence per wine_id is the most recent
+    for (const movement of allStockMovements) {
+      if (!map.has(movement.wine_id)) {
+        map.set(movement.wine_id, movement)
+      }
+    }
+    return map
+  }, [allStockMovements])
 
   // Merge URL search params with default values
   const defaultFilters: WineFilterValues = {
@@ -356,6 +378,8 @@ function WineList() {
                       <WineCard
                         key={wine.id}
                         wine={wine}
+                        winery={wine.winery_id ? wineryMap.get(wine.winery_id) : undefined}
+                        recentStockMovement={recentStockMovementMap.get(wine.id)}
                         onView={() => navigate({ to: '/wines/$id', params: { id: wine.id } })}
                         onEdit={() => navigate({ to: '/wines/$id/edit', params: { id: wine.id } })}
                         onDelete={handleDelete}

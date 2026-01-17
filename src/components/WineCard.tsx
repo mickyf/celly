@@ -1,25 +1,34 @@
 import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { useWinery } from '../hooks/useWineries'
-import { useStockMovements } from '../hooks/useStockMovements'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
 
 type Wine = Database['public']['Tables']['wines']['Row']
+type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+type StockMovement = Database['public']['Tables']['stock_movements']['Row']
 
 interface WineCardProps {
   wine: Wine
+  winery?: Tables<'wineries'> | null
+  recentStockMovement?: StockMovement | null
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
-  showRecentMovements?: boolean
 }
 
-export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements = true }: WineCardProps) {
+export function WineCard({
+  wine,
+  winery,
+  recentStockMovement,
+  onView,
+  onEdit,
+  onDelete,
+}: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
-  const { data: winery } = useWinery(wine.winery_id || '')
-  const { data: stockMovements } = useStockMovements(showRecentMovements ? wine.id : undefined)
+
+  const recentMovement = recentStockMovement
+
   const BADGE_GAP = 3;
   const currentYear = new Date().getFullYear()
   const isReadyToDrink =
@@ -27,11 +36,6 @@ export function WineCard({ wine, onView, onEdit, onDelete, showRecentMovements =
     wine.drink_window_end &&
     currentYear >= wine.drink_window_start &&
     currentYear <= wine.drink_window_end
-
-  // Get most recent stock movement (if enabled)
-  const recentMovement = showRecentMovements && stockMovements && stockMovements.length > 0
-    ? stockMovements[0]
-    : null
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
