@@ -10,6 +10,7 @@ import {
   Collapse,
   Text,
   Badge,
+  ActionIcon,
 } from '@mantine/core'
 import { IconSearch, IconFilter, IconX, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import { useState } from 'react'
@@ -115,9 +116,19 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
               size="xs"
               onClick={() => setOpened(!opened)}
               rightSection={opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+              visibleFrom="sm"
             >
               {opened ? t('common:buttons.hideFilters') : t('common:buttons.showFilters')}
             </Button>
+            <ActionIcon
+              variant="subtle"
+              size="md"
+              onClick={() => setOpened(!opened)}
+              hiddenFrom="sm"
+              aria-label={opened ? t('common:buttons.hideFilters') : t('common:buttons.showFilters')}
+            >
+              {opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+            </ActionIcon>
           </Group>
         </Group>
 

@@ -55,23 +55,27 @@ export function WineCard({
     </div>
   )
 
+  const photoContent = onView ? (
+    <UnstyledButton
+      onClick={onView}
+      aria-label={t('common:buttons.viewDetails')}
+      style={{ display: 'block', width: '100%' }}
+    >
+      {photoBlock}
+    </UnstyledButton>
+  ) : (
+    photoBlock
+  )
+
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
-      <Card.Section>
-        {onView ? (
-          <UnstyledButton
-            onClick={onView}
-            aria-label={t('common:buttons.viewDetails')}
-            style={{ display: 'block', width: '100%' }}
-          >
-            {photoBlock}
-          </UnstyledButton>
-        ) : (
-          photoBlock
-        )}
-      </Card.Section>
+      {signedPhotoUrl ? (
+        <Card.Section>{photoContent}</Card.Section>
+      ) : (
+        <Card.Section visibleFrom="sm">{photoContent}</Card.Section>
+      )}
 
-      <Stack gap="sm" mt="md" mb="md">
+      <Stack gap="sm" mt={signedPhotoUrl ? 'md' : { base: 0, sm: 'md' }} mb="md">
 
         <Group justify="space-between" mb={5}>
           {onView ? (
