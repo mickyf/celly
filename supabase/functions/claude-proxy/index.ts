@@ -45,10 +45,7 @@ function validateImage(
   return { ok: true, mediaType: imageMediaType as AllowedImageType }
 }
 
-// Claude responses sometimes wrap JSON in ```json fences, sometimes follow
-// the JSON with explanation prose. The previous greedy /\{[\s\S]*\}/ matched
-// from the first { to the last }, which broke when a second {} appeared in
-// trailing text. Try fence first, then balanced braces.
+// Claude wraps JSON in ```json fences or adds trailing prose; balance braces.
 function extractJsonBlock(text: string): string | null {
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
   if (fence) return fence[1]
