@@ -30,7 +30,8 @@
     "modalEdit": "Degustationsnotiz bearbeiten",
     "modalAdd": "Degustationsnotiz hinzufügen",
     "increaseQuantity": "Eine Flasche hinzufügen",
-    "decreaseQuantity": "Eine Flasche entfernen"
+    "decreaseQuantity": "Eine Flasche entfernen",
+    "placeInCellar": "Im Keller platzieren"
   },
   "add": {
     "title": "Wein hinzufügen",
@@ -335,5 +336,15 @@
       "drink": "Trinken (−1 Flasche)",
       "unplace": "Aus Platz entfernen"
     }
+  },
+  "placeWine": {
+    "title": "{{name}} im Keller platzieren",
+    "subtitle": "Tippen Sie auf einen leeren Platz, um eine Flasche dort abzulegen. Tippen Sie auf eine bereits platzierte Flasche, um sie aus dem Platz zu nehmen.",
+    "breadcrumb": "Im Keller platzieren",
+    "progress": "{{placed}} von {{total}} platziert",
+    "allPlaced": "Alle Flaschen sind platziert.",
+    "unplacedHint_one": "Noch {{count}} Flasche zu platzieren",
+    "unplacedHint_other": "Noch {{count}} Flaschen zu platzieren",
+    "done": "Fertig"
   }
 }

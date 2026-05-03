@@ -25,10 +25,11 @@ interface CellarVisualizerProps {
     slots: SlotWithWine[]
     onAddShelf: () => void
     onSlotClick: (slot: SlotWithWine) => void
-    onEditShelf: (shelf: number) => void
+    onEditShelf?: (shelf: number) => void
+    placeMode?: { wineId: string }
 }
 
-export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onEditShelf }: CellarVisualizerProps) {
+export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onEditShelf, placeMode }: CellarVisualizerProps) {
     const { t } = useTranslation(['wines', 'common'])
     const theme = useMantineTheme()
     const navigate = useNavigate()
@@ -147,29 +148,31 @@ export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onE
                                     {occupied} / {shelfSlots.length}
                                 </Badge>
                             </Group>
-                            <Group gap="xs">
-                                <ActionIcon
-                                    variant="subtle"
-                                    onClick={() => onEditShelf(shelf)}
-                                    aria-label={t('common:buttons.edit')}
-                                >
-                                    <IconPencil size={16} />
-                                </ActionIcon>
-                                <Tooltip
-                                    label={t('wines:overview.cannotDeleteOccupied')}
-                                    disabled={occupied === 0}
-                                >
+                            {!placeMode && (
+                                <Group gap="xs">
                                     <ActionIcon
                                         variant="subtle"
-                                        color="red"
-                                        onClick={() => handleDeleteShelf(shelf)}
-                                        disabled={occupied > 0}
-                                        aria-label={t('wines:overview.deleteShelf')}
+                                        onClick={() => onEditShelf?.(shelf)}
+                                        aria-label={t('common:buttons.edit')}
                                     >
-                                        <IconTrash size={16} />
+                                        <IconPencil size={16} />
                                     </ActionIcon>
-                                </Tooltip>
-                            </Group>
+                                    <Tooltip
+                                        label={t('wines:overview.cannotDeleteOccupied')}
+                                        disabled={occupied === 0}
+                                    >
+                                        <ActionIcon
+                                            variant="subtle"
+                                            color="red"
+                                            onClick={() => handleDeleteShelf(shelf)}
+                                            disabled={occupied > 0}
+                                            aria-label={t('wines:overview.deleteShelf')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Group>
+                            )}
                         </Group>
 
                         <Stack gap="xs">
@@ -184,10 +187,15 @@ export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onE
                                             }
                                             const wine = slot.wine
                                             const occupied = !!wine
+                                            const isOwnWine = !!(placeMode && wine && wine.id === placeMode.wineId)
+                                            const isOtherWine = !!(placeMode && wine && wine.id !== placeMode.wineId)
+                                            const isClickable = placeMode
+                                                ? !occupied || isOwnWine
+                                                : !occupied
                                             const slotBox = (
                                                 <Box
                                                     onClick={() => {
-                                                        if (!occupied) onSlotClick(slot)
+                                                        if (isClickable) onSlotClick(slot)
                                                     }}
                                                     style={{
                                                         width: 40,
@@ -197,8 +205,13 @@ export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onE
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        cursor: 'pointer',
-                                                        border: `1px dashed ${occupied ? 'transparent' : theme.colors.gray[4]}`,
+                                                        cursor: isClickable ? 'pointer' : 'default',
+                                                        opacity: isOtherWine ? 0.35 : 1,
+                                                        border: isOwnWine
+                                                            ? `2px solid ${theme.colors.grape[7]}`
+                                                            : !occupied && placeMode
+                                                                ? `2px dashed ${theme.colors.grape[5]}`
+                                                                : `1px dashed ${occupied ? 'transparent' : theme.colors.gray[4]}`,
                                                     }}
                                                 >
                                                     {occupied && <IconBottle size={24} color="white" stroke={1.5} />}
@@ -207,6 +220,14 @@ export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onE
                                             const tooltipLabel = wine
                                                 ? `${wine.name}${wine.vintage ? ` (${wine.vintage})` : ''}`
                                                 : `${t('wines:overview.slotEmpty')} — ${t('wines:form.labels.row')} ${row}, ${t('wines:form.labels.column')} ${col}`
+
+                                            if (placeMode) {
+                                                return (
+                                                    <Tooltip key={col} label={tooltipLabel} position="top" withArrow>
+                                                        {slotBox}
+                                                    </Tooltip>
+                                                )
+                                            }
 
                                             if (occupied && wine) {
                                                 return (

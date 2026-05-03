@@ -64,7 +64,7 @@
 - cellar overview: 
   - ~~click on an empty place and select an un-placed wine to place it there~~
   - ~~click on a placed wine and select if remove from the place or open the wine~~ (also added "drink" which decrements stock)
-  - add wine: display the cellar overview and let the user click the places, where the bottles were placed. Like on a seat-booking-overview.
+  - ~~add wine: display the cellar overview and let the user click the places, where the bottles were placed. Like on a seat-booking-overview.~~
   - ~~wine location flow is unreliable: insert returns 409 Conflict, UX needs a rethink~~ (redesigned: each row is now a slot, wine_id nullable)
   - ~~simplify stock changes with an up- and down-button on the card~~
   - hide wines when drunken out in all the places, add a filter on the wine list to display "drunken" wines
