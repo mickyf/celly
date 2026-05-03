@@ -1,7 +1,8 @@
 import { vi, type Mock } from 'vitest'
 
 export type QueryResult<T = unknown> = {
-  data: T | null
+  data?: T | null
+  count?: number | null
   error: { message: string; code?: string; hint?: string; details?: string } | null
 }
 
