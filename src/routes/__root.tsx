@@ -1,4 +1,5 @@
-import { Outlet, createRootRoute, Link } from '@tanstack/react-router'
+import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-router'
+import { notifications } from '@mantine/notifications'
 import { AppShell, Burger, Group, NavLink, Title, Anchor } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
@@ -12,7 +13,7 @@ import {
   IconGridDots,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from 'react-i18next'
 import { LanguageSelector } from '../components/LanguageSelector'
@@ -23,32 +24,52 @@ export const Route = createRootRoute({
   component: RootLayout,
 })
 
+const PUBLIC_ROUTE_PREFIXES = ['/login', '/forgot-password', '/reset-password']
+
 function RootLayout() {
   const [opened, { toggle }] = useDisclosure()
   const [user, setUser] = useState<User | null>(null)
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'auth'])
+  const navigate = useNavigate()
+  const intentionalSignOut = useRef(false)
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       setSentryUser(currentUser)
     })
 
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       setSentryUser(currentUser)
+
+      // Surface unintentional sign-outs (token refresh failure, expired
+      // session) so the user knows to re-authenticate.
+      if (event === 'SIGNED_OUT' && !intentionalSignOut.current) {
+        const onPublicRoute = PUBLIC_ROUTE_PREFIXES.some((p) =>
+          window.location.pathname.startsWith(p),
+        )
+        if (!onPublicRoute) {
+          notifications.show({
+            title: t('auth:notifications.sessionExpiredTitle'),
+            message: t('auth:notifications.sessionExpiredMessage'),
+            color: 'orange',
+          })
+          navigate({ to: '/login' })
+        }
+      }
+      intentionalSignOut.current = false
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate, t])
 
   const handleSignOut = async () => {
+    intentionalSignOut.current = true
     await supabase.auth.signOut()
     setSentryUser(null)
   }
