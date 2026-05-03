@@ -130,7 +130,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
           }
         />
 
-        <Collapse in={opened}>
+        <Collapse expanded={opened}>
           <Stack gap="md" mt="md">
             <Select
               label={t('wines:filters.winery')}
