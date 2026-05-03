@@ -149,7 +149,7 @@ function RootLayout() {
           )}
         </AppShell.Navbar>
 
-        <AppShell.Main>
+        <AppShell.Main style={{ overflowX: 'hidden' }}>
           <OfflineBanner />
           <Outlet />
         </AppShell.Main>

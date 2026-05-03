@@ -15,12 +15,14 @@ import {
   Paper,
   SimpleGrid,
   Select,
+  ActionIcon,
 } from '@mantine/core'
 import {
   IconGlass,
   IconEdit,
   IconTrash,
   IconPlus,
+  IconMinus,
   IconBottle,
   IconSparkles,
   IconGitMerge,
@@ -234,6 +236,17 @@ function WineDetail() {
     closeStockModal()
   }
 
+  const handleQuickStockChange = (movement_type: 'in' | 'out') => {
+    addStockMovement.mutate({
+      wine_id: id,
+      user_id: '',
+      movement_type,
+      quantity: 1,
+      movement_date: new Date().toISOString(),
+      notes: null,
+    })
+  }
+
   const handleEnrichWine = async () => {
     if (!wine) return
     await enrichWine.mutateAsync({ wine })
@@ -300,41 +313,87 @@ function WineDetail() {
               </div>
             }
             actions={
-              <Group>
+              <Group gap="xs">
                 {canEnrich && (
-                  <Button
-                    variant="gradient"
-                    gradient={{ from: 'grape', to: 'violet', deg: 90 }}
-                    leftSection={<IconSparkles size={20} />}
-                    onClick={handleEnrichWine}
-                    loading={enrichWine.isPending}
-                  >
-                    {t('wines:enrichment.button')}
-                  </Button>
+                  <>
+                    <Button
+                      variant="gradient"
+                      gradient={{ from: 'grape', to: 'violet', deg: 90 }}
+                      leftSection={<IconSparkles size={20} />}
+                      onClick={handleEnrichWine}
+                      loading={enrichWine.isPending}
+                      visibleFrom="sm"
+                    >
+                      {t('wines:enrichment.button')}
+                    </Button>
+                    <ActionIcon
+                      size="lg"
+                      variant="gradient"
+                      gradient={{ from: 'grape', to: 'violet', deg: 90 }}
+                      onClick={handleEnrichWine}
+                      loading={enrichWine.isPending}
+                      hiddenFrom="sm"
+                      aria-label={t('wines:enrichment.button')}
+                    >
+                      <IconSparkles size={20} />
+                    </ActionIcon>
+                  </>
                 )}
                 <Button
                   variant="light"
                   leftSection={<IconEdit size={20} />}
                   onClick={() => navigate({ to: '/wines/$id/edit', params: { id } })}
+                  visibleFrom="sm"
                 >
                   {t('common:buttons.edit')}
                 </Button>
+                <ActionIcon
+                  size="lg"
+                  variant="light"
+                  onClick={() => navigate({ to: '/wines/$id/edit', params: { id } })}
+                  hiddenFrom="sm"
+                  aria-label={t('common:buttons.edit')}
+                >
+                  <IconEdit size={20} />
+                </ActionIcon>
                 <Button
                   variant="light"
                   color="blue"
                   leftSection={<IconGitMerge size={20} />}
                   onClick={openMerge}
+                  visibleFrom="sm"
                 >
                   {t('common:buttons.merge')}
                 </Button>
+                <ActionIcon
+                  size="lg"
+                  variant="light"
+                  color="blue"
+                  onClick={openMerge}
+                  hiddenFrom="sm"
+                  aria-label={t('common:buttons.merge')}
+                >
+                  <IconGitMerge size={20} />
+                </ActionIcon>
                 <Button
                   variant="light"
                   color="red"
                   leftSection={<IconTrash size={20} />}
                   onClick={openDeleteWine}
+                  visibleFrom="sm"
                 >
                   {t('common:buttons.delete')}
                 </Button>
+                <ActionIcon
+                  size="lg"
+                  variant="light"
+                  color="red"
+                  onClick={openDeleteWine}
+                  hiddenFrom="sm"
+                  aria-label={t('common:buttons.delete')}
+                >
+                  <IconTrash size={20} />
+                </ActionIcon>
               </Group>
             }
           />
@@ -400,9 +459,33 @@ function WineDetail() {
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                     {t('wines:detail.sections.quantity')}
                   </Text>
-                  <Text size="lg" mt="xs">
-                    {t('common:counts.bottles', { count: wine.quantity || 0 })}
-                  </Text>
+                  <Group gap="xs" mt="xs" align="center">
+                    <ActionIcon
+                      size="lg"
+                      variant="light"
+                      color="blue"
+                      radius="xl"
+                      aria-label={t('wines:detail.decreaseQuantity')}
+                      disabled={(wine.quantity ?? 0) <= 0 || addStockMovement.isPending}
+                      onClick={() => handleQuickStockChange('out')}
+                    >
+                      <IconMinus size={18} />
+                    </ActionIcon>
+                    <Text size="lg">
+                      {t('common:counts.bottles', { count: wine.quantity || 0 })}
+                    </Text>
+                    <ActionIcon
+                      size="lg"
+                      variant="light"
+                      color="blue"
+                      radius="xl"
+                      aria-label={t('wines:detail.increaseQuantity')}
+                      disabled={addStockMovement.isPending}
+                      onClick={() => handleQuickStockChange('in')}
+                    >
+                      <IconPlus size={18} />
+                    </ActionIcon>
+                  </Group>
                 </div>
 
                 {wine.price && (

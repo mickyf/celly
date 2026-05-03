@@ -13,11 +13,15 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <Breadcrumbs separator=">" mt="xs">
+    <Breadcrumbs 
+      separator=">" 
+      mt="xs"
+      styles={{ root: { flexWrap: 'wrap', minWidth: 0 } }}
+    >
       {items.map((item, index) => {
         if (!item.to) {
           return (
-            <Text key={index} size="sm" c="dimmed">
+            <Text key={index} size="sm" c="dimmed" truncate>
               {item.label}
             </Text>
           )
