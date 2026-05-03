@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
+import { resizeImage } from '../lib/imageResize'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -319,13 +320,14 @@ export const useUploadWinePhoto = () => {
         throw error
       }
 
-      const fileExt = file.name.split('.').pop()
+      const resized = await resizeImage(file)
+      const fileExt = resized.name.split('.').pop()
       const fileName = `${wineId}.${fileExt}`
       const filePath = `${user.id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('wine-images')
-        .upload(filePath, file, { upsert: true })
+        .upload(filePath, resized, { upsert: true })
 
       if (uploadError) {
         Sentry.captureException(uploadError, {

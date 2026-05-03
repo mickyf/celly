@@ -46,56 +46,50 @@ export const useDashboardStats = () => {
         throw error
       }
 
-      // Fetch wines
-      const { data: wines, error: winesError } = await supabase
-        .from('wines')
-        .select('*')
-        .eq('user_id', user.id)
+      // Fetch wines, tasting notes, and stock movements in parallel — they
+      // don't depend on each other.
+      const [winesRes, notesRes, stockRes] = await Promise.all([
+        supabase
+          .from('wines')
+          .select('id, name, quantity, price, drink_window_start, drink_window_end, grapes')
+          .eq('user_id', user.id),
+        supabase
+          .from('tasting_notes')
+          .select('id, rating, tasted_at, wine_id')
+          .eq('user_id', user.id)
+          .order('tasted_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('stock_movements')
+          .select('movement_date, movement_type, quantity')
+          .eq('user_id', user.id)
+          .order('movement_date', { ascending: true }),
+      ])
+
+      const { data: wines, error: winesError } = winesRes
+      const { data: tastingNotes, error: notesError } = notesRes
+      const { data: stockMovements, error: stockMovementsError } = stockRes
 
       if (winesError) {
         Sentry.captureException(winesError, {
-          tags: {
-            errorType: 'supabase_query',
-            table: 'wines',
-            operation: 'select',
-          },
-          contexts: {
-            supabase: {
-              table: 'wines',
-              operation: 'select',
-              error_code: winesError.code,
-              error_hint: winesError.hint,
-            },
-          },
+          tags: { errorType: 'supabase_query', table: 'wines', operation: 'select' },
+          contexts: { supabase: { table: 'wines', operation: 'select', error_code: winesError.code, error_hint: winesError.hint } },
         })
         throw winesError
       }
-
-      // Fetch tasting notes with wine names
-      const { data: tastingNotes, error: notesError } = await supabase
-        .from('tasting_notes')
-        .select('id, rating, tasted_at, wine_id')
-        .eq('user_id', user.id)
-        .order('tasted_at', { ascending: false })
-        .limit(5)
-
       if (notesError) {
         Sentry.captureException(notesError, {
-          tags: {
-            errorType: 'supabase_query',
-            table: 'tasting_notes',
-            operation: 'select',
-          },
-          contexts: {
-            supabase: {
-              table: 'tasting_notes',
-              operation: 'select',
-              error_code: notesError.code,
-              error_hint: notesError.hint,
-            },
-          },
+          tags: { errorType: 'supabase_query', table: 'tasting_notes', operation: 'select' },
+          contexts: { supabase: { table: 'tasting_notes', operation: 'select', error_code: notesError.code, error_hint: notesError.hint } },
         })
         throw notesError
+      }
+      if (stockMovementsError) {
+        Sentry.captureException(stockMovementsError, {
+          tags: { errorType: 'supabase_query', table: 'stock_movements', operation: 'select' },
+          contexts: { supabase: { table: 'stock_movements', operation: 'select', error_code: stockMovementsError.code, error_hint: stockMovementsError.hint } },
+        })
+        throw stockMovementsError
       }
 
       // Calculate statistics
@@ -129,44 +123,15 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5)
 
-      // Get recent tastings with wine names
-      const recentTastings = await Promise.all(
-        (tastingNotes || []).map(async (note) => {
-          const wine = wines?.find((w) => w.id === note.wine_id)
-          return {
-            id: note.id,
-            wine_name: wine?.name || 'Unknown',
-            rating: note.rating,
-            tasted_at: note.tasted_at,
-          }
-        })
-      )
-
-      // Fetch stock movements for bottle count data
-      const { data: stockMovements, error: stockMovementsError } = await supabase
-        .from('stock_movements')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('movement_date', { ascending: true })
-
-      if (stockMovementsError) {
-        Sentry.captureException(stockMovementsError, {
-          tags: {
-            errorType: 'supabase_query',
-            table: 'stock_movements',
-            operation: 'select',
-          },
-          contexts: {
-            supabase: {
-              table: 'stock_movements',
-              operation: 'select',
-              error_code: stockMovementsError.code,
-              error_hint: stockMovementsError.hint,
-            },
-          },
-        })
-        throw stockMovementsError
-      }
+      // Recent tastings with wine names. Lookup is in-memory since wines is
+      // already loaded; precompute a name index to avoid scanning per note.
+      const wineNameById = new Map((wines ?? []).map((w) => [w.id, w.name]))
+      const recentTastings = (tastingNotes || []).map((note) => ({
+        id: note.id,
+        wine_name: wineNameById.get(note.wine_id) ?? 'Unknown',
+        rating: note.rating,
+        tasted_at: note.tasted_at,
+      }))
 
       // Build a monthly bottle-count series by walking movements forward from
       // the implied initial count. The initial count is `totalBottles` minus
