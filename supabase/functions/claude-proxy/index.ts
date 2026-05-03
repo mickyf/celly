@@ -2,7 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
-import Anthropic from "npm:@anthropic-ai/sdk@0.32.1"
+import Anthropic from "npm:@anthropic-ai/sdk@0.92.0"
 
 const ALLOWED_ORIGINS = [
   "https://celly.pages.dev",

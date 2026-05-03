@@ -16,7 +16,6 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
     "@mantine/charts": "^9.1.1",
     "@mantine/core": "^9.1.1",
     "@mantine/dates": "^9.1.1",
