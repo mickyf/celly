@@ -437,6 +437,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                   size="lg"
                   onClick={() => setWineryModalOpened(true)}
                   title={t('wineries:add.title', { defaultValue: 'Add Winery' })}
+                  aria-label={t('wineries:add.title', { defaultValue: 'Add Winery' })}
                   mb={4}
                 >
                   <IconPlus size={20} />
@@ -548,6 +549,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                             variant="subtle"
                             color="red"
                             onClick={() => form.removeListItem('locations', index)}
+                            aria-label={t('common:buttons.delete')}
                           >
                             <IconTrash size={16} />
                           </ActionIcon>
@@ -569,6 +571,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                           size="lg"
                           onClick={() => openAddCellarModal(index)}
                           title={t('wines:form.buttons.addCellar')}
+                          aria-label={t('wines:form.buttons.addCellar')}
                           mb={4}
                         >
                           <IconPlus size={20} />

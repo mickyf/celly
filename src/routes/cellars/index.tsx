@@ -161,6 +161,7 @@ function CellarOverview() {
                 size="lg"
                 onClick={() => setCellarModalOpened(true)}
                 title={t('wines:form.buttons.addCellar')}
+                aria-label={t('wines:form.buttons.addCellar')}
                 mb={4}
               >
                 <IconPlus size={20} />

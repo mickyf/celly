@@ -4,6 +4,8 @@
     "subtitle": "Verwalten Sie Ihre Weinproduzenten",
     "addButton": "Weingut hinzufügen",
     "emptyState": "Noch keine Weingüter. Fügen Sie Ihr erstes Weingut hinzu!",
+    "emptyStateTitle": "Noch keine Weingüter",
+    "emptyStateAction": "Erstes Weingut hinzufügen",
     "noResults": "Keine Weingüter entsprechen Ihrer Suche.",
     "showingCount": "{{filtered}} von {{total}} Weingütern angezeigt",
     "searchPlaceholder": "Weingüter suchen..."

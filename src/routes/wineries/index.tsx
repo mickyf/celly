@@ -13,12 +13,13 @@ import {
   TextInput,
   Select,
 } from '@mantine/core'
-import { IconPlus, IconSearch } from '@tabler/icons-react'
+import { IconPlus, IconSearch, IconBuildingWarehouse } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWineries, useDeleteWinery, useMergeWineries } from '../../hooks/useWineries'
 import { useWines } from '../../hooks/useWines'
 import { WineryCard } from '../../components/WineryCard'
+import { EmptyState } from '../../components/EmptyState'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../../constants/countries'
@@ -200,9 +201,14 @@ function WineryList() {
               )}
             </>
           ) : (
-            <Text c="dimmed" ta="center" py="xl">
-              {t('wineries:list.emptyState')}
-            </Text>
+            <EmptyState
+              icon={<IconBuildingWarehouse size={56} stroke={1.2} color="var(--mantine-color-grape-4)" />}
+              title={t('wineries:list.emptyStateTitle')}
+              message={t('wineries:list.emptyState')}
+              actionLabel={t('wineries:list.emptyStateAction')}
+              actionLeftSection={<IconPlus size={18} />}
+              onAction={() => navigate({ to: '/wineries/add' })}
+            />
           )}
         </Stack>
       </Container>

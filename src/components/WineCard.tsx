@@ -166,6 +166,7 @@ export function WineCard({
               leftSection={<IconGitMerge size={16} />}
               onClick={() => onMerge(wine.id)}
               pr={0}
+              aria-label={t('common:buttons.merge')}
             />
           )}
 
@@ -176,6 +177,7 @@ export function WineCard({
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}
               pr={0}
+              aria-label={t('common:buttons.edit')}
             />
           )}
 
@@ -186,6 +188,7 @@ export function WineCard({
               leftSection={<IconTrash size={16} />}
               onClick={() => onDelete(wine.id)}
               pr={0}
+              aria-label={t('common:buttons.delete')}
             />
           )}
         </Group>

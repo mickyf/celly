@@ -8,6 +8,7 @@ import { useWineLocations, useAddWineLocation, useUpdateWineLocation, useDeleteW
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../../components/PageHeader'
 import type { BreadcrumbItem } from '../../../components/Breadcrumb'
+import { RouteError } from '../../../components/RouteError'
 
 interface WineEditSearch {
   from?: string
@@ -17,6 +18,7 @@ interface WineEditSearch {
 
 export const Route = createFileRoute('/wines/$id/edit')({
   component: EditWine,
+  errorComponent: RouteError,
   validateSearch: (search: Record<string, unknown>): WineEditSearch => {
     return {
       from: typeof search.from === 'string' ? search.from : undefined,

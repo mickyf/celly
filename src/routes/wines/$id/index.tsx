@@ -39,6 +39,7 @@ import {
 } from '../../../hooks/useStockMovements'
 import { useEnrichWine } from '../../../hooks/useWineEnrichment'
 import { useWinePhotoUrl } from '../../../hooks/useWinePhotoUrl'
+import { RouteError } from '../../../components/RouteError'
 import { useDisclosure } from '@mantine/hooks'
 import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
 import { TastingNoteCard } from '../../../components/TastingNoteCard'
@@ -61,6 +62,7 @@ interface WineDetailSearch {
 
 export const Route = createFileRoute('/wines/$id/')({
   component: WineDetail,
+  errorComponent: RouteError,
   validateSearch: (search: Record<string, unknown>): WineDetailSearch => {
     return {
       from: typeof search.from === 'string' ? search.from : undefined,

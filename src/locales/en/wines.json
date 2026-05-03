@@ -6,6 +6,8 @@
     "showingCountSingle": "Showing {{filtered}} of {{total}} wine",
     "addButton": "Add Wine",
     "emptyState": "No wines yet. Start by adding your first bottle!",
+    "emptyStateTitle": "Your cellar is empty",
+    "emptyStateAction": "Add your first wine",
     "noResults": "No wines match your filters. Try adjusting your search criteria."
   },
   "detail": {

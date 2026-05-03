@@ -8,9 +8,11 @@ import { useAddWineLocation } from '../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/PageHeader'
 import type { BreadcrumbItem } from '../../components/Breadcrumb'
+import { RouteError } from '../../components/RouteError'
 
 export const Route = createFileRoute('/wines/add')({
   component: AddWine,
+  errorComponent: RouteError,
 })
 
 function AddWine() {

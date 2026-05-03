@@ -60,6 +60,7 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerg
               leftSection={<IconGitMerge size={16} />}
               onClick={() => onMerge(winery.id)}
               pr={0}
+              aria-label={t('common:buttons.merge')}
             />
           )}
           {onEdit && (
@@ -69,6 +70,7 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerg
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}
               pr={0}
+              aria-label={t('common:buttons.edit')}
             />
           )}
           {onDelete && (
@@ -79,6 +81,7 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerg
               onClick={() => onDelete(winery.id)}
               disabled={wineCount > 0}
               pr={0}
+              aria-label={t('common:buttons.delete')}
             />
           )}
         </Group>

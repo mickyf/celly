@@ -67,7 +67,7 @@ function RootLayout() {
         <AppShell.Header>
           <Group h="100%" px="md" justify="space-between">
             <Group>
-              <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+              <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" aria-label={t('buttons.openMenu')} />
               <Anchor component={Link} to="/" underline="never" c="inherit">
                 <Group gap="xs">
                   <IconBottle size={28} stroke={1.5} />

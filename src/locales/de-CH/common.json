@@ -3,13 +3,15 @@
     "add": "Hinzufügen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
+    "merge": "Zusammenführen",
     "cancel": "Abbrechen",
     "save": "Speichern",
     "back": "Zurück",
     "viewDetails": "Details",
     "clearAll": "Alle löschen",
     "showFilters": "Filter anzeigen",
-    "hideFilters": "Filter ausblenden"
+    "hideFilters": "Filter ausblenden",
+    "openMenu": "Menü öffnen"
   },
   "actions": {
     "search": "Suchen",
