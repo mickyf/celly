@@ -15,8 +15,6 @@
   },
   "readyText": "{{count}} von {{total}} Weinen befinden sich in ihrem optimalen Trinkfenster",
   "readyCount": "{{count}} Weine",
-  "grapeCount": "{{count}} Wein",
-  "grapeCount_other": "{{count}} Weine",
   "noGrapes": "Noch keine Weine mit Rebsorten vorhanden",
   "quickActions": {
     "addWine": {

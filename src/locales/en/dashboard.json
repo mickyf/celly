@@ -15,8 +15,6 @@
   },
   "readyText": "{{count}} out of {{total}} wines are within their optimal drinking window",
   "readyCount": "{{count}} wines",
-  "grapeCount": "{{count}} wine",
-  "grapeCount_other": "{{count}} wines",
   "noGrapes": "No wines with grape varieties yet",
   "quickActions": {
     "addWine": {

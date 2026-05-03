@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { AuthSplash } from '../../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
-import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Modal, Progress } from '@mantine/core'
+import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Modal, Progress, ActionIcon } from '@mantine/core'
 import { IconPlus, IconSparkles, IconBottle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
@@ -334,24 +334,48 @@ function WineList() {
                 {t('wines:list.subtitle')}
               </Text>
             </div>
-            <Group>
+            <Group gap="xs">
               {wines && wines.length > 0 && winesNeedingEnrichment > 0 && (
-                <Button
-                  leftSection={<IconSparkles size={20} />}
-                  onClick={handleBulkEnrich}
-                  loading={bulkEnrich.isPending}
-                  variant="light"
-                  color="grape"
-                >
-                  {t('wines:bulkEnrichment.button', { count: winesNeedingEnrichment })}
-                </Button>
+                <>
+                  <Button
+                    leftSection={<IconSparkles size={20} />}
+                    onClick={handleBulkEnrich}
+                    loading={bulkEnrich.isPending}
+                    variant="light"
+                    color="grape"
+                    visibleFrom="sm"
+                  >
+                    {t('wines:bulkEnrichment.button', { count: winesNeedingEnrichment })}
+                  </Button>
+                  <ActionIcon
+                    size="lg"
+                    variant="light"
+                    color="grape"
+                    onClick={handleBulkEnrich}
+                    loading={bulkEnrich.isPending}
+                    hiddenFrom="sm"
+                    aria-label={t('wines:bulkEnrichment.button', { count: winesNeedingEnrichment })}
+                  >
+                    <IconSparkles size={20} />
+                  </ActionIcon>
+                </>
               )}
               <Button
                 leftSection={<IconPlus size={20} />}
                 onClick={() => navigate({ to: '/wines/add' })}
+                visibleFrom="sm"
               >
                 {t('wines:list.addButton')}
               </Button>
+              <ActionIcon
+                size="lg"
+                variant="filled"
+                onClick={() => navigate({ to: '/wines/add' })}
+                hiddenFrom="sm"
+                aria-label={t('wines:list.addButton')}
+              >
+                <IconPlus size={20} />
+              </ActionIcon>
             </Group>
           </Group>
 

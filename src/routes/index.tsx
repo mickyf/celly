@@ -203,18 +203,22 @@ function Dashboard() {
                 {t('dashboard:sections.topGrapes')}
               </Text>
               {stats.topGrapes.length > 0 ? (
-                <Stack gap="xs">
+                <Group gap="xs">
                   {stats.topGrapes.map((item) => (
-                    <Group key={item.grape} justify="space-between">
-                      <Badge variant="light" size="lg">
-                        {item.grape}
-                      </Badge>
-                      <Text size="sm" fw={500}>
-                        {t('dashboard:grapeCount', { count: item.count })}
-                      </Text>
-                    </Group>
+                    <Badge
+                      key={item.grape}
+                      variant="light"
+                      size="lg"
+                      rightSection={
+                        <Text size="xs" fw={700}>
+                          {item.count}
+                        </Text>
+                      }
+                    >
+                      {item.grape}
+                    </Badge>
                   ))}
-                </Stack>
+                </Group>
               ) : (
                 <Text size="sm" c="dimmed">
                   {t('dashboard:noGrapes')}
