@@ -45,6 +45,7 @@
 ## bugs
 - image delete is not stored on wine
 - no feedback on single wine AI enrichement when there's nothing to enrich any more
+- adding a wine doesn't close the form, it should move to the detail view on success
 
 ## minor
 - remove degustation notes from dashboard
