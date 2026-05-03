@@ -5,6 +5,7 @@ import { showMutationError } from '../lib/mutationError'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import { resizeImage } from '../lib/imageResize'
+import { extractPhotoPath } from '../lib/winePhoto'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -344,6 +345,41 @@ export const useUploadWinePhoto = () => {
         message: t('wines:notifications.photoUploaded.message'),
         color: 'green',
       })
+    },
+    onError: (error) => showMutationError(t, error),
+  })
+}
+
+export const useDeleteWinePhoto = () => {
+  const { t } = useTranslation(['wines'])
+
+  return useMutation({
+    mutationFn: async ({ photoUrl }: { photoUrl: string }) => {
+      const path = extractPhotoPath(photoUrl)
+      if (!path) return
+
+      Sentry.addBreadcrumb({
+        category: 'data.mutation',
+        message: 'Deleting wine photo',
+        level: 'info',
+        data: { path },
+      })
+
+      const { error } = await supabase.storage.from('wine-images').remove([path])
+
+      if (error) {
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'supabase_storage',
+            bucket: 'wine-images',
+            operation: 'remove',
+          },
+          contexts: {
+            storage: { bucket: 'wine-images', file_path: path },
+          },
+        })
+        throw error
+      }
     },
     onError: (error) => showMutationError(t, error),
   })

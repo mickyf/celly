@@ -43,9 +43,9 @@
 - ~~MCP server for adding a wine or winery~~
 
 ## bugs
-- image delete is not stored on wine
-- no feedback on single wine AI enrichement when there's nothing to enrich any more
-- adding a wine doesn't close the form, it should move to the detail view on success
+- ~~image delete is not stored on wine~~
+- ~~no feedback on single wine AI enrichement when there's nothing to enrich any more~~
+- ~~adding a wine doesn't close the form, it should move to the detail view on success~~
 
 ## minor
 - remove degustation notes from dashboard
@@ -56,19 +56,20 @@
 - mobile view: wine cards should hide the image block if no image is available (too many useless placeholder images are displayed on scrolling the list), but keep it if desktop
 - move the merge button from the wine card to the detail view (next to edit)
 - wine detail view: set an image max height
-- remove obvious comments
-
+- ~~remove obvious comments~~
 
 ## major
 - simplify stock changes with an up- and down-button on the card
 - cellar overview: 
   - click on an empty place and select an un-placed wine to place it there
   - click on a placed wine and select if remove from the place or open the wine
+  - add wine: display the cellar overview and let the user click the places, where the bottles were placed. Like on a seat-booking-overview.
+  - wine location flow is unreliable: insert returns 409 Conflict, UX needs a rethink
 - feature: add wine from free text input
 - feature: add multiple wines from order document
 - feature: password change function is missing
 - Branding: icon and logo
 
 ## security/technical
-- upgrade dependencies
+- ~~upgrade dependencies~~
 - add a central error handling function

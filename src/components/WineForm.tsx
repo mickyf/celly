@@ -31,7 +31,7 @@ type Wine = Database['public']['Tables']['wines']['Row']
 
 interface WineFormProps {
   wine?: Wine
-  onSubmit: (values: WineFormValues, photo?: File) => void
+  onSubmit: (values: WineFormValues, photo?: File, photoCleared?: boolean) => void
   onCancel?: () => void
   isLoading?: boolean
 }
@@ -197,7 +197,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   }
 
   const handleSubmit = (values: WineFormValues) => {
-    onSubmit(values, photoFile || undefined)
+    onSubmit(values, photoFile || undefined, photoCleared)
   }
 
   const handleAddWinery = async () => {

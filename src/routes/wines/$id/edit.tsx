@@ -4,7 +4,7 @@ import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { WineForm, type WineFormValues } from '../../../components/WineForm'
-import { useWine, useUpdateWine, useUploadWinePhoto } from '../../../hooks/useWines'
+import { useWine, useUpdateWine, useUploadWinePhoto, useDeleteWinePhoto } from '../../../hooks/useWines'
 import { useWineLocations, useAddWineLocation, useUpdateWineLocation, useDeleteWineLocation } from '../../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../../components/PageHeader'
@@ -39,6 +39,7 @@ function EditWine() {
   const { data: wine, isLoading } = useWine(id)
   const updateWine = useUpdateWine()
   const uploadPhoto = useUploadWinePhoto()
+  const deletePhoto = useDeleteWinePhoto()
 
   // Generate breadcrumbs based on navigation context
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
@@ -76,24 +77,33 @@ function EditWine() {
   const updateLocation = useUpdateWineLocation()
   const deleteLocation = useDeleteWineLocation()
 
-  const handleSubmit = async (values: WineFormValues, photo?: File) => {
+  const handleSubmit = async (values: WineFormValues, photo?: File, photoCleared?: boolean) => {
     try {
       // Extract locations from values
       const { locations, ...wineValues } = values
+
+      // If photo was cleared (and no replacement), remove storage object and null the column
+      const removingPhoto = photoCleared && !photo && wine?.photo_url
 
       // Update the wine
       await updateWine.mutateAsync({
         id,
         ...wineValues,
+        ...(removingPhoto ? { photo_url: null } : {}),
       })
+
+      if (removingPhoto && wine?.photo_url) {
+        await deletePhoto.mutateAsync({ photoUrl: wine.photo_url })
+      }
 
       // Sync locations using existingLocations from useWineLocations hook
       if (existingLocations) {
+        const validLocations = locations.filter((l) => l.cellar_id)
         const locationsToDelete = existingLocations.filter(
-          (existing) => !locations.find((l) => l.id === existing.id)
+          (existing) => !validLocations.find((l) => l.id === existing.id)
         )
-        const locationsToUpdate = locations.filter((l) => l.id)
-        const locationsToAdd = locations.filter((l) => !l.id)
+        const locationsToUpdate = validLocations.filter((l) => l.id)
+        const locationsToAdd = validLocations.filter((l) => !l.id)
 
         await Promise.all([
           ...locationsToDelete.map((l) =>
