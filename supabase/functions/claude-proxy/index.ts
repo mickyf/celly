@@ -45,6 +45,33 @@ function validateImage(
   return { ok: true, mediaType: imageMediaType as AllowedImageType }
 }
 
+// Claude responses sometimes wrap JSON in ```json fences, sometimes follow
+// the JSON with explanation prose. The previous greedy /\{[\s\S]*\}/ matched
+// from the first { to the last }, which broke when a second {} appeared in
+// trailing text. Try fence first, then balanced braces.
+function extractJsonBlock(text: string): string | null {
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  if (fence) return fence[1]
+  const start = text.indexOf("{")
+  if (start === -1) return null
+  let depth = 0
+  let inString = false
+  let escape = false
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]
+    if (escape) { escape = false; continue }
+    if (ch === "\\") { escape = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === "{") depth++
+    else if (ch === "}") {
+      depth--
+      if (depth === 0) return text.slice(start, i + 1)
+    }
+  }
+  return null
+}
+
 // Valid country codes
 const WINE_COUNTRIES = [
   "FR", "IT", "ES", "US", "AU", "AR", "CL", "DE", "PT", "NZ", "ZA", "AT",
@@ -241,13 +268,12 @@ Important:
   const responseText =
     message.content[0].type === "text" ? message.content[0].text : ""
 
-  // Extract JSON from the response (Claude might wrap it in markdown)
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
     throw new Error("Failed to parse pairing response from Claude")
   }
 
-  const parsedResponse = JSON.parse(jsonMatch[0])
+  const parsedResponse = JSON.parse(jsonMatch)
 
   // Map the recommendations to include full wine details
   interface PairingRec { wineIndex: number; rank: number; pairingScore: number; explanation: string }
@@ -335,8 +361,7 @@ Important guidelines:
   const responseText =
     message.content[0].type === "text" ? message.content[0].text : ""
 
-  // Extract JSON from the response (Claude might wrap it in markdown)
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
     return {
       enrichmentData: null,
@@ -344,7 +369,7 @@ Important guidelines:
     }
   }
 
-  const parsedResponse = JSON.parse(jsonMatch[0])
+  const parsedResponse = JSON.parse(jsonMatch)
 
   // Validate the response data
   const enrichmentData: Record<string, unknown> = {
@@ -501,7 +526,7 @@ Important guidelines:
   const responseText =
     message.content[0].type === "text" ? message.content[0].text : ""
 
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
     return {
       enrichmentData: null,
@@ -509,7 +534,7 @@ Important guidelines:
     }
   }
 
-  const parsedResponse = JSON.parse(jsonMatch[0])
+  const parsedResponse = JSON.parse(jsonMatch)
 
   // Validate the response data
   const enrichmentData: Record<string, unknown> = {
