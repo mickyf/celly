@@ -53,8 +53,8 @@ function EditWinery() {
 
       // Navigate back to winery detail
       navigate({ to: '/wineries/$id', params: { id } })
-    } catch (error) {
-      console.error('Error updating winery:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 

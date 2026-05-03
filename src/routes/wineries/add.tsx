@@ -51,8 +51,8 @@ function AddWinery() {
       } else {
         navigate({ to: '/wineries' })
       }
-    } catch (error) {
-      console.error('Error adding winery:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 

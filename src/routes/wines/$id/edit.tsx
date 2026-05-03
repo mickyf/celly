@@ -135,8 +135,8 @@ function EditWine() {
       }
 
       navigate({ to: '/wines/$id', params: { id } })
-    } catch (error) {
-      console.error('Error updating wine:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 

@@ -191,8 +191,8 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
           food_pairings: data.foodPairings || form.values.food_pairings,
         })
       }
-    } catch (error) {
-      console.error('Identification failed:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 
@@ -211,8 +211,8 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       setNewWineryName('')
       setNewWineryCountry(null)
       setWineryModalOpened(false)
-    } catch (error) {
-      console.error('Failed to add winery:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 
@@ -255,8 +255,8 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       }
       setNewCellarName('')
       setCellarModalOpened(false)
-    } catch (error) {
-      console.error('Failed to add cellar:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 

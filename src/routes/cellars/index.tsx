@@ -45,8 +45,8 @@ function CellarOverview() {
       setSelectedCellarId(result.id)
       setNewCellarName('')
       setCellarModalOpened(false)
-    } catch (error) {
-      console.error('Failed to add cellar:', error)
+    } catch {
+      // Error already captured by the mutation hook and surfaced via toast.
     }
   }
 

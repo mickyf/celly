@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { showMutationError } from '../lib/mutationError'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import type { Tables, TablesInsert, TablesUpdate } from '../types/database'
@@ -22,7 +23,7 @@ export const useTastingNotes = (wineId?: string) => {
 
       let query = supabase
         .from('tasting_notes')
-        .select('*')
+        .select('id, wine_id, rating, notes, tasted_at, user_id')
         .order('tasted_at', { ascending: false })
 
       if (wineId) {
@@ -131,13 +132,7 @@ export const useAddTastingNote = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -198,13 +193,7 @@ export const useUpdateTastingNote = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -260,12 +249,6 @@ export const useDeleteTastingNote = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }

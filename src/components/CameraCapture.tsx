@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { Modal, Button, Group, Alert } from '@mantine/core'
 import { IconAlertCircle, IconCamera, IconCameraRotate } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import * as Sentry from '@sentry/react'
 
 interface CameraCaptureProps {
   opened: boolean
@@ -42,8 +43,8 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
         await new Promise<void>((resolve) => {
           if (videoRef.current) {
             videoRef.current.onloadedmetadata = () => {
-              videoRef.current?.play().catch(err => {
-                console.error('Error playing video:', err)
+              videoRef.current?.play().catch((err) => {
+                Sentry.captureException(err, { tags: { source: 'camera-capture', op: 'video.play' } })
               })
               resolve()
             }
@@ -56,7 +57,7 @@ export function CameraCapture({ opened, onClose, onCapture }: CameraCaptureProps
       setStream(mediaStream)
       setFacingMode(mode)
     } catch (err) {
-      console.error('Error accessing camera:', err)
+      Sentry.captureException(err, { tags: { source: 'camera-capture', op: 'getUserMedia' } })
       setError(t('common:camera.cameraError'))
     }
   }, [stream, t])

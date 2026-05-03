@@ -102,6 +102,7 @@
       "message": "Ein unerwarteter Fehler ist aufgetreten. Unser Team wurde benachrichtigt.",
       "retry": "Erneut versuchen",
       "home": "Zum Dashboard"
-    }
+    },
+    "toastTitle": "Ein Fehler ist aufgetreten"
   }
 }

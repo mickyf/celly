@@ -69,7 +69,6 @@ export function WineryForm({
         })
       }
     } catch (err) {
-      console.error(err)
       notifications.show({
         title: t('wineries:enrichment.error'),
         message: String(err),

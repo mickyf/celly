@@ -102,6 +102,7 @@
       "message": "An unexpected error occurred. Our team has been notified.",
       "retry": "Try Again",
       "home": "Go to Dashboard"
-    }
+    },
+    "toastTitle": "Something went wrong"
   }
 }

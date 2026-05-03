@@ -84,8 +84,9 @@ function AddWine() {
 
       // Navigate to the newly created wine detail page
       navigate({ to: '/wines/$id', params: { id: wine.id } })
-    } catch (error) {
-      console.error('Error adding wine:', error)
+    } catch {
+      // Error is captured by the mutation's own Sentry handler and surfaced
+      // to the user via Mantine notification.
     }
   }
 

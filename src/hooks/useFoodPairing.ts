@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { getFoodPairing, type PairingResponse } from '../lib/claude'
-import { notifications } from '@mantine/notifications'
+import { showMutationError } from '../lib/mutationError'
 import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
 
@@ -13,6 +14,7 @@ interface PairingRequest {
 }
 
 export const useFoodPairing = () => {
+  const { t } = useTranslation('common')
   return useMutation({
     mutationFn: async ({ menu, wines, language = 'de-CH' }: PairingRequest): Promise<PairingResponse> => {
       Sentry.addBreadcrumb({
@@ -39,13 +41,6 @@ export const useFoodPairing = () => {
 
       return await getFoodPairing(menu, wines, language)
     },
-    onError: (error: Error) => {
-      // Error already captured in mutationFn or claude.ts, just show notification
-      notifications.show({
-        title: 'Pairing failed',
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error: Error) => showMutationError(t, error),
   })
 }

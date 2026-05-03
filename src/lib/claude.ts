@@ -94,7 +94,7 @@ async function callClaudeProxy<T>(
   })
 
   if (error) {
-    console.error('Edge Function error:', error)
+    Sentry.captureException(error, { tags: { source: 'claude-proxy' } })
     throw new Error(error.message || 'Failed to call Claude API proxy')
   }
 
