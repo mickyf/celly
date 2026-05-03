@@ -18,6 +18,10 @@ npm run build
 # Lint codebase
 npm run lint
 
+# Run tests (Vitest + happy-dom + React Testing Library)
+npm test           # single run
+npm run test:watch # watch mode
+
 # Preview production build
 npm run preview
 
@@ -38,6 +42,26 @@ npx supabase migration new <name>  # Create new migration
 cd mcp-server && npm install && npm run build  # Build MCP server
 cd mcp-server && npm run dev                   # Watch mode for development
 ```
+
+## Git hooks
+
+A Husky pre-push hook (`.husky/pre-push`) runs `tsc -b && npm test` before every push. Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional. Lint is intentionally not in the hook yet (existing errors block all pushes); re-add once those are cleared.
+
+## Testing rule (always consider tests)
+
+When making code changes, **always consider whether a test should accompany the change** and either add one or briefly state why it's not warranted. Defaults:
+
+- **Bug fix** → add a regression test that would have failed on the broken code.
+- **New pure function, utility, or hook logic** → add a unit test.
+- **New component with non-trivial logic or branches** → add a render/interaction test using `@testing-library/react`.
+- **Refactor of pure logic** → write tests *before* refactoring if none exist.
+- **Copy/text, styling-only, config, or migration files** → tests are usually not warranted; say so explicitly.
+
+Conventions:
+- Co-locate tests next to source: `foo.ts` → `foo.test.ts` (or `.test.tsx`).
+- Use `vitest` with explicit imports (`import { describe, it, expect } from 'vitest'`) — no globals.
+- Prefer pure logic tests over heavy mocking. Only mock Supabase / Claude / network when there is no smaller seam.
+- Tests must pass before pushing — the pre-push hook will block otherwise.
 
 ## Architecture
 
