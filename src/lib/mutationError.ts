@@ -10,5 +10,7 @@ export function showMutationError(t: TFunction, error: Error) {
     title: t('common:errors.toastTitle'),
     message: error.message,
     color: 'red',
+    autoClose: 8000,
+    withCloseButton: true,
   })
 }

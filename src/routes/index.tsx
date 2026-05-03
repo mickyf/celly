@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
   Container,
@@ -8,8 +9,6 @@ import {
   Paper,
   Group,
   SimpleGrid,
-  Loader,
-  Center,
   Badge,
   Button,
   Table,
@@ -27,6 +26,7 @@ import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import { useDashboardStats } from '../hooks/useDashboard'
 import { useTranslation } from 'react-i18next'
+import { DashboardStatsSkeleton } from '../components/skeletons'
 import dayjs from 'dayjs'
 import { ConsumptionChart } from '../components/ConsumptionChart'
 
@@ -49,7 +49,7 @@ function Dashboard() {
   }, [])
 
   if (authLoading) {
-    return null
+    return <AuthSplash />
   }
 
   if (!user) {
@@ -58,9 +58,15 @@ function Dashboard() {
 
   if (isLoading || !stats) {
     return (
-      <Center h={400}>
-        <Loader size="lg" />
-      </Center>
+      <Container size="lg">
+        <Stack gap="xl">
+          <div>
+            <Title order={1}>{t('dashboard:title')}</Title>
+            <Text c="dimmed" size="lg">{t('dashboard:subtitle')}</Text>
+          </div>
+          <DashboardStatsSkeleton />
+        </Stack>
+      </Container>
     )
   }
 

@@ -50,7 +50,7 @@ const updateSW = registerSW({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme}>
-      <Notifications />
+      <Notifications autoClose={5000} />
       <App />
     </MantineProvider>
   </StrictMode>,

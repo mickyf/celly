@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
-import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Loader, Center, Modal, Progress, Select } from '@mantine/core'
+import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Modal, Progress, Select } from '@mantine/core'
 import { IconPlus, IconSparkles, IconBottle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
@@ -10,6 +11,7 @@ import { useStockMovements } from '../../hooks/useStockMovements'
 import { useBulkEnrichWines } from '../../hooks/useWineEnrichment'
 import { WineCard } from '../../components/WineCard'
 import { EmptyState } from '../../components/EmptyState'
+import { WineGridSkeleton } from '../../components/skeletons'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
@@ -359,7 +361,7 @@ function WineList() {
   }, [wines])
 
   if (authLoading) {
-    return null
+    return <AuthSplash />
   }
 
   if (!user) {
@@ -399,9 +401,7 @@ function WineList() {
           </Group>
 
           {isLoading ? (
-            <Center py="xl">
-              <Loader size="lg" />
-            </Center>
+            <WineGridSkeleton />
           ) : wines && wines.length > 0 ? (
             <>
               <WineFilters

@@ -18,6 +18,7 @@ import type { User } from '@supabase/supabase-js'
 import { useTranslation } from 'react-i18next'
 import { LanguageSelector } from '../components/LanguageSelector'
 import { AppErrorBoundary } from '../components/ErrorBoundary'
+import { OfflineBanner } from '../components/OfflineBanner'
 import { setSentryUser } from '../lib/sentryUser'
 
 export const Route = createRootRoute({
@@ -149,6 +150,7 @@ function RootLayout() {
         </AppShell.Navbar>
 
         <AppShell.Main>
+          <OfflineBanner />
           <Outlet />
         </AppShell.Main>
       </AppShell>
