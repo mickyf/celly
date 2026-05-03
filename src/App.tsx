@@ -29,12 +29,12 @@ const queryClient = new QueryClient({
   },
 })
 
-function App() {
+const App = Sentry.withProfiler(function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>
   )
-}
+})
 
-export default Sentry.withProfiler(App)
+export default App

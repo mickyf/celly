@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import {
   Container,
   Title,
@@ -77,7 +78,7 @@ function WineDetail() {
   const { id } = Route.useParams()
   const search = Route.useSearch()
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
   const { data: signedPhotoUrl } = useWinePhotoUrl(wine?.photo_url)
@@ -95,7 +96,7 @@ function WineDetail() {
   // Get country information for winery
   const wineryCountry = useMemo(() => {
     return winery?.country_code ? getCountryByCode(winery.country_code, t) : null
-  }, [winery?.country_code, t])
+  }, [winery, t])
 
   // Generate breadcrumbs based on navigation context
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {

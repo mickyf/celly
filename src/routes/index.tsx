@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import {
   Container,
   Title,
@@ -36,7 +37,7 @@ export const Route = createFileRoute('/')({
 function Dashboard() {
   const { t } = useTranslation(['dashboard', 'common'])
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: stats, isLoading } = useDashboardStats()
 

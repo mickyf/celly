@@ -28,8 +28,8 @@ export function PageHeader({ breadcrumbs, onBack, title, actions }: PageHeaderPr
         router.history.back()
       } else if (parentBreadcrumb?.to) {
         navigate({
-          to: parentBreadcrumb.to as any,
-          search: parentBreadcrumb.search as any
+          to: parentBreadcrumb.to as never,
+          search: parentBreadcrumb.search as never,
         })
       }
     }

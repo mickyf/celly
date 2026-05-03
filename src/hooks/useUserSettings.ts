@@ -3,9 +3,13 @@ import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
+import type { Database } from '../types/database'
+
+type UserSettingRow = Database['public']['Tables']['user_settings']['Row']
+type Json = Database['public']['Tables']['user_settings']['Row']['value']
 
 export const useUserSettings = () => {
-    return useQuery({
+    return useQuery<UserSettingRow[]>({
         queryKey: ['user_settings'],
         queryFn: async () => {
             Sentry.addBreadcrumb({
@@ -14,9 +18,9 @@ export const useUserSettings = () => {
                 level: 'info',
             })
 
-            const { data, error } = await (supabase
-                .from('user_settings' as any)
-                .select('*') as any)
+            const { data, error } = await supabase
+                .from('user_settings')
+                .select('*')
 
             if (error) {
                 Sentry.captureException(error, {
@@ -28,20 +32,20 @@ export const useUserSettings = () => {
                 })
                 throw error
             }
-            return data as any[]
+            return data ?? []
         },
     })
 }
 
 export const useUserSetting = (key: string) => {
-    return useQuery({
+    return useQuery<UserSettingRow | null>({
         queryKey: ['user_settings', key],
         queryFn: async () => {
-            const { data, error } = await (supabase
-                .from('user_settings' as any)
+            const { data, error } = await supabase
+                .from('user_settings')
                 .select('*')
                 .eq('key', key)
-                .maybeSingle() as any)
+                .maybeSingle()
 
             if (error) {
                 Sentry.captureException(error, {
@@ -54,7 +58,7 @@ export const useUserSetting = (key: string) => {
                 })
                 throw error
             }
-            return data as any | null
+            return data
         },
     })
 }
@@ -64,7 +68,7 @@ export const useUpdateUserSetting = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async ({ key, value }: { key: string; value: any }) => {
+        mutationFn: async ({ key, value }: { key: string; value: Json }) => {
             Sentry.addBreadcrumb({
                 category: 'data.mutation',
                 message: 'Updating user setting',
@@ -80,17 +84,17 @@ export const useUpdateUserSetting = () => {
                 throw new Error('Not authenticated')
             }
 
-            const { data, error } = await (supabase
-                .from('user_settings' as any)
+            const { data, error } = await supabase
+                .from('user_settings')
                 .upsert(
                     {
                         user_id: user.id,
                         key,
                         value,
-                        updated_at: new Date().toISOString()
+                        updated_at: new Date().toISOString(),
                     },
-                    { onConflict: 'user_id,key' }
-                ) as any)
+                    { onConflict: 'user_id,key' },
+                )
                 .select()
                 .single()
 

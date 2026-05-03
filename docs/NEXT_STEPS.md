@@ -50,6 +50,8 @@
 - mobile view: filter control: the expand ("Filter anzeigen") should be only the chevron, no label
 - mobile view: wine cards should hide the image block if no image is available (too many useless placeholder images are displayed on scrolling the list), but keep it if desktop
 - move the merge button from the wine card to the detail view (next to edit)
+- wine detail view: set an image max height
+- remove obvious comments
  
 
 ## major
@@ -59,3 +61,7 @@
   - click on a placed wine and select if remove from the place or open the wine
 - feature: add wine from free text input
 - feature: add multiple wines from order document
+- feature: password change function is missing
+
+## security
+- upgrade dependencies

@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import {
   Container,
   Title,
@@ -35,7 +36,7 @@ export const Route = createFileRoute('/pairing')({
 function FoodPairing() {
   const { t, i18n } = useTranslation(['pairing', 'common'])
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [menu, setMenu] = useState('')
   const [recommendations, setRecommendations] = useState<PairingRecommendation[]>([])

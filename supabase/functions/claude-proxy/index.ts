@@ -79,16 +79,10 @@ interface WineEnrichmentFromImageRequest {
   imageMediaType: string
 }
 
-interface WineryEnrichmentRequest {
-  type: "winery-enrichment"
-  wineryName: string
-}
-
 type ClaudeProxyRequest =
   | FoodPairingRequest
   | WineEnrichmentRequest
   | WineEnrichmentFromImageRequest
-  | WineryEnrichmentRequest
 
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req)
@@ -110,7 +104,7 @@ serve(async (req) => {
     }
 
     // Get Claude API key from user settings first
-    const { data: userSettings, error: settingsError } = await supabase
+    const { data: userSettings } = await supabase
       .from('user_settings')
       .select('value')
       .eq('user_id', userId)
@@ -183,7 +177,6 @@ async function handleFoodPairing(
   request: FoodPairingRequest
 ) {
   const { menu, availableWines, language } = request
-  const currentYear = new Date().getFullYear()
 
   // Format wine list for Claude. Wine names come from user input, so sandbox.
   const wineList = availableWines
@@ -259,7 +252,8 @@ Important:
   const parsedResponse = JSON.parse(jsonMatch[0])
 
   // Map the recommendations to include full wine details
-  const recommendations = parsedResponse.recommendations.map((rec: any) => {
+  interface PairingRec { wineIndex: number; rank: number; pairingScore: number; explanation: string }
+  const recommendations = parsedResponse.recommendations.map((rec: PairingRec) => {
     const wine = availableWines[rec.wineIndex - 1]
     return {
       wineId: wine.id,
@@ -355,7 +349,7 @@ Important guidelines:
   const parsedResponse = JSON.parse(jsonMatch[0])
 
   // Validate the response data
-  const enrichmentData: any = {
+  const enrichmentData: Record<string, unknown> = {
     confidence: parsedResponse.confidence || "low",
     explanation: parsedResponse.explanation || "No explanation provided",
   }
@@ -520,7 +514,7 @@ Important guidelines:
   const parsedResponse = JSON.parse(jsonMatch[0])
 
   // Validate the response data
-  const enrichmentData: any = {
+  const enrichmentData: Record<string, unknown> = {
     name: parsedResponse.name || "",
     confidence: parsedResponse.confidence || "low",
     explanation: parsedResponse.explanation || "No explanation provided",
@@ -597,69 +591,3 @@ Important guidelines:
   return { enrichmentData }
 }
 
-async function handleWineryEnrichment(
-  anthropic: Anthropic,
-  request: WineryEnrichmentRequest
-) {
-  const { wineryName } = request
-
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
-    max_tokens: 1024,
-    messages: [
-      {
-        role: "user",
-        content: `You are a wine expert.I need you to identify this winery and provide structured data about it.
-
-Winery name: ${wineryName}
-
-Please identify the winery and provide:
-  1. Valid ISO 3166 - 1 alpha - 2 country code(e.g., FR, IT, ES, US)
-  2. Confidence that this is a real winery
-
-Return your response as a JSON object with this exact structure:
-  {
-    "countryCode": "FR",
-      "confidence": "high",
-        "explanation": "Famous winery in Bordeaux, France"
-  }
-
-Important guidelines:
-  - Country codes must be valid ISO 3166 - 1 alpha - 2 codes: ${WINE_COUNTRIES.join(", ")}
-  - Confidence should be "high" for known wineries, "low" if you can't identify it`,
-      },
-    ],
-  })
-
-  // Parse the response
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : ""
-
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
-    return {
-      enrichmentData: null,
-      error: "Failed to parse enrichment response from Claude",
-    }
-  }
-
-  const parsedResponse = JSON.parse(jsonMatch[0])
-
-  // Validate the response data
-  const enrichmentData: any = {
-    confidence: parsedResponse.confidence || "low",
-    explanation: parsedResponse.explanation || "No explanation provided",
-  }
-
-  // Validate country code
-  if (parsedResponse.countryCode) {
-    const validCountryCode = WINE_COUNTRIES.includes(
-      parsedResponse.countryCode.toUpperCase()
-    )
-    if (validCountryCode) {
-      enrichmentData.countryCode = parsedResponse.countryCode.toUpperCase()
-    }
-  }
-
-  return { enrichmentData }
-}

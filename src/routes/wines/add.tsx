@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
@@ -18,7 +19,7 @@ export const Route = createFileRoute('/wines/add')({
 function AddWine() {
   const { t } = useTranslation(['wines', 'common'])
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const addWine = useAddWine()
   const uploadPhoto = useUploadWinePhoto()

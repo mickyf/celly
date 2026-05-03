@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Loader, Center, Modal, Progress, Select } from '@mantine/core'
 import { IconPlus, IconSparkles, IconBottle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
@@ -12,6 +13,19 @@ import { EmptyState } from '../../components/EmptyState'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
+
+const DEFAULT_FILTERS: WineFilterValues = {
+  search: '',
+  winery: null,
+  grapes: [],
+  bottleSizes: [],
+  vintageMin: null,
+  vintageMax: null,
+  priceMin: null,
+  priceMax: null,
+  drinkingWindow: 'all',
+  dataCompleteness: 'all',
+}
 
 export const Route = createFileRoute('/wines/')({
   component: WineList,
@@ -57,7 +71,7 @@ function WineList() {
   const { t } = useTranslation(['wines', 'common'])
   const navigate = useNavigate()
   const search = Route.useSearch()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wines, isLoading } = useWines()
   const { data: wineries } = useWineries()
@@ -93,24 +107,10 @@ function WineList() {
     return map
   }, [allStockMovements])
 
-  // Merge URL search params with default values
-  const defaultFilters: WineFilterValues = {
-    search: '',
-    winery: null,
-    grapes: [],
-    bottleSizes: [],
-    vintageMin: null,
-    vintageMax: null,
-    priceMin: null,
-    priceMax: null,
-    drinkingWindow: 'all',
-    dataCompleteness: 'all',
-  }
-
-  const filters: WineFilterValues = {
-    ...defaultFilters,
-    ...search,
-  }
+  const filters: WineFilterValues = useMemo(
+    () => ({ ...DEFAULT_FILTERS, ...search }),
+    [search],
+  )
 
   // Update filters by navigating with new search params
   const setFilters = (newFilters: WineFilterValues) => {
