@@ -53,7 +53,12 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - **Frontend:** new `extractPhotoPath()` helper (with tests in `src/lib/winePhoto.test.ts`) and `useWinePhotoUrl()` hook (`src/hooks/useWinePhotoUrl.ts`) generate signed URLs with a 1-hour TTL and a 55-minute query staleTime, so URLs refresh ahead of expiry. The helper accepts both legacy public URLs and bare paths, so existing rows keep working.
 - **Render sites updated:** `src/components/WineCard.tsx`, `src/routes/wines/$id/index.tsx`, `src/components/WineForm.tsx` (with a new `photoCleared` flag so the remove-photo button still hides the existing image when no replacement is picked).
 - **Upload:** `useUploadWinePhoto` in `src/hooks/useWines.ts` now stores the storage path instead of a public URL.
-- **Apply locally:** `npx supabase db reset` to run the new migration. **Production:** `npx supabase db push` when ready — note this is one-way; rolling back means manually re-flipping the bucket to public.
+- **Rollout (staged, since this project deploys against production Supabase directly):**
+  1. Deploy the frontend first. `createSignedUrl` works on public buckets too, and the path extractor accepts both legacy public URLs and bare paths, so existing photos keep displaying.
+  2. Verify in the live app that photos load and uploads still work.
+  3. Run `npx supabase db push` to apply `20260503110000_make_wine_images_private.sql`. Bucket flips private + SELECT tightens.
+  4. Re-verify photos load (now strictly via signed URLs).
+- **Rollback:** flip the bucket back to `public:true` in the Supabase dashboard. Instant.
 
 ### ~~P1-3. Prompt injection surface in `claude-proxy`~~ ✅ Done
 - **File:** `supabase/functions/claude-proxy/index.ts`
