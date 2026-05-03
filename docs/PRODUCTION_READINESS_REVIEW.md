@@ -43,15 +43,17 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 
 ### Security & hardening
 
-### P1-1. Sentry-proxy edge function has no auth
-- **File:** `supabase/functions/sentry-proxy/index.ts` (verified — only validates the project ID embedded in the envelope)
-- **Why it matters:** Anyone can POST envelopes and burn your Sentry quota.
-- **Fix:** Verify a Supabase JWT before forwarding. Same pattern as `claude-proxy`.
+### ~~P1-1. Sentry-proxy edge function has no auth~~ → downgraded to P2
+- **File:** `supabase/functions/sentry-proxy/index.ts`
+- **Why it was raised:** Anyone can POST envelopes and burn your Sentry quota.
+- **Why downgraded:** For a personal app, the practical risk is low — the proxy already validates the project ID, Sentry has its own per-project rate limits, and the DSN is public anyway (it ships in the JS bundle). The Sentry browser SDK doesn't pass our Supabase JWT by default; wiring `transportOptions` to inject it adds real complexity for a small win. Revisit if Sentry quota becomes a cost issue.
 
-### P1-2. Storage bucket allows unrestricted SELECT on all photos
-- **File:** `supabase/migrations/20260103090129_create_wine_tables.sql:140-141` (verified — bucket is also `public: true`)
-- **Why it matters:** Any authenticated user can read another user's photos by guessing the `{user_id}/{wine_id}` path. Bucket is also public, so direct URLs bypass RLS entirely.
-- **Fix:** Add `USING (auth.uid()::text = (storage.foldername(name))[1])` to the SELECT policy AND set the bucket to non-public, serving images via signed URLs.
+### ~~P1-2. Storage bucket allows unrestricted SELECT on all photos~~ ✅ Done
+- **Migration:** `supabase/migrations/20260503110000_make_wine_images_private.sql` flips the bucket to `public: false` and replaces the open SELECT policy with a per-user one (`auth.uid() = (storage.foldername(name))[1]`).
+- **Frontend:** new `extractPhotoPath()` helper (with tests in `src/lib/winePhoto.test.ts`) and `useWinePhotoUrl()` hook (`src/hooks/useWinePhotoUrl.ts`) generate signed URLs with a 1-hour TTL and a 55-minute query staleTime, so URLs refresh ahead of expiry. The helper accepts both legacy public URLs and bare paths, so existing rows keep working.
+- **Render sites updated:** `src/components/WineCard.tsx`, `src/routes/wines/$id/index.tsx`, `src/components/WineForm.tsx` (with a new `photoCleared` flag so the remove-photo button still hides the existing image when no replacement is picked).
+- **Upload:** `useUploadWinePhoto` in `src/hooks/useWines.ts` now stores the storage path instead of a public URL.
+- **Apply locally:** `npx supabase db reset` to run the new migration. **Production:** `npx supabase db push` when ready — note this is one-way; rolling back means manually re-flipping the bucket to public.
 
 ### ~~P1-3. Prompt injection surface in `claude-proxy`~~ ✅ Done
 - **File:** `supabase/functions/claude-proxy/index.ts`
@@ -62,18 +64,19 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - **File:** `supabase/functions/claude-proxy/index.ts`
 - **Fix applied:** Added `validateImage()` that whitelists `image/jpeg|png|gif|webp` and rejects payloads larger than 5 MB (matching Claude vision's own limit). Removed the `as any` cast on `media_type` along the way. Returns `{ enrichmentData: null, error }` on rejection so the frontend can surface the failure.
 
-### P1-5. CORS wildcard on edge functions
+### ~~P1-5. CORS wildcard on edge functions~~ ✅ Done
 - **Files:** `supabase/functions/claude-proxy/index.ts`, `supabase/functions/sentry-proxy/index.ts`
-- **Why it matters:** Not exploitable on its own (auth still required for claude-proxy), but tightening is trivial and good hygiene.
-- **Fix:** Replace `Access-Control-Allow-Origin: *` with the actual frontend origin from env.
+- **Fix applied:** Both functions now build CORS headers per request, echoing the origin only if it matches the whitelist `["https://celly.pages.dev", "http://localhost:5173"]`. Added `Vary: Origin` so caches behave correctly. Error responses now also carry CORS headers (previously 401s would fail the browser CORS check).
+- **Note:** Cloudflare Pages preview deployments use ephemeral subdomains (`https://*.celly.pages.dev`) and would currently be blocked. Add a regex check to `ALLOWED_ORIGINS` if you start using previews.
 
 ### ~~P1-6. Auth error messages enable account enumeration~~ ✅ Done
 - **File:** `src/routes/login.tsx`, `src/locales/{en,de-CH}/auth.json`
 - **Fix applied:** Replaced raw `error.message` with new generic translation keys `notifications.loginFailedMessage` ("Invalid email or password.") and `notifications.signupFailedMessage` ("Could not create the account. Please try again.") in both locales. Note: Supabase already genericises login errors at the API level — this also covers the signup leak ("User already registered"), which was the bigger enumeration vector.
 
-### P1-7. Password policy is `length >= 6` client-side only
-- **File:** `src/routes/login.tsx`
-- **Fix:** Configure Supabase Auth password rules in dashboard (min 12 chars + complexity) — server-side, not client.
+### ~~P1-7. Password policy is `length >= 6` client-side only~~ ✅ Done (client side)
+- **Files:** `src/lib/passwordPolicy.ts` (+ `passwordPolicy.test.ts`, 6 tests), `src/routes/login.tsx`, `src/routes/reset-password.tsx`, both `auth.json` locales.
+- **Fix applied:** New `validatePasswordComplexity()` enforces min 8 chars + uppercase + digit + symbol on signup and password reset. Login form relaxed to a non-empty check (so users with older shorter passwords can still sign in). Specific error messages added in EN and de-CH.
+- **Still on you:** Set the matching policy in the Supabase dashboard under Auth → Password requirements. Without that, the server still accepts weaker passwords if anyone bypasses the client.
 
 ### Reliability & UX
 

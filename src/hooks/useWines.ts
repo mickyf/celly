@@ -345,11 +345,9 @@ export const useUploadWinePhoto = () => {
         throw uploadError
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('wine-images').getPublicUrl(filePath)
-
-      return publicUrl
+      // Store the storage path (not a public URL). The bucket is private; views
+      // resolve the path to a signed URL via useWinePhotoUrl.
+      return filePath
     },
     onSuccess: () => {
       Sentry.addBreadcrumb({
