@@ -14,6 +14,7 @@ import {
   Modal,
   Paper,
   SimpleGrid,
+  Select,
 } from '@mantine/core'
 import {
   IconGlass,
@@ -22,10 +23,11 @@ import {
   IconPlus,
   IconBottle,
   IconSparkles,
+  IconGitMerge,
 } from '@tabler/icons-react'
 import { supabase } from '../../../lib/supabase'
-import { useEffect, useState } from 'react'
-import { useWine, useDeleteWine } from '../../../hooks/useWines'
+import { useEffect, useState, useMemo } from 'react'
+import { useWine, useDeleteWine, useMergeWines, useWines } from '../../../hooks/useWines'
 import { useWinery } from '../../../hooks/useWineries'
 import { useWineLocations } from '../../../hooks/useWineLocations'
 import {
@@ -50,7 +52,6 @@ import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../../../constants/countries'
 import type { Database } from '../../../types/database'
 import { PageHeader } from '../../../components/PageHeader'
-import { useMemo } from 'react'
 import type { BreadcrumbItem } from '../../../components/Breadcrumb'
 
 type TastingNote = Database['public']['Tables']['tasting_notes']['Row']
@@ -86,7 +87,9 @@ function WineDetail() {
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
   const { data: locations } = useWineLocations(id)
   const { data: stockMovements, isLoading: movementsLoading } = useStockMovements(id)
+  const { data: allWines } = useWines()
   const deleteWine = useDeleteWine()
+  const mergeWines = useMergeWines()
   const addNoteMutation = useAddTastingNote()
   const updateNote = useUpdateTastingNote()
   const deleteNote = useDeleteTastingNote()
@@ -130,6 +133,32 @@ function WineDetail() {
   const [deleteNoteOpened, { open: openDeleteNote, close: closeDeleteNote }] =
     useDisclosure(false)
   const [editingNote, setEditingNote] = useState<TastingNote | null>(null)
+  const [mergeOpened, { open: openMerge, close: closeMerge }] = useDisclosure(false)
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null)
+
+  const mergeTargetOptions = useMemo(() => {
+    if (!allWines) return []
+    return allWines
+      .filter((w) => w.id !== id)
+      .map((w) => ({
+        value: w.id,
+        label: `${w.name}${w.vintage ? ` (${w.vintage})` : ''} - ${t('wines:card.quantity', { quantity: w.quantity })}`,
+      }))
+  }, [allWines, id, t])
+
+  const handleConfirmMerge = () => {
+    if (!mergeTargetId) return
+    mergeWines.mutate(
+      { sourceId: id, targetId: mergeTargetId },
+      {
+        onSuccess: () => {
+          closeMerge()
+          setMergeTargetId(null)
+          navigate({ to: '/wines/$id', params: { id: mergeTargetId } })
+        },
+      }
+    )
+  }
 
 
   useEffect(() => {
@@ -292,6 +321,14 @@ function WineDetail() {
                 </Button>
                 <Button
                   variant="light"
+                  color="blue"
+                  leftSection={<IconGitMerge size={20} />}
+                  onClick={openMerge}
+                >
+                  {t('common:buttons.merge')}
+                </Button>
+                <Button
+                  variant="light"
                   color="red"
                   leftSection={<IconTrash size={20} />}
                   onClick={openDeleteWine}
@@ -306,7 +343,14 @@ function WineDetail() {
             {/* Wine Photo */}
             <Paper shadow="sm" p="lg" radius="md" withBorder>
               {signedPhotoUrl ? (
-                <Image src={signedPhotoUrl} alt={wine.name} radius="md" loading="lazy" />
+                <Image
+                  src={signedPhotoUrl}
+                  alt={wine.name}
+                  radius="md"
+                  loading="lazy"
+                  fit="contain"
+                  mah={500}
+                />
               ) : (
                 <Center h={300} style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                   <IconBottle size={80} stroke={1.5} color="#adb5bd" />
@@ -569,6 +613,54 @@ function WineDetail() {
           onCancel={closeStockModal}
           isLoading={addStockMovement.isPending}
         />
+      </Modal>
+
+      {/* Merge Wine Modal */}
+      <Modal
+        opened={mergeOpened}
+        onClose={closeMerge}
+        title={t('wines:merge.title')}
+        centered
+        size="lg"
+      >
+        <Stack>
+          <Text size="sm" c="dimmed">
+            {t('wines:merge.description')}
+          </Text>
+
+          <Text size="sm">
+            <strong>{t('wines:merge.source')}:</strong> {wine.name}
+            {wine.vintage && ` (${wine.vintage})`} - {t('wines:card.quantity', { quantity: wine.quantity })}
+          </Text>
+
+          <Select
+            label={t('wines:merge.targetLabel')}
+            placeholder={t('wines:merge.targetPlaceholder')}
+            data={mergeTargetOptions}
+            value={mergeTargetId}
+            onChange={setMergeTargetId}
+            searchable
+            required
+          />
+
+          <Text size="xs" c="dimmed">
+            {t('wines:merge.warning')}
+          </Text>
+
+          <Group justify="flex-end">
+            <Button variant="default" onClick={closeMerge}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button
+              color="blue"
+              onClick={handleConfirmMerge}
+              loading={mergeWines.isPending}
+              disabled={!mergeTargetId}
+            >
+              {t('wines:merge.confirmButton')}
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </>
   )

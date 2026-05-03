@@ -1,5 +1,5 @@
-import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor } from '@mantine/core'
-import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown, IconGitMerge } from '@tabler/icons-react'
+import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor, UnstyledButton } from '@mantine/core'
+import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
@@ -16,7 +16,6 @@ interface WineCardProps {
   onView?: () => void
   onEdit?: () => void
   onDelete?: (id: string) => void
-  onMerge?: (id: string) => void
 }
 
 export function WineCard({
@@ -26,7 +25,6 @@ export function WineCard({
   onView,
   onEdit,
   onDelete,
-  onMerge,
 }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
   const { data: signedPhotoUrl } = useWinePhotoUrl(wine.photo_url)
@@ -41,23 +39,35 @@ export function WineCard({
     currentYear >= wine.drink_window_start &&
     currentYear <= wine.drink_window_end
 
+  const photoBlock = signedPhotoUrl ? (
+    <Image src={signedPhotoUrl} height={200} alt={wine.name} fit='contain' loading="lazy" />
+  ) : (
+    <div
+      style={{
+        height: 200,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8f9fa',
+      }}
+    >
+      <IconGlass size={64} stroke={1.5} color="#adb5bd" />
+    </div>
+  )
+
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
-        {signedPhotoUrl ? (
-          <Image src={signedPhotoUrl} height={200} alt={wine.name} fit='contain' loading="lazy" />
-        ) : (
-          <div
-            style={{
-              height: 200,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#f8f9fa',
-            }}
+        {onView ? (
+          <UnstyledButton
+            onClick={onView}
+            aria-label={t('common:buttons.viewDetails')}
+            style={{ display: 'block', width: '100%' }}
           >
-            <IconGlass size={64} stroke={1.5} color="#adb5bd" />
-          </div>
+            {photoBlock}
+          </UnstyledButton>
+        ) : (
+          photoBlock
         )}
       </Card.Section>
 
@@ -158,21 +168,9 @@ export function WineCard({
             </Button>
           )}
 
-          {onMerge && (
-            <Button
-              ml="auto"
-              variant="light"
-              color="blue"
-              leftSection={<IconGitMerge size={16} />}
-              onClick={() => onMerge(wine.id)}
-              pr={0}
-              aria-label={t('common:buttons.merge')}
-            />
-          )}
-
           {onEdit && (
             <Button
-              ml={onMerge ? undefined : "auto"}
+              ml="auto"
               variant="light"
               leftSection={<IconEdit size={16} />}
               onClick={onEdit}

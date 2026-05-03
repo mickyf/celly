@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
@@ -11,13 +11,10 @@ import {
   SimpleGrid,
   Badge,
   Button,
-  Table,
-  Rating,
   RingProgress,
 } from '@mantine/core'
 import {
   IconBottle,
-  IconGlass,
   IconChefHat,
   IconCurrencyDollar,
   IconArrowRight,
@@ -27,8 +24,9 @@ import { useEffect, useState } from 'react'
 import { useDashboardStats } from '../hooks/useDashboard'
 import { useTranslation } from 'react-i18next'
 import { DashboardStatsSkeleton } from '../components/skeletons'
-import dayjs from 'dayjs'
 import { ConsumptionChart } from '../components/ConsumptionChart'
+
+const clickableCardSx = { cursor: 'pointer' } as const
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
@@ -85,8 +83,18 @@ function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+          <Paper
+            shadow="sm"
+            p="xl"
+            radius="md"
+            withBorder
+            style={clickableCardSx}
+            onClick={() => navigate({ to: '/wines', search: {} })}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
+          >
             <Group>
               <IconBottle size={32} stroke={1.5} />
               <div>
@@ -94,13 +102,23 @@ function Dashboard() {
                   {t('dashboard:stats.totalBottles')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines" search={{}}>{stats.totalBottles}</Link>
+                  {stats.totalBottles}
                 </Text>
               </div>
             </Group>
           </Paper>
 
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
+          <Paper
+            shadow="sm"
+            p="xl"
+            radius="md"
+            withBorder
+            style={clickableCardSx}
+            onClick={() => navigate({ to: '/wines', search: {} })}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
+          >
             <Group>
               <IconBottle size={32} stroke={1.5} />
               <div>
@@ -108,13 +126,23 @@ function Dashboard() {
                   {t('dashboard:stats.uniqueWines')}
                 </Text>
                 <Text size="xl" fw={700}>
-                  <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/wines" search={{}}>{stats.totalWines}</Link>
+                  {stats.totalWines}
                 </Text>
               </div>
             </Group>
           </Paper>
 
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
+          <Paper
+            shadow="sm"
+            p="xl"
+            radius="md"
+            withBorder
+            style={clickableCardSx}
+            onClick={() => navigate({ to: '/wines', search: {} })}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
+          >
             <Group>
               <IconCurrencyDollar size={32} stroke={1.5} />
               <div>
@@ -123,20 +151,6 @@ function Dashboard() {
                 </Text>
                 <Text size="xl" fw={700}>
                   CHF {stats.totalValue.toFixed(2)}
-                </Text>
-              </div>
-            </Group>
-          </Paper>
-
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
-            <Group>
-              <IconGlass size={32} stroke={1.5} />
-              <div>
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  {t('dashboard:stats.tastingNotes')}
-                </Text>
-                <Text size="xl" fw={700}>
-                  {stats.tastingNotesCount}
                 </Text>
               </div>
             </Group>
@@ -209,47 +223,6 @@ function Dashboard() {
             </Stack>
           </Paper>
         </SimpleGrid>
-
-        {/* Recent Tastings */}
-        {stats.recentTastings.length > 0 && (
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
-            <Stack gap="md">
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
-                  {t('dashboard:sections.recentNotes')}
-                </Text>
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  rightSection={<IconArrowRight size={14} />}
-                  onClick={() => navigate({ to: '/wines', search: {} })}
-                >
-                  {t('dashboard:quickActions.viewAll.button')}
-                </Button>
-              </Group>
-              <Table>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>{t('dashboard:table.wine')}</Table.Th>
-                    <Table.Th>{t('dashboard:table.rating')}</Table.Th>
-                    <Table.Th>{t('dashboard:table.date')}</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {stats.recentTastings.map((tasting) => (
-                    <Table.Tr key={tasting.id}>
-                      <Table.Td>{tasting.wine_name}</Table.Td>
-                      <Table.Td>
-                        <Rating value={tasting.rating} readOnly size="sm" />
-                      </Table.Td>
-                      <Table.Td>{dayjs(tasting.tasted_at).format('DD.MM.YYYY')}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </Stack>
-          </Paper>
-        )}
 
         {/* Quick Actions */}
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
