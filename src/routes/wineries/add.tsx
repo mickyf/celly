@@ -7,9 +7,11 @@ import { useAddWinery } from '../../hooks/useWineries'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/PageHeader'
 import type { BreadcrumbItem } from '../../components/Breadcrumb'
+import { RouteError } from '../../components/RouteError'
 
 export const Route = createFileRoute('/wineries/add')({
   component: AddWinery,
+  errorComponent: RouteError,
 })
 
 function AddWinery() {

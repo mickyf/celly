@@ -7,9 +7,11 @@ import { useWinery, useUpdateWinery } from '../../../hooks/useWineries'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../../components/PageHeader'
 import type { BreadcrumbItem } from '../../../components/Breadcrumb'
+import { RouteError } from '../../../components/RouteError'
 
 export const Route = createFileRoute('/wineries/$id/edit')({
   component: EditWinery,
+  errorComponent: RouteError,
 })
 
 function EditWinery() {

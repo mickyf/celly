@@ -3,13 +3,15 @@
     "add": "Add",
     "edit": "Edit",
     "delete": "Delete",
+    "merge": "Merge",
     "cancel": "Cancel",
     "save": "Save",
     "back": "Back",
     "viewDetails": "Details",
     "clearAll": "Clear All",
     "showFilters": "Show Filters",
-    "hideFilters": "Hide Filters"
+    "hideFilters": "Hide Filters",
+    "openMenu": "Open menu"
   },
   "actions": {
     "search": "Search",

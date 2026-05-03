@@ -4,6 +4,8 @@
     "subtitle": "Manage your wine producers",
     "addButton": "Add Winery",
     "emptyState": "No wineries yet. Start by adding your first winery!",
+    "emptyStateTitle": "No wineries yet",
+    "emptyStateAction": "Add your first winery",
     "noResults": "No wineries match your search.",
     "showingCount": "Showing {{filtered}} of {{total}} wineries",
     "searchPlaceholder": "Search wineries..."

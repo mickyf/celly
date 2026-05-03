@@ -99,6 +99,7 @@ export function WineryForm({
                       onClick={handleEnrich}
                       loading={enriching}
                       disabled={enriching}
+                      aria-label={t('wineries:enrichment.button')}
                     >
                       <IconSparkles size={18} />
                     </ActionIcon>

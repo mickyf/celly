@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Loader, Center, Modal, Progress, Select } from '@mantine/core'
-import { IconPlus, IconSparkles } from '@tabler/icons-react'
+import { IconPlus, IconSparkles, IconBottle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWines, useDeleteWine, useMergeWines } from '../../hooks/useWines'
@@ -8,6 +8,7 @@ import { useWineries } from '../../hooks/useWineries'
 import { useStockMovements } from '../../hooks/useStockMovements'
 import { useBulkEnrichWines } from '../../hooks/useWineEnrichment'
 import { WineCard } from '../../components/WineCard'
+import { EmptyState } from '../../components/EmptyState'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
@@ -440,9 +441,14 @@ function WineList() {
               )}
             </>
           ) : (
-            <Text c="dimmed" ta="center" py="xl">
-              {t('wines:list.emptyState')}
-            </Text>
+            <EmptyState
+              icon={<IconBottle size={56} stroke={1.2} color="var(--mantine-color-grape-4)" />}
+              title={t('wines:list.emptyStateTitle')}
+              message={t('wines:list.emptyState')}
+              actionLabel={t('wines:list.emptyStateAction')}
+              actionLeftSection={<IconPlus size={18} />}
+              onAction={() => navigate({ to: '/wines/add' })}
+            />
           )}
         </Stack>
       </Container>

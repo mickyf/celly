@@ -6,6 +6,8 @@
     "showingCountSingle": "{{filtered}} von {{total}} Wein angezeigt",
     "addButton": "Wein hinzufügen",
     "emptyState": "Noch keine Weine vorhanden. Fügen Sie Ihre erste Flasche hinzu!",
+    "emptyStateTitle": "Ihr Keller ist leer",
+    "emptyStateAction": "Ersten Wein hinzufügen",
     "noResults": "Keine Weine entsprechen Ihren Filtern. Versuchen Sie, Ihre Suchkriterien anzupassen."
   },
   "detail": {
