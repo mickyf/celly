@@ -62,10 +62,7 @@ export const useAddStockMovement = () => {
 
   return useMutation({
     onMutate: async (movement: NewStockMovement) => {
-      // Snapshot wines list and apply the quantity delta optimistically so
-      // the dashboard / wines list reflects the change before the round-trip
-      // completes. The DB trigger updates wine.quantity authoritatively; we
-      // refetch the affected wine in onSuccess.
+      // Optimistic delta; DB trigger is authoritative — onSuccess refetches the wine.
       await queryClient.cancelQueries({ queryKey: ['wines'] })
       const previousWines = queryClient.getQueryData<Wine[]>(['wines'])
       const delta = movement.movement_type === 'in' ? movement.quantity : -movement.quantity
@@ -136,8 +133,6 @@ export const useAddStockMovement = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['stock_movements'] })
       queryClient.invalidateQueries({ queryKey: ['stock_movements', data.wine_id] })
-      // Refetch the canonical quantity for the affected wine. The wines list
-      // was already updated optimistically in onMutate.
       queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
 
       Sentry.addBreadcrumb({
@@ -153,7 +148,6 @@ export const useAddStockMovement = () => {
       })
     },
     onError: (error, _variables, context) => {
-      // Roll back the optimistic wines list update if it was applied.
       if (context?.previousWines) {
         queryClient.setQueryData(['wines'], context.previousWines)
       }

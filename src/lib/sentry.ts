@@ -58,8 +58,6 @@ export function initializeSentry() {
   })
 }
 
-// Router instrumentation for TanStack Router. Typed minimally — we only call
-// `.subscribe('onLoad', ...)` with the load event we care about.
 interface RouterSubscribable {
   subscribe(event: 'onLoad', handler: (e: { toLocation: { pathname: string } }) => void): unknown
 }
@@ -75,9 +73,7 @@ export function instrumentRouter(router: RouterSubscribable) {
           'routing.to': toLocation.pathname,
         },
       },
-      () => {
-        // Transaction automatically ends when navigation completes
-      }
+      () => {},
     )
   })
 }

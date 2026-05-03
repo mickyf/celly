@@ -52,7 +52,7 @@ function AddWinery() {
         navigate({ to: '/wineries' })
       }
     } catch {
-      // Error already captured by the mutation hook and surfaced via toast.
+      // handled in mutation onError
     }
   }
 

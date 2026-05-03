@@ -192,7 +192,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         })
       }
     } catch {
-      // Error already captured by the mutation hook and surfaced via toast.
+      // handled in mutation onError
     }
   }
 
@@ -212,7 +212,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       setNewWineryCountry(null)
       setWineryModalOpened(false)
     } catch {
-      // Error already captured by the mutation hook and surfaced via toast.
+      // handled in mutation onError
     }
   }
 
@@ -238,9 +238,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         quantity: 1
       })
     }
-    // form, cellarOptions, and wine are intentionally excluded — `form` is a
-    // stable Mantine form instance, and we only want this effect to fire when
-    // the data sources change, not on every render that recreates objects.
+    // Mantine form ref is stable; only re-run when data sources change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingLocations, cellarOptions.length])
 
@@ -256,7 +254,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
       setNewCellarName('')
       setCellarModalOpened(false)
     } catch {
-      // Error already captured by the mutation hook and surfaced via toast.
+      // handled in mutation onError
     }
   }
 

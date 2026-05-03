@@ -19,14 +19,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Create a query client (error tracking handled in individual hooks).
-// gcTime defaults to 5 minutes which evicts cached data soon after a route
-// becomes inactive — bumping to 30 minutes keeps tab-switches snappy.
+// Create a query client (error tracking handled in individual hooks)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
       retry: 1,
     },
   },
