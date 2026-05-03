@@ -54,5 +54,8 @@
 
 ## major
 - simplify stock changes with an up- and down-button on the card
+- cellar overview: 
+  - click on an empty place and select an un-placed wine to place it there
+  - click on a placed wine and select if remove from the place or open the wine
 - feature: add wine from free text input
 - feature: add multiple wines from order document
