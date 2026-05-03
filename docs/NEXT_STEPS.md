@@ -48,14 +48,14 @@
 - ~~adding a wine doesn't close the form, it should move to the detail view on success~~
 
 ## minor
-- remove degustation notes from dashboard
-- make dashboard cards clickable, not only the number
-- wine card: image clickable not only title
+- ~~remove degustation notes from dashboard~~
+- ~~make dashboard cards clickable, not only the number~~
+- ~~wine card: image clickable not only title~~
 - mobile view: buttons should collapse to icon only (no label) when not enough space on 1 line (enrich and add buttons)
 - mobile view: filter control: the expand ("Filter anzeigen") should be only the chevron, no label
 - mobile view: wine cards should hide the image block if no image is available (too many useless placeholder images are displayed on scrolling the list), but keep it if desktop
-- move the merge button from the wine card to the detail view (next to edit)
-- wine detail view: set an image max height
+- ~~move the merge button from the wine card to the detail view (next to edit)~~
+- ~~wine detail view: set an image max height~~
 - ~~remove obvious comments~~
 
 ## major

@@ -5,13 +5,11 @@
     "totalBottles": "Total Bottles",
     "uniqueWines": "Unique Wines",
     "totalValue": "Total Value",
-    "tastingNotes": "Tasting Notes",
     "readyToDrink": "Ready to Drink"
   },
   "sections": {
     "readyToDrink": "Ready to Drink",
     "topGrapes": "Top Grape Varieties",
-    "recentNotes": "Recent Tasting Notes",
     "quickActions": "Quick Actions",
     "consumption": "Consumption"
   },
@@ -37,11 +35,6 @@
     "viewAll": {
       "button": "View All Wines"
     }
-  },
-  "table": {
-    "wine": "Wine",
-    "rating": "Rating",
-    "date": "Date"
   },
   "consumption": {
     "noData": "No consumption data available",

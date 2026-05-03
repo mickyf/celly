@@ -5,13 +5,11 @@
     "totalBottles": "Flaschen Total",
     "uniqueWines": "Verschiedene Weine",
     "totalValue": "Gesamtwert",
-    "tastingNotes": "Degustationsnotizen",
     "readyToDrink": "Trinkreif"
   },
   "sections": {
     "readyToDrink": "Trinkreif",
     "topGrapes": "Top Rebsorten",
-    "recentNotes": "Neueste Degustationsnotizen",
     "quickActions": "Schnellaktionen",
     "consumption": "Verbrauch"
   },
@@ -37,11 +35,6 @@
     "viewAll": {
       "button": "Alle Weine anzeigen"
     }
-  },
-  "table": {
-    "wine": "Wein",
-    "rating": "Bewertung",
-    "date": "Datum"
   },
   "consumption": {
     "noData": "Keine Verbrauchsdaten verfügbar",

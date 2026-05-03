@@ -51,8 +51,7 @@ export function StatCardSkeleton() {
 
 export function DashboardStatsSkeleton() {
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
-      <StatCardSkeleton />
+    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
       <StatCardSkeleton />
       <StatCardSkeleton />
       <StatCardSkeleton />

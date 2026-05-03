@@ -7,14 +7,7 @@ export interface DashboardStats {
   totalValue: number
   totalWines: number
   readyToDrink: number
-  tastingNotesCount: number
   topGrapes: { grape: string; count: number }[]
-  recentTastings: {
-    id: string
-    wine_name: string
-    rating: number
-    tasted_at: string | null
-  }[]
   consumptionData: {
     date: string
     count: number
@@ -46,17 +39,11 @@ export const useDashboardStats = () => {
         throw error
       }
 
-      const [winesRes, notesRes, stockRes] = await Promise.all([
+      const [winesRes, stockRes] = await Promise.all([
         supabase
           .from('wines')
           .select('id, name, quantity, price, drink_window_start, drink_window_end, grapes')
           .eq('user_id', user.id),
-        supabase
-          .from('tasting_notes')
-          .select('id, rating, tasted_at, wine_id')
-          .eq('user_id', user.id)
-          .order('tasted_at', { ascending: false })
-          .limit(5),
         supabase
           .from('stock_movements')
           .select('movement_date, movement_type, quantity')
@@ -65,7 +52,6 @@ export const useDashboardStats = () => {
       ])
 
       const { data: wines, error: winesError } = winesRes
-      const { data: tastingNotes, error: notesError } = notesRes
       const { data: stockMovements, error: stockMovementsError } = stockRes
 
       if (winesError) {
@@ -74,13 +60,6 @@ export const useDashboardStats = () => {
           contexts: { supabase: { table: 'wines', operation: 'select', error_code: winesError.code, error_hint: winesError.hint } },
         })
         throw winesError
-      }
-      if (notesError) {
-        Sentry.captureException(notesError, {
-          tags: { errorType: 'supabase_query', table: 'tasting_notes', operation: 'select' },
-          contexts: { supabase: { table: 'tasting_notes', operation: 'select', error_code: notesError.code, error_hint: notesError.hint } },
-        })
-        throw notesError
       }
       if (stockMovementsError) {
         Sentry.captureException(stockMovementsError, {
@@ -121,14 +100,6 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5)
 
-      const wineNameById = new Map((wines ?? []).map((w) => [w.id, w.name]))
-      const recentTastings = (tastingNotes || []).map((note) => ({
-        id: note.id,
-        wine_name: wineNameById.get(note.wine_id) ?? 'Unknown',
-        rating: note.rating,
-        tasted_at: note.tasted_at,
-      }))
-
       // Build a monthly bottle-count series by walking movements forward from
       // the implied initial count. The initial count is `totalBottles` minus
       // the net delta of all movements, so the final point reconciles with the
@@ -167,9 +138,7 @@ export const useDashboardStats = () => {
         totalValue,
         totalWines,
         readyToDrink,
-        tastingNotesCount: tastingNotes?.length || 0,
         topGrapes,
-        recentTastings,
         consumptionData,
       }
 
