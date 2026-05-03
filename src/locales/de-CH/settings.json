@@ -6,6 +6,10 @@
         "label": "Claude API-Schlüssel",
         "getApiKey": "API-Schlüssel von Anthropic anfordern"
     },
+    "password": {
+        "title": "Passwort ändern",
+        "description": "Lege ein neues Passwort für dein Konto fest."
+    },
     "about": {
         "title": "Über Celly",
         "description": "Celly ist dein persönlicher Assistent für deinen Weinkeller. Verwalte deine Sammlung, erhalte KI-gestützte Einblicke und finde die perfekten Food-Pairings."
