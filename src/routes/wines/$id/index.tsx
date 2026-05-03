@@ -38,6 +38,7 @@ import {
   useAddStockMovement,
 } from '../../../hooks/useStockMovements'
 import { useEnrichWine } from '../../../hooks/useWineEnrichment'
+import { useWinePhotoUrl } from '../../../hooks/useWinePhotoUrl'
 import { useDisclosure } from '@mantine/hooks'
 import { TastingNoteForm, type TastingNoteFormValues } from '../../../components/TastingNoteForm'
 import { TastingNoteCard } from '../../../components/TastingNoteCard'
@@ -77,6 +78,7 @@ function WineDetail() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading: wineLoading } = useWine(id)
+  const { data: signedPhotoUrl } = useWinePhotoUrl(wine?.photo_url)
   const { data: winery } = useWinery(wine?.winery_id || '')
   const { data: tastingNotes, isLoading: notesLoading } = useTastingNotes(id)
   const { data: locations } = useWineLocations(id)
@@ -300,8 +302,8 @@ function WineDetail() {
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
             {/* Wine Photo */}
             <Paper shadow="sm" p="lg" radius="md" withBorder>
-              {wine.photo_url ? (
-                <Image src={wine.photo_url} alt={wine.name} radius="md" />
+              {signedPhotoUrl ? (
+                <Image src={signedPhotoUrl} alt={wine.name} radius="md" loading="lazy" />
               ) : (
                 <Center h={300} style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                   <IconBottle size={80} stroke={1.5} color="#adb5bd" />

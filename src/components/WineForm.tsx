@@ -20,6 +20,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries, useAddWinery } from '../hooks/useWineries'
 import { useEnrichWineFromImage } from '../hooks/useWineEnrichment'
+import { useWinePhotoUrl } from '../hooks/useWinePhotoUrl'
 import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
 import { useCellars, useAddCellar } from '../hooks/useCellars'
@@ -63,9 +64,11 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   const { data: cellars } = useCellars()
   const addCellar = useAddCellar()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(
-    wine?.photo_url || null
-  )
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoCleared, setPhotoCleared] = useState(false)
+  const { data: signedExistingPhotoUrl } = useWinePhotoUrl(wine?.photo_url)
+  const displayPhotoUrl =
+    photoPreview ?? (photoCleared ? null : signedExistingPhotoUrl ?? null)
   const [cameraOpened, setCameraOpened] = useState(false)
   const [cellarModalOpened, setCellarModalOpened] = useState(false)
   const [wineryModalOpened, setWineryModalOpened] = useState(false)
@@ -151,6 +154,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   const handlePhotoDrop = (files: File[]) => {
     const file = files[0]
     if (file) {
+      setPhotoCleared(false)
       setPhotoFile(file)
       const reader = new FileReader()
       reader.onload = () => {
@@ -161,6 +165,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
   }
 
   const handleCameraCapture = (file: File) => {
+    setPhotoCleared(false)
     setPhotoFile(file)
     const reader = new FileReader()
     reader.onload = () => {
@@ -315,14 +320,15 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                 {t('wines:form.sections.photo')}
               </Text>
 
-              {photoPreview ? (
+              {displayPhotoUrl ? (
                 <div>
                   <Image
-                    src={photoPreview}
+                    src={displayPhotoUrl}
                     alt="Wine bottle"
                     height={200}
                     fit="contain"
                     radius="md"
+                    loading="lazy"
                   />
                   <Group grow mt="sm">
                     <Button
@@ -341,6 +347,7 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
                       onClick={() => {
                         setPhotoFile(null)
                         setPhotoPreview(null)
+                        setPhotoCleared(true)
                       }}
                     >
                       {t('wines:form.buttons.removePhoto')}

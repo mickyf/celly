@@ -3,6 +3,7 @@ import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDo
 import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
+import { useWinePhotoUrl } from '../hooks/useWinePhotoUrl'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
@@ -28,6 +29,7 @@ export function WineCard({
   onMerge,
 }: WineCardProps) {
   const { t } = useTranslation(['wines', 'common'])
+  const { data: signedPhotoUrl } = useWinePhotoUrl(wine.photo_url)
 
   const recentMovement = recentStockMovement
 
@@ -42,8 +44,8 @@ export function WineCard({
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
-        {wine.photo_url ? (
-          <Image src={wine.photo_url} height={200} alt={wine.name} fit='contain' />
+        {signedPhotoUrl ? (
+          <Image src={signedPhotoUrl} height={200} alt={wine.name} fit='contain' loading="lazy" />
         ) : (
           <div
             style={{
