@@ -28,10 +28,12 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - **Why it matters:** Cold load on mobile 3G is multi-second; PWA install size is bloated; build warns about chunk size. The biggest single production-readiness win.
 - **Fix:** Add `build.rollupOptions.manualChunks` to split vendor chunks (React, Mantine, TanStack, Sentry, charts). TanStack Router routes are already file-based — verify they're lazy-loaded; if not, switch to `createLazyFileRoute` for non-critical routes (pairing, settings, edit forms).
 
-### P0-3. Zero test infrastructure
-- **Files:** `package.json` (no `test` script, no Vitest/Jest), no `*.test.*` files anywhere.
-- **Why it matters:** Every refactor risks silent regressions. Hooks like `useDashboard` have nontrivial logic (grape counting, monthly aggregation) that's currently un-testable.
-- **Fix:** Add Vitest + React Testing Library. Start with hook unit tests (`useDashboard`, filter logic in `wines/index.tsx`, enrichment merge logic). Defer full E2E. ~60% coverage on `src/hooks/` and `src/lib/` is the realistic target.
+### ~~P0-3. Zero test infrastructure~~ ✅ Scaffolded
+- **Files:** `vite.config.ts`, `src/test/setup.ts`, `src/constants/countries.test.ts`, `.husky/pre-push`
+- **Why it mattered:** Every refactor risked silent regressions; `useDashboard` and similar hooks had nontrivial logic with no safety net.
+- **What's in place:** Vitest + happy-dom + React Testing Library + `@testing-library/jest-dom` installed. Test scripts: `npm test` (run once) and `npm run test:watch`. Husky pre-push hook runs `tsc -b && npm test` to gate every push (CF Pages auto-deploys master, so this is the safety net before code reaches production). One seed test file (`countries.test.ts`, 5 tests passing) proves the harness.
+- **Lint deferred from the hook:** the codebase has 37 pre-existing lint errors (P1-15). Re-add `npm run lint` to `.husky/pre-push` once that's cleared.
+- **Still to do:** real coverage on hooks (`useDashboard`, wine filter logic, enrichment merge) and components. Target ~60% coverage of `src/hooks/` and `src/lib/`.
 
 ---
 
