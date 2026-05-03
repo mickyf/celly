@@ -145,7 +145,7 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - ✅ **P2-15.** `src/lib/mutationError.ts` exports `showMutationError(t, error)` that captures to Sentry and shows a red toast. Wired into 19 onError sites across hooks. Stock movement keeps its bespoke onError to retain the optimistic rollback.
 - ✅ **P2-16.** `npm audit fix` ran. 13 → 4 vulnerabilities; the remaining 4 are in `serialize-javascript` via `vite-plugin-pwa` → `workbox-build` → `@rollup/plugin-terser`. Build-time only, fix would require a breaking downgrade of `vite-plugin-pwa` — not worth it.
 - ⏸️ **P2-17.** Deferred to a P3 batch covering TS 5 → 6, TanStack minor bumps, React 19.2 patch, and other major dep updates together.
-- ✅ **P2-18.** `public/_headers` shipped with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, HSTS (1 year + subdomains), `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy` limiting `camera` to self and blocking mic/geolocation. CSP is in **Report-Only** mode initially — covers `'self'`, Supabase REST/edge/realtime (`https://*.supabase.co` + `wss://*.supabase.co`), inline styles for Mantine, data:/blob: images for camera capture. **Action on you:** after the next deploy, open DevTools → Console on the live app and exercise the main flows (list, add, photo upload, AI enrichment, dashboard). Any `[Report Only] Refused to ...` warnings tell us what to add to the policy. Once clean, flip `Content-Security-Policy-Report-Only` → `Content-Security-Policy` to enforce.
+- ✅ **P2-18.** `public/_headers` shipped with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, HSTS (1 year + subdomains), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera self, mic/geolocation blocked), and an enforced CSP covering `'self'`, Supabase REST/edge/realtime (`https://*.supabase.co` + `wss://*.supabase.co`), inline styles for Mantine, and data:/blob: images for camera capture. Verified zero CSP violations on the live app before flipping `Content-Security-Policy-Report-Only` → `Content-Security-Policy`.
 
 ### MCP server
 - ✅ **P2-19.** Token caveat documented in `mcp-server/README.md`.
@@ -154,7 +154,7 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 
 ## Outstanding work
 
-- **P2-18 follow-up** — after the deploy that ships the new `_headers`, exercise the app and check the browser console for CSP violations. Tighten the policy if any legitimate flows are blocked, then flip `Content-Security-Policy-Report-Only` → `Content-Security-Policy` to enforce.
+None — review complete. P3 (major dependency updates including TS 5 → 6) is the next planned batch.
 
 ## Deferred to P3 (future batch)
 
