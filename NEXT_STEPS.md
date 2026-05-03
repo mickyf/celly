@@ -40,5 +40,12 @@
 - ~~PWA: App manifest with icon~~
 - ~~merge 2 wineries together~~
 - ~~merge 2 wines together~~
-- MCP server for adding a wine or winery
+- ~~MCP server for adding a wine or winery~~
 - Branding: icon and logo
+
+- remove degustation notes from dashboard
+- make dashboard cards clickable, not only the number
+
+- simplify stock changes with an up- and down-button on the card
+- feature: add wine from free text input
+- feature: add multiple wines from order document
