@@ -71,7 +71,7 @@
 - hide wines when drunken out in all the places, add a filter on the wine list to display "drunken" wines
 - ~~feature: add wine from free text input~~
 - feature: add multiple wines from order document
-- feature: password change function is missing
+- ~~feature: password change function is missing~~
 - Branding: icon and logo
 
 ## security/technical
