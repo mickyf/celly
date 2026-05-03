@@ -12,7 +12,8 @@
     "readyToDrink": "Ready to Drink",
     "topGrapes": "Top Grape Varieties",
     "recentNotes": "Recent Tasting Notes",
-    "quickActions": "Quick Actions"
+    "quickActions": "Quick Actions",
+    "consumption": "Consumption"
   },
   "readyText": "{{count}} out of {{total}} wines are within their optimal drinking window",
   "readyCount": "{{count}} wines",
@@ -41,5 +42,11 @@
     "wine": "Wine",
     "rating": "Rating",
     "date": "Date"
+  },
+  "consumption": {
+    "noData": "No consumption data available",
+    "count": "Bottle Count",
+    "month": "Month",
+    "description": "Shows wine bottle count over time"
   }
 }
