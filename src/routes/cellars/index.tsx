@@ -30,7 +30,8 @@ function CellarOverview() {
   const { t } = useTranslation(['wines', 'common'])
   const { data: cellars, isLoading: cellarsLoading } = useCellars()
   const [selectedCellarId, setSelectedCellarId] = useState<string | null>(null)
-  const { data: locations } = useWineLocations(undefined, selectedCellarId || undefined)
+  const effectiveCellarId = selectedCellarId ?? cellars?.[0]?.id ?? null
+  const { data: locations } = useWineLocations(undefined, effectiveCellarId || undefined)
   const addCellar = useAddCellar()
 
   // Quick-add cellar state
@@ -57,13 +58,6 @@ function CellarOverview() {
       })) || [],
     [cellars]
   )
-
-  // Default to first cellar
-  useMemo(() => {
-    if (cellars && cellars.length > 0 && !selectedCellarId) {
-      setSelectedCellarId(cellars[0].id)
-    }
-  }, [cellars, selectedCellarId])
 
   const totalBottles = useMemo(
     () => locations?.reduce((acc, curr) => acc + curr.quantity, 0) || 0,
@@ -158,7 +152,7 @@ function CellarOverview() {
                 label={t('wines:form.labels.cellar')}
                 placeholder={t('wines:form.placeholders.cellar')}
                 data={cellarOptions}
-                value={selectedCellarId}
+                value={effectiveCellarId}
                 onChange={setSelectedCellarId}
                 style={{ width: 300 }}
               />
@@ -179,9 +173,9 @@ function CellarOverview() {
           </Group>
         </Paper>
 
-        {selectedCellarId && locations && (
+        {effectiveCellarId && locations && (
           <CellarVisualizer
-            cellarId={selectedCellarId}
+            cellarId={effectiveCellarId}
             locations={locations}
           />
         )}

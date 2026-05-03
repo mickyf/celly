@@ -18,10 +18,10 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 
 ## P0 — Must fix before production deploy
 
-### P0-1. `react-hooks/set-state-in-render` lint error
+### ~~P0-1. `react-hooks/set-state-in-render` lint error~~ ✅ Done
 - **File:** `src/routes/cellars/index.tsx:64`
-- **Why it matters:** Calling `setState` inside `useMemo` can cause infinite render loops in React 19 — this is a latent bug, not a style issue.
-- **Fix:** Move the state update into `useEffect`.
+- **Why it mattered:** Calling `setState` inside `useMemo` can cause infinite render loops in React 19 — latent bug, not a style issue.
+- **Fix applied:** Replaced the `useMemo`-with-side-effect with a derived value computed during render (`effectiveCellarId = selectedCellarId ?? cellars?.[0]?.id ?? null`). Local state retained for the dropdown's onChange and post-add selection.
 
 ### P0-2. Bundle is a single 1.65 MB chunk (~495 KB gzipped), no code splitting
 - **File:** `vite.config.ts`
