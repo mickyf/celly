@@ -1,0 +1,5 @@
+/* Mantine's default dimmed (#868e96) is 3.32:1 vs white — fails WCAG AA for
+   normal text. Bump to gray.7 (#6c757d, 4.74:1) so c="dimmed" passes. */
+:root {
+  --mantine-color-dimmed: #6c757d;
+}
