@@ -110,13 +110,13 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
-  '/cellars': typeof CellarsIndexRoute
-  '/wineries': typeof WineriesIndexRoute
-  '/wines': typeof WinesIndexRoute
+  '/cellars/': typeof CellarsIndexRoute
+  '/wineries/': typeof WineriesIndexRoute
+  '/wines/': typeof WinesIndexRoute
   '/wineries/$id/edit': typeof WineriesIdEditRoute
   '/wines/$id/edit': typeof WinesIdEditRoute
-  '/wineries/$id': typeof WineriesIdIndexRoute
-  '/wines/$id': typeof WinesIdIndexRoute
+  '/wineries/$id/': typeof WineriesIdIndexRoute
+  '/wines/$id/': typeof WinesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -164,13 +164,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
-    | '/cellars'
-    | '/wineries'
-    | '/wines'
+    | '/cellars/'
+    | '/wineries/'
+    | '/wines/'
     | '/wineries/$id/edit'
     | '/wines/$id/edit'
-    | '/wineries/$id'
-    | '/wines/$id'
+    | '/wineries/$id/'
+    | '/wines/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -272,21 +272,21 @@ declare module '@tanstack/react-router' {
     '/wines/': {
       id: '/wines/'
       path: '/wines'
-      fullPath: '/wines'
+      fullPath: '/wines/'
       preLoaderRoute: typeof WinesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wineries/': {
       id: '/wineries/'
       path: '/wineries'
-      fullPath: '/wineries'
+      fullPath: '/wineries/'
       preLoaderRoute: typeof WineriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cellars/': {
       id: '/cellars/'
       path: '/cellars'
-      fullPath: '/cellars'
+      fullPath: '/cellars/'
       preLoaderRoute: typeof CellarsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -307,14 +307,14 @@ declare module '@tanstack/react-router' {
     '/wines/$id/': {
       id: '/wines/$id/'
       path: '/wines/$id'
-      fullPath: '/wines/$id'
+      fullPath: '/wines/$id/'
       preLoaderRoute: typeof WinesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wineries/$id/': {
       id: '/wineries/$id/'
       path: '/wineries/$id'
-      fullPath: '/wineries/$id'
+      fullPath: '/wineries/$id/'
       preLoaderRoute: typeof WineriesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
