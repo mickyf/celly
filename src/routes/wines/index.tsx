@@ -13,21 +13,14 @@ import { WineCard } from '../../components/WineCard'
 import { EmptyState } from '../../components/EmptyState'
 import { WineGridSkeleton } from '../../components/skeletons'
 import { WineFilters, type WineFilterValues } from '../../components/WineFilters'
+import {
+  DEFAULT_WINE_FILTERS,
+  applyWineFilters,
+  countActiveWineFilters,
+  wineNeedsEnrichment,
+} from '../../lib/wineFilters'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
-
-const DEFAULT_FILTERS: WineFilterValues = {
-  search: '',
-  winery: null,
-  grapes: [],
-  bottleSizes: [],
-  vintageMin: null,
-  vintageMax: null,
-  priceMin: null,
-  priceMax: null,
-  drinkingWindow: 'all',
-  dataCompleteness: 'all',
-}
 
 export const Route = createFileRoute('/wines/')({
   component: WineList,
@@ -106,7 +99,7 @@ function WineList() {
   }, [allStockMovements])
 
   const filters: WineFilterValues = useMemo(
-    () => ({ ...DEFAULT_FILTERS, ...search }),
+    () => ({ ...DEFAULT_WINE_FILTERS, ...search }),
     [search],
   )
 
@@ -140,112 +133,12 @@ function WineList() {
     })
   }, [])
 
-  // Filter wines based on filter criteria
-  const filteredWines = useMemo(() => {
-    if (!wines) return []
+  const filteredWines = useMemo(
+    () => (wines ? applyWineFilters(wines, wineries, filters) : []),
+    [wines, wineries, filters],
+  )
 
-    const currentYear = new Date().getFullYear()
-
-    return wines.filter((wine) => {
-      // Search filter - search by wine name OR winery name
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase()
-        const wineNameMatch = wine.name?.toLowerCase().includes(searchLower) || false
-
-        // Get winery name if wine has a winery
-        const winery = wineries?.find((w) => w.id === wine.winery_id)
-        const wineryNameMatch = winery?.name?.toLowerCase().includes(searchLower) || false
-
-        // Return false if neither wine name nor winery name match
-        if (!wineNameMatch && !wineryNameMatch) {
-          return false
-        }
-      }
-
-      // Winery filter
-      if (filters.winery && wine.winery_id !== filters.winery) {
-        return false
-      }
-
-      // Grape filter
-      if (filters.grapes.length > 0) {
-        const hasMatchingGrape = filters.grapes.some((grape) =>
-          wine.grapes?.includes(grape)
-        )
-        if (!hasMatchingGrape) return false
-      }
-
-      // Bottle size filter
-      if (filters.bottleSizes.length > 0) {
-        if (!wine.bottle_size || !filters.bottleSizes.includes(wine.bottle_size)) {
-          return false
-        }
-      }
-
-      // Vintage filter
-      if (filters.vintageMin !== null && wine.vintage && wine.vintage < filters.vintageMin) {
-        return false
-      }
-      if (filters.vintageMax !== null && wine.vintage && wine.vintage > filters.vintageMax) {
-        return false
-      }
-
-      // Price filter
-      if (filters.priceMin !== null && wine.price && wine.price < filters.priceMin) {
-        return false
-      }
-      if (filters.priceMax !== null && wine.price && wine.price > filters.priceMax) {
-        return false
-      }
-
-      // Drinking window filter
-      if (filters.drinkingWindow !== 'all') {
-        if (!wine.drink_window_start || !wine.drink_window_end) {
-          return false
-        }
-
-        const isReady =
-          currentYear >= wine.drink_window_start && currentYear <= wine.drink_window_end
-        const isFuture = currentYear < wine.drink_window_start
-        const isPast = currentYear > wine.drink_window_end
-
-        if (filters.drinkingWindow === 'ready' && !isReady) return false
-        if (filters.drinkingWindow === 'future' && !isFuture) return false
-        if (filters.drinkingWindow === 'past' && !isPast) return false
-      }
-
-      // Data completeness filter
-      if (filters.dataCompleteness !== 'all') {
-        const hasGrapes = wine.grapes && wine.grapes.length > 0
-        const hasVintage = wine.vintage !== null
-        const hasDrinkWindow = wine.drink_window_start !== null && wine.drink_window_end !== null
-        const hasWinery = wine.winery_id !== null
-        const hasPrice = wine.price !== null
-
-        const isComplete = hasGrapes && hasVintage && hasDrinkWindow && hasWinery && hasPrice
-        const isIncomplete = !hasGrapes || !hasVintage || !hasDrinkWindow || !hasWinery || !hasPrice
-
-        if (filters.dataCompleteness === 'complete' && !isComplete) return false
-        if (filters.dataCompleteness === 'incomplete' && !isIncomplete) return false
-      }
-
-      return true
-    })
-  }, [wines, wineries, filters])
-
-  // Count active filters
-  const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (filters.search) count++
-    if (filters.winery) count++
-    if (filters.grapes.length > 0) count++
-    if (filters.bottleSizes.length > 0) count++
-    if (filters.vintageMin !== null || filters.vintageMax !== null) count++
-    if (filters.priceMin !== null || filters.priceMax !== null) count++
-    if (filters.drinkingWindow !== 'all') count++
-    if (filters.dataCompleteness !== 'all') count++
-    return count
-  }, [filters])
+  const activeFilterCount = useMemo(() => countActiveWineFilters(filters), [filters])
 
   const handleDelete = (id: string) => {
     setDeleteId(id)
@@ -263,16 +156,7 @@ function WineList() {
   const handleBulkEnrich = () => {
     if (!wines) return
 
-    // Filter wines that need enrichment
-    const winesToEnrich = wines.filter((wine) => {
-      const needsGrapes = !wine.grapes || wine.grapes.length === 0
-      const needsVintage = wine.vintage === null
-      const needsDrinkWindow = wine.drink_window_start === null || wine.drink_window_end === null
-      const needsWinery = wine.winery_id === null
-      const needsPrice = wine.price === null
-      const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
-      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings
-    })
+    const winesToEnrich = wines.filter(wineNeedsEnrichment)
 
     if (winesToEnrich.length === 0) {
       return
@@ -301,19 +185,10 @@ function WineList() {
     }
   }, [bulkEnrich.isPending, enrichModalOpened, closeEnrichModal])
 
-  // Count wines that need enrichment
-  const winesNeedingEnrichment = useMemo(() => {
-    if (!wines) return 0
-    return wines.filter((wine) => {
-      const needsGrapes = !wine.grapes || wine.grapes.length === 0
-      const needsVintage = wine.vintage === null
-      const needsDrinkWindow = wine.drink_window_start === null || wine.drink_window_end === null
-      const needsWinery = wine.winery_id === null
-      const needsPrice = wine.price === null
-      const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
-      return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings
-    }).length
-  }, [wines])
+  const winesNeedingEnrichment = useMemo(
+    () => (wines ? wines.filter(wineNeedsEnrichment).length : 0),
+    [wines],
+  )
 
   if (authLoading) {
     return <AuthSplash />
