@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import {
   Container,
   Title,
@@ -33,7 +34,7 @@ function WineryDetail() {
   const { t } = useTranslation(['wineries', 'common'])
   const { id } = Route.useParams()
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: winery, isLoading: wineryLoading } = useWinery(id)
   const { data: wineryWines = [], isLoading: winesLoading } = useWines(id)

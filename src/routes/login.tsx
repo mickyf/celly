@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import {
   Container,
   Paper,
@@ -26,7 +27,7 @@ export const Route = createFileRoute('/login')({
 
 function Login() {
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation('auth')

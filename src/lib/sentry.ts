@@ -58,10 +58,14 @@ export function initializeSentry() {
   })
 }
 
-// Router instrumentation for TanStack Router
-export function instrumentRouter(router: any) {
-  // Track route changes as transactions
-  router.subscribe('onLoad', ({ toLocation }: any) => {
+// Router instrumentation for TanStack Router. Typed minimally — we only call
+// `.subscribe('onLoad', ...)` with the load event we care about.
+interface RouterSubscribable {
+  subscribe(event: 'onLoad', handler: (e: { toLocation: { pathname: string } }) => void): unknown
+}
+
+export function instrumentRouter(router: RouterSubscribable) {
+  router.subscribe('onLoad', ({ toLocation }) => {
     Sentry.startSpan(
       {
         name: toLocation.pathname,

@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 export interface BreadcrumbItem {
   label: string
   to?: string // undefined = current page (not clickable)
-  search?: any // Preserve search params when navigating
+  search?: Record<string, unknown>
 }
 
 interface BreadcrumbProps {
@@ -28,8 +28,10 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
           <Anchor
             key={index}
             component={Link}
-            to={item.to as any}
-            search={item.search}
+            // TanStack Router strictly types `to` and `search`; breadcrumb
+            // entries are user-data driven, so we widen here.
+            to={item.to as never}
+            search={item.search as never}
             size="sm"
           >
             {item.label}

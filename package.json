@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "gen-types": "npx supabase gen types typescript --local > src/types/database.ts",
+    "gen-types": "npx supabase gen types typescript --linked > src/types/database.ts",
     "gen-icons": "node scripts/generate-icons.js",
     "prepare": "husky"
   },
@@ -59,7 +59,7 @@
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "sharp": "^0.34.5",
-    "supabase": "^2.70.5",
+    "supabase": "^2.98.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",

@@ -238,6 +238,10 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
         quantity: 1
       })
     }
+    // form, cellarOptions, and wine are intentionally excluded — `form` is a
+    // stable Mantine form instance, and we only want this effect to fire when
+    // the data sources change, not on every render that recreates objects.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingLocations, cellarOptions.length])
 
   const handleAddCellar = async (index?: number) => {

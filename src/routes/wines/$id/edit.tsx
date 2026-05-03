@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import type { User } from '@supabase/supabase-js'
 import { Container, Title, Text, Stack, Loader, Center } from '@mantine/core'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
@@ -33,7 +34,7 @@ function EditWine() {
   const { id } = Route.useParams()
   const search = Route.useSearch()
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const { data: wine, isLoading } = useWine(id)
   const updateWine = useUpdateWine()
