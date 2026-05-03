@@ -3,11 +3,8 @@
  */
 
 import type { SupabaseClient } from './client.js';
-import type { Wine } from './types.js';
+import type { Wine, Winery } from './types.js';
 
-/**
- * Format wine collection as markdown resource
- */
 export async function getWineCollectionResource(client: SupabaseClient): Promise<string> {
   const wines = await client.getWines();
 
@@ -15,7 +12,6 @@ export async function getWineCollectionResource(client: SupabaseClient): Promise
     return 'No wines in your cellar yet.';
   }
 
-  // Group wines by drinking status
   const currentYear = new Date().getFullYear();
   const readyToDrink: Wine[] = [];
   const drinkSoon: Wine[] = [];
@@ -23,11 +19,11 @@ export async function getWineCollectionResource(client: SupabaseClient): Promise
   const noWindow: Wine[] = [];
 
   for (const wine of wines) {
-    if (!wine.drink_from && !wine.drink_until) {
+    if (!wine.drink_window_start && !wine.drink_window_end) {
       noWindow.push(wine);
-    } else if (wine.drink_from && wine.drink_from > currentYear) {
+    } else if (wine.drink_window_start && wine.drink_window_start > currentYear) {
       ageFurther.push(wine);
-    } else if (wine.drink_until && wine.drink_until < currentYear) {
+    } else if (wine.drink_window_end && wine.drink_window_end < currentYear) {
       drinkSoon.push(wine);
     } else {
       readyToDrink.push(wine);
@@ -60,9 +56,6 @@ export async function getWineCollectionResource(client: SupabaseClient): Promise
   return markdown;
 }
 
-/**
- * Format a single wine as detailed markdown resource
- */
 export async function getWineDetailResource(client: SupabaseClient, id: string): Promise<string> {
   const wine = await client.getWine(id);
 
@@ -71,8 +64,8 @@ export async function getWineDetailResource(client: SupabaseClient, id: string):
   }
 
   let markdown = `# ${wine.name}\n\n`;
+  markdown += `**ID:** ${wine.id}\n`;
 
-  // Basic information
   if (wine.vintage) {
     markdown += `**Vintage:** ${wine.vintage}\n`;
   }
@@ -83,39 +76,40 @@ export async function getWineDetailResource(client: SupabaseClient, id: string):
 
   markdown += `**Quantity:** ${wine.quantity} bottle${wine.quantity !== 1 ? 's' : ''}\n`;
 
-  if (wine.bottle_size && wine.bottle_size !== 750) {
-    markdown += `**Bottle Size:** ${wine.bottle_size}ml\n`;
+  if (wine.bottle_size) {
+    markdown += `**Bottle Size:** ${wine.bottle_size}\n`;
   }
 
-  // Drinking window
-  if (wine.drink_from || wine.drink_until) {
-    const from = wine.drink_from || 'now';
-    const until = wine.drink_until || 'indefinitely';
+  if (wine.winery_id) {
+    markdown += `**Winery ID:** ${wine.winery_id}\n`;
+  }
+
+  if (wine.drink_window_start || wine.drink_window_end) {
+    const from = wine.drink_window_start ?? 'now';
+    const until = wine.drink_window_end ?? 'indefinitely';
     markdown += `**Drinking Window:** ${from} - ${until}\n`;
 
     const currentYear = new Date().getFullYear();
-    if (wine.drink_from && wine.drink_from > currentYear) {
-      markdown += `*Status: Age further (ready in ${wine.drink_from - currentYear} year${wine.drink_from - currentYear !== 1 ? 's' : ''})*\n`;
-    } else if (wine.drink_until && wine.drink_until < currentYear) {
+    if (wine.drink_window_start && wine.drink_window_start > currentYear) {
+      const years = wine.drink_window_start - currentYear;
+      markdown += `*Status: Age further (ready in ${years} year${years !== 1 ? 's' : ''})*\n`;
+    } else if (wine.drink_window_end && wine.drink_window_end < currentYear) {
       markdown += `*Status: Past peak - drink soon!*\n`;
     } else {
       markdown += `*Status: Ready to drink*\n`;
     }
   }
 
-  // Price
   if (wine.price) {
     markdown += `**Price:** CHF ${wine.price.toFixed(2)}\n`;
   }
 
   markdown += '\n';
 
-  // Food pairings
   if (wine.food_pairings) {
     markdown += `## Food Pairings\n\n${wine.food_pairings}\n\n`;
   }
 
-  // Tasting notes
   try {
     const notes = await client.getTastingNotes(wine.id);
     if (notes.length > 0) {
@@ -128,16 +122,54 @@ export async function getWineDetailResource(client: SupabaseClient, id: string):
         }
       }
     }
-  } catch (error) {
-    // Tasting notes are optional, don't fail if they can't be fetched
+  } catch {
+    // Tasting notes are optional
   }
 
   return markdown;
 }
 
-/**
- * Helper function to format a list of wines
- */
+export async function getWineryCollectionResource(client: SupabaseClient): Promise<string> {
+  const wineries = await client.getWineries();
+
+  if (wineries.length === 0) {
+    return 'No wineries yet.';
+  }
+
+  let markdown = '# Wineries\n\n';
+  markdown += `Total wineries: ${wineries.length}\n\n`;
+
+  for (const winery of wineries) {
+    markdown += formatWineryEntry(winery);
+  }
+
+  return markdown;
+}
+
+export async function getWineryDetailResource(client: SupabaseClient, id: string): Promise<string> {
+  const { winery, wines } = await client.getWinery(id);
+
+  if (!winery) {
+    return `Winery with ID ${id} not found.`;
+  }
+
+  let markdown = `# ${winery.name}\n\n`;
+  markdown += `**ID:** ${winery.id}\n`;
+  if (winery.country_code) {
+    markdown += `**Country:** ${winery.country_code}\n`;
+  }
+  markdown += '\n';
+
+  if (wines.length > 0) {
+    markdown += `## Wines (${wines.length})\n\n`;
+    markdown += formatWineList(wines);
+  } else {
+    markdown += '_No wines associated with this winery yet._\n';
+  }
+
+  return markdown;
+}
+
 function formatWineList(wines: Wine[]): string {
   let markdown = '';
 
@@ -147,6 +179,7 @@ function formatWineList(wines: Wine[]): string {
       markdown += ` (${wine.vintage})`;
     }
     markdown += '\n';
+    markdown += `- ID: ${wine.id}\n`;
 
     if (wine.grapes && wine.grapes.length > 0) {
       markdown += `- Grapes: ${wine.grapes.join(', ')}\n`;
@@ -154,9 +187,9 @@ function formatWineList(wines: Wine[]): string {
 
     markdown += `- Quantity: ${wine.quantity}\n`;
 
-    if (wine.drink_from || wine.drink_until) {
-      const from = wine.drink_from || 'now';
-      const until = wine.drink_until || 'indefinitely';
+    if (wine.drink_window_start || wine.drink_window_end) {
+      const from = wine.drink_window_start ?? 'now';
+      const until = wine.drink_window_end ?? 'indefinitely';
       markdown += `- Drinking window: ${from}-${until}\n`;
     }
 
@@ -167,5 +200,15 @@ function formatWineList(wines: Wine[]): string {
     markdown += '\n';
   }
 
+  return markdown;
+}
+
+function formatWineryEntry(winery: Winery): string {
+  let markdown = `### ${winery.name}\n`;
+  markdown += `- ID: ${winery.id}\n`;
+  if (winery.country_code) {
+    markdown += `- Country: ${winery.country_code}\n`;
+  }
+  markdown += '\n';
   return markdown;
 }

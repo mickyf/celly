@@ -58,11 +58,16 @@ Edit your `claude_desktop_config.json`:
 ### Resources
 - **Wine Collection** (`celly://wines`) - View collection organized by drinking status.
 - **Wine Details** (`celly://wines/{id}`) - View details, drink window, and tasting notes.
+- **Wineries** (`celly://wineries`) - List all wineries with country codes.
+- **Winery Details** (`celly://wineries/{id}`) - Winery info plus its wines.
 
 ### Tools
 - **`list_wines`** - List all wines with status.
 - **`get_wine`** - Detailed info for a specific wine.
-- **`add_wine`** - Add a new wine (name, vintage, grapes, quantity, price, etc.).
+- **`add_wine`** - Add a new wine (name, vintage, grapes, quantity, price, drink window, bottle size, food pairings, winery_id).
+- **`list_wineries`** - List all wineries with their IDs and country codes.
+- **`get_winery`** - Winery details including all associated wines.
+- **`add_winery`** - Add a new winery (name, ISO country code).
 
 ---
 

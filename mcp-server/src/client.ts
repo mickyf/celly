@@ -4,11 +4,13 @@
  */
 
 import type { Config } from './config.js';
-import type { Wine, TastingNote, AddWineParams } from './types.js';
+import type { Wine, Winery, TastingNote, AddWineParams, AddWineryParams } from './types.js';
 
-interface MCPProxyResponse<T> {
+interface MCPProxyResponse {
   wine?: Wine;
   wines?: Wine[];
+  winery?: Winery;
+  wineries?: Winery[];
   tasting_notes?: TastingNote[];
   error?: string;
 }
@@ -18,124 +20,70 @@ export class SupabaseClient {
   private headers: Record<string, string>;
 
   constructor(config: Config) {
-    // Edge Function URL
     this.proxyUrl = `${config.supabaseUrl}/functions/v1/mcp-server-proxy`;
-
-    // Only need auth token, not anon key
     this.headers = {
       'Authorization': `Bearer ${config.userAuthToken}`,
       'Content-Type': 'application/json',
     };
   }
 
-  /**
-   * Fetch all wines for the authenticated user
-   */
-  async getWines(): Promise<Wine[]> {
+  private async call(action: string, params?: Record<string, unknown>): Promise<MCPProxyResponse> {
     const response = await fetch(this.proxyUrl, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify({
-        action: 'list_wines',
-      }),
+      body: JSON.stringify({ action, params }),
     });
 
     if (!response.ok) {
       const error = await response.json() as { error?: string };
-      throw new Error(`Failed to fetch wines: ${error.error || response.statusText}`);
+      throw new Error(error.error || response.statusText);
     }
 
-    const result = await response.json() as MCPProxyResponse<Wine[]>;
-
+    const result = await response.json() as MCPProxyResponse;
     if (result.error) {
-      throw new Error(`Failed to fetch wines: ${result.error}`);
+      throw new Error(result.error);
     }
+    return result;
+  }
 
+  async getWines(): Promise<Wine[]> {
+    const result = await this.call('list_wines');
     return result.wines || [];
   }
 
-  /**
-   * Fetch a single wine by ID with related data
-   */
   async getWine(id: string): Promise<Wine | null> {
-    const response = await fetch(this.proxyUrl, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({
-        action: 'get_wine',
-        params: { wine_id: id },
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json() as { error?: string };
-      throw new Error(`Failed to fetch wine: ${error.error || response.statusText}`);
-    }
-
-    const result = await response.json() as MCPProxyResponse<Wine>;
-
-    if (result.error) {
-      throw new Error(`Failed to fetch wine: ${result.error}`);
-    }
-
+    const result = await this.call('get_wine', { wine_id: id });
     return result.wine || null;
   }
 
-  /**
-   * Fetch tasting notes for a wine
-   */
   async getTastingNotes(wineId: string): Promise<TastingNote[]> {
-    const response = await fetch(this.proxyUrl, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({
-        action: 'get_wine',
-        params: { wine_id: wineId },
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json() as { error?: string };
-      throw new Error(`Failed to fetch tasting notes: ${error.error || response.statusText}`);
-    }
-
-    const result = await response.json() as MCPProxyResponse<TastingNote[]>;
-
-    if (result.error) {
-      throw new Error(`Failed to fetch tasting notes: ${result.error}`);
-    }
-
+    const result = await this.call('get_wine', { wine_id: wineId });
     return result.tasting_notes || [];
   }
 
-  /**
-   * Add a new wine
-   */
   async addWine(params: AddWineParams): Promise<Wine> {
-    const response = await fetch(this.proxyUrl, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({
-        action: 'add_wine',
-        params: { wine: params },
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json() as { error?: string };
-      throw new Error(`Failed to add wine: ${error.error || response.statusText}`);
-    }
-
-    const result = await response.json() as MCPProxyResponse<Wine>;
-
-    if (result.error) {
-      throw new Error(`Failed to add wine: ${result.error}`);
-    }
-
+    const result = await this.call('add_wine', { wine: params });
     if (!result.wine) {
-      throw new Error('Failed to add wine: No wine returned');
+      throw new Error('No wine returned');
     }
-
     return result.wine;
+  }
+
+  async getWineries(): Promise<Winery[]> {
+    const result = await this.call('list_wineries');
+    return result.wineries || [];
+  }
+
+  async getWinery(id: string): Promise<{ winery: Winery | null; wines: Wine[] }> {
+    const result = await this.call('get_winery', { winery_id: id });
+    return { winery: result.winery || null, wines: result.wines || [] };
+  }
+
+  async addWinery(params: AddWineryParams): Promise<Winery> {
+    const result = await this.call('add_winery', { winery: params });
+    if (!result.winery) {
+      throw new Error('No winery returned');
+    }
+    return result.winery;
   }
 }
