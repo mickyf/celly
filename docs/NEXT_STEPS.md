@@ -41,18 +41,22 @@
 - ~~merge 2 wineries together~~
 - ~~merge 2 wines together~~
 - ~~MCP server for adding a wine or winery~~
-- Branding: icon and logo
+
+## bugs
+- image delete is not stored on wine
+- no feedback on single wine AI enrichement when there's nothing to enrich any more
 
 ## minor
 - remove degustation notes from dashboard
 - make dashboard cards clickable, not only the number
+- wine card: image clickable not only title
 - mobile view: buttons should collapse to icon only (no label) when not enough space on 1 line (enrich and add buttons)
 - mobile view: filter control: the expand ("Filter anzeigen") should be only the chevron, no label
 - mobile view: wine cards should hide the image block if no image is available (too many useless placeholder images are displayed on scrolling the list), but keep it if desktop
 - move the merge button from the wine card to the detail view (next to edit)
 - wine detail view: set an image max height
 - remove obvious comments
- 
+
 
 ## major
 - simplify stock changes with an up- and down-button on the card
@@ -62,6 +66,7 @@
 - feature: add wine from free text input
 - feature: add multiple wines from order document
 - feature: password change function is missing
+- Branding: icon and logo
 
 ## security/technical
 - upgrade dependencies
