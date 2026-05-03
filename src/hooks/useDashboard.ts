@@ -46,8 +46,6 @@ export const useDashboardStats = () => {
         throw error
       }
 
-      // Fetch wines, tasting notes, and stock movements in parallel — they
-      // don't depend on each other.
       const [winesRes, notesRes, stockRes] = await Promise.all([
         supabase
           .from('wines')
@@ -123,8 +121,6 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5)
 
-      // Recent tastings with wine names. Lookup is in-memory since wines is
-      // already loaded; precompute a name index to avoid scanning per note.
       const wineNameById = new Map((wines ?? []).map((w) => [w.id, w.name]))
       const recentTastings = (tastingNotes || []).map((note) => ({
         id: note.id,

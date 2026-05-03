@@ -16,7 +16,6 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
     <Breadcrumbs separator=">" mt="xs">
       {items.map((item, index) => {
         if (!item.to) {
-          // Current page - not clickable
           return (
             <Text key={index} size="sm" c="dimmed">
               {item.label}
@@ -28,8 +27,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
           <Anchor
             key={index}
             component={Link}
-            // TanStack Router strictly types `to` and `search`; breadcrumb
-            // entries are user-data driven, so we widen here.
+            // breadcrumb entries are user-data driven; widen TanStack's strict types
             to={item.to as never}
             search={item.search as never}
             size="sm"

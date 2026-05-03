@@ -1,6 +1,3 @@
-// Resize an image File to fit within maxDim on the longer edge, preserving
-// aspect ratio. Re-encodes to JPEG at the given quality. Skips work when the
-// source is already small enough that resizing wouldn't save meaningfully.
 export async function resizeImage(
   file: File,
   maxDim = 1280,
@@ -36,8 +33,6 @@ export async function resizeImage(
               reject(new Error('Image resize produced no blob'))
               return
             }
-            // If re-encoding made the file larger (rare for small originals),
-            // keep the source.
             if (blob.size >= file.size) {
               resolve(file)
               return

@@ -47,8 +47,7 @@ function RootLayout() {
       setUser(currentUser)
       setSentryUser(currentUser)
 
-      // Surface unintentional sign-outs (token refresh failure, expired
-      // session) so the user knows to re-authenticate.
+      // Surface unintentional sign-outs (e.g. token refresh failure).
       if (event === 'SIGNED_OUT' && !intentionalSignOut.current) {
         const onPublicRoute = PUBLIC_ROUTE_PREFIXES.some((p) =>
           window.location.pathname.startsWith(p),

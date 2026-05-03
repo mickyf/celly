@@ -19,8 +19,7 @@ function buildCorsHeaders(req: Request): Record<string, string> {
   }
 }
 
-// Strip our sandbox delimiters from user input so it can't break out of the
-// <user_input> block in the prompt.
+// Strip the sandbox delimiter so user input can't break out of <user_input>.
 function sandbox(input: string): string {
   return input.replace(/<\/?user_input>/gi, "")
 }
@@ -30,7 +29,7 @@ const INJECTION_DEFENSE =
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const
 type AllowedImageType = typeof ALLOWED_IMAGE_TYPES[number]
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5 MB — matches Claude vision's own limit
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // matches Claude vision's limit
 
 function validateImage(
   base64Image: string,
@@ -178,7 +177,6 @@ async function handleFoodPairing(
 ) {
   const { menu, availableWines, language } = request
 
-  // Format wine list for Claude. Wine names come from user input, so sandbox.
   const wineList = availableWines
     .map(
       (w, idx) =>

@@ -2,9 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { extractPhotoPath } from '../lib/winePhoto'
 
-// Signed URL TTL. The query staleTime is set just under this so we refresh
-// before Supabase expires the URL.
 const SIGNED_URL_TTL_SECONDS = 60 * 60
+// staleTime sits 5 min below TTL so cache refreshes before Supabase expires the URL.
 const SIGNED_URL_STALE_MS = (SIGNED_URL_TTL_SECONDS - 5 * 60) * 1000
 
 export function useWinePhotoUrl(stored: string | null | undefined) {

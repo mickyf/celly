@@ -329,8 +329,7 @@ export const useUploadWinePhoto = () => {
         throw uploadError
       }
 
-      // Store the storage path (not a public URL). The bucket is private; views
-      // resolve the path to a signed URL via useWinePhotoUrl.
+      // Bucket is private; consumers resolve the path via useWinePhotoUrl.
       return filePath
     },
     onSuccess: () => {

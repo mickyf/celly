@@ -37,8 +37,7 @@ function SettingsPage() {
                 claude_api_key: (claudeKeySetting.value as string) || '',
             })
         }
-        // form is intentionally excluded — its instance is stable across
-        // renders but the linter can't see that.
+        // Mantine form ref is stable.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [claudeKeySetting])
 

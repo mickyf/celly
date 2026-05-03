@@ -1,5 +1,4 @@
--- Make the wine-images bucket private and scope SELECT to the owning user.
--- Frontend now resolves stored paths to signed URLs via useWinePhotoUrl.
+-- Bucket private; SELECT scoped per-user. Frontend uses signed URLs.
 
 UPDATE storage.buckets SET public = false WHERE id = 'wine-images';
 
