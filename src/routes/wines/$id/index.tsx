@@ -446,27 +446,14 @@ function WineDetail() {
                     <Stack gap="xs" mt="xs">
                       {locations.map((loc) => (
                         <Paper key={loc.id} withBorder p="xs" radius="sm" bg="gray.0">
-                          <Group justify="space-between">
-                            <Stack gap={2}>
-                              <Text size="sm" fw={600}>
-                                {loc.cellar?.name || t('wines:form.labels.location')}
-                              </Text>
-                              {(loc.shelf || loc.row || loc.column) && (
-                                <Text size="xs" c="dimmed">
-                                  {[
-                                    loc.shelf && `${t('wines:form.labels.shelf')}: ${loc.shelf}`,
-                                    loc.row && `${t('wines:form.labels.row')}: ${loc.row}`,
-                                    loc.column && `${t('wines:form.labels.column')}: ${loc.column}`,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(', ')}
-                                </Text>
-                              )}
-                            </Stack>
-                            <Badge color="blue" variant="light">
-                              {t('common:counts.bottles', { count: loc.quantity })}
-                            </Badge>
-                          </Group>
+                          <Stack gap={2}>
+                            <Text size="sm" fw={600}>
+                              {loc.cellar?.name || t('wines:form.labels.location')}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {`${t('wines:form.labels.shelf')}: ${loc.shelf}, ${t('wines:form.labels.row')}: ${loc.row}, ${t('wines:form.labels.column')}: ${loc.column}`}
+                            </Text>
+                          </Stack>
                         </Paper>
                       ))}
                     </Stack>

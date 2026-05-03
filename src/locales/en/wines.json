@@ -306,9 +306,32 @@
   },
   "overview": {
     "title": "Cellar Overview",
-    "unpositionedWines": "Unpositioned Wines",
-    "unpositionedWinesDesc": "These wines are in this cellar but don't have a specific shelf, row, or column assigned yet.",
     "emptyTitle": "No Cellars",
-    "emptyMessage": "You haven't added any cellars yet. Add a cellar in the wine form to get started."
+    "emptyMessage": "You haven't added any cellars yet. Add one to get started.",
+    "addShelf": "Add Shelf",
+    "deleteShelf": "Delete Shelf",
+    "cannotDeleteOccupied": "Remove all bottles from this shelf first",
+    "shelfNumber": "Shelf {{n}}",
+    "rows": "Rows",
+    "columns": "Columns",
+    "noShelves": "This cellar has no shelves yet. Add one to start placing wines.",
+    "shelfRowsColumnsHint": "Each shelf is a grid of rows × columns. Each cell holds one bottle.",
+    "confirmDeleteShelf": "Delete shelf {{n}}? This removes all its slots and unplaces any bottles in them.",
+    "place": {
+      "title": "Place a Wine",
+      "subtitle": "Shelf {{shelf}}, Row {{row}}, Column {{column}}",
+      "selectLabel": "Choose a wine",
+      "selectPlaceholder": "Pick a wine with unplaced bottles",
+      "noUnplaced": "All your bottles are already placed.",
+      "unplacedCount": "{{count}} unplaced",
+      "confirm": "Place Bottle"
+    },
+    "unplace": "Remove from slot",
+    "slotEmpty": "Empty",
+    "actions": {
+      "openDetail": "Open wine",
+      "drink": "Drink (−1 bottle)",
+      "unplace": "Remove from slot"
+    }
   }
 }

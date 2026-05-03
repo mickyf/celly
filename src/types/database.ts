@@ -169,39 +169,36 @@ export type Database = {
       wine_locations: {
         Row: {
           cellar_id: string
-          column: number | null
+          column: number
           created_at: string | null
           id: string
-          quantity: number
-          row: number | null
-          shelf: number | null
+          row: number
+          shelf: number
           updated_at: string | null
           user_id: string
-          wine_id: string
+          wine_id: string | null
         }
         Insert: {
           cellar_id: string
-          column?: number | null
+          column: number
           created_at?: string | null
           id?: string
-          quantity?: number
-          row?: number | null
-          shelf?: number | null
+          row: number
+          shelf: number
           updated_at?: string | null
           user_id: string
-          wine_id: string
+          wine_id?: string | null
         }
         Update: {
           cellar_id?: string
-          column?: number | null
+          column?: number
           created_at?: string | null
           id?: string
-          quantity?: number
-          row?: number | null
-          shelf?: number | null
+          row?: number
+          shelf?: number
           updated_at?: string | null
           user_id?: string
-          wine_id?: string
+          wine_id?: string | null
         }
         Relationships: [
           {
