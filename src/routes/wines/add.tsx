@@ -6,7 +6,6 @@ import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { WineForm, type WineFormValues } from '../../components/WineForm'
 import { useAddWine, useUploadWinePhoto } from '../../hooks/useWines'
-import { useAddWineLocation } from '../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/PageHeader'
 import type { BreadcrumbItem } from '../../components/Breadcrumb'
@@ -24,7 +23,6 @@ function AddWine() {
   const [loading, setLoading] = useState(true)
   const addWine = useAddWine()
   const uploadPhoto = useUploadWinePhoto()
-  const addLocation = useAddWineLocation()
 
   // Generate breadcrumbs
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
@@ -43,35 +41,18 @@ function AddWine() {
   }, [])
 
   const handleSubmit = async (values: WineFormValues, photo?: File) => {
-    const { locations, ...wineValues } = values
-
     let wine
     try {
       wine = await addWine.mutateAsync({
-        ...wineValues,
+        ...values,
         photo_url: null,
         user_id: '',
       })
     } catch {
-      // handled in mutation onError; stay on form so user can retry
       return
     }
 
     if (!wine?.id) return
-
-    // Locations and photo are best-effort — wine is created, so navigate either way.
-    // Skip rows without a cellar (cellar_id is NOT NULL).
-    await Promise.allSettled(
-      locations
-        .filter((loc) => loc.cellar_id)
-        .map((loc) =>
-          addLocation.mutateAsync({
-            ...loc,
-            wine_id: wine.id,
-            user_id: '',
-          })
-        )
-    )
 
     if (photo) {
       try {

@@ -306,9 +306,32 @@
   },
   "overview": {
     "title": "Keller-Übersicht",
-    "unpositionedWines": "Nicht platzierte Weine",
-    "unpositionedWinesDesc": "Diese Weine befinden sich in diesem Keller, haben aber noch kein spezifisches Regal, keine Reihe oder Spalte zugewiesen.",
     "emptyTitle": "Keine Keller",
-    "emptyMessage": "Sie haben noch keine Keller hinzugefügt. Fügen Sie im Weinformular einen Keller hinzu, um zu beginnen."
+    "emptyMessage": "Sie haben noch keine Keller. Erstellen Sie einen, um zu beginnen.",
+    "addShelf": "Regal hinzufügen",
+    "deleteShelf": "Regal löschen",
+    "cannotDeleteOccupied": "Entfernen Sie zuerst alle Flaschen aus diesem Regal",
+    "shelfNumber": "Regal {{n}}",
+    "rows": "Reihen",
+    "columns": "Spalten",
+    "noShelves": "Dieser Keller hat noch keine Regale. Fügen Sie eines hinzu, um Weine zu platzieren.",
+    "shelfRowsColumnsHint": "Ein Regal ist ein Raster aus Reihen × Spalten. Jede Zelle nimmt eine Flasche auf.",
+    "confirmDeleteShelf": "Regal {{n}} löschen? Damit werden alle Plätze entfernt und Flaschen darin freigegeben.",
+    "place": {
+      "title": "Wein platzieren",
+      "subtitle": "Regal {{shelf}}, Reihe {{row}}, Spalte {{column}}",
+      "selectLabel": "Wein auswählen",
+      "selectPlaceholder": "Wein mit nicht platzierten Flaschen wählen",
+      "noUnplaced": "Alle Ihre Flaschen sind bereits platziert.",
+      "unplacedCount": "{{count}} nicht platziert",
+      "confirm": "Flasche platzieren"
+    },
+    "unplace": "Aus Platz entfernen",
+    "slotEmpty": "Leer",
+    "actions": {
+      "openDetail": "Wein öffnen",
+      "drink": "Trinken (−1 Flasche)",
+      "unplace": "Aus Platz entfernen"
+    }
   }
 }

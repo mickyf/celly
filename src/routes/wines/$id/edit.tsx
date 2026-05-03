@@ -5,7 +5,6 @@ import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { WineForm, type WineFormValues } from '../../../components/WineForm'
 import { useWine, useUpdateWine, useUploadWinePhoto, useDeleteWinePhoto } from '../../../hooks/useWines'
-import { useWineLocations, useAddWineLocation, useUpdateWineLocation, useDeleteWineLocation } from '../../../hooks/useWineLocations'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../../components/PageHeader'
 import type { BreadcrumbItem } from '../../../components/Breadcrumb'
@@ -72,23 +71,13 @@ function EditWine() {
     })
   }, [])
 
-  const { data: existingLocations } = useWineLocations(id)
-  const addLocation = useAddWineLocation()
-  const updateLocation = useUpdateWineLocation()
-  const deleteLocation = useDeleteWineLocation()
-
   const handleSubmit = async (values: WineFormValues, photo?: File, photoCleared?: boolean) => {
     try {
-      // Extract locations from values
-      const { locations, ...wineValues } = values
-
-      // If photo was cleared (and no replacement), remove storage object and null the column
       const removingPhoto = photoCleared && !photo && wine?.photo_url
 
-      // Update the wine
       await updateWine.mutateAsync({
         id,
-        ...wineValues,
+        ...values,
         ...(removingPhoto ? { photo_url: null } : {}),
       })
 
@@ -96,52 +85,9 @@ function EditWine() {
         await deletePhoto.mutateAsync({ photoUrl: wine.photo_url })
       }
 
-      // Sync locations using existingLocations from useWineLocations hook
-      if (existingLocations) {
-        const validLocations = locations.filter((l) => l.cellar_id)
-        const locationsToDelete = existingLocations.filter(
-          (existing) => !validLocations.find((l) => l.id === existing.id)
-        )
-        const locationsToUpdate = validLocations.filter((l) => l.id)
-        const locationsToAdd = validLocations.filter((l) => !l.id)
-
-        await Promise.all([
-          ...locationsToDelete.map((l) =>
-            deleteLocation.mutateAsync({ id: l.id, wineId: id })
-          ),
-          ...locationsToUpdate.map((l) =>
-            updateLocation.mutateAsync({
-              id: l.id!,
-              cellar_id: l.cellar_id,
-              shelf: l.shelf,
-              row: l.row,
-              column: l.column,
-              quantity: l.quantity,
-              wine_id: id,
-            })
-          ),
-          ...locationsToAdd.map((l) =>
-            addLocation.mutateAsync({
-              ...l,
-              wine_id: id,
-              user_id: '', // Hook will handle this
-            })
-          ),
-        ])
-      }
-
-      // If there's a new photo, upload it
       if (photo) {
-        const photoUrl = await uploadPhoto.mutateAsync({
-          file: photo,
-          wineId: id,
-        })
-
-        // Update wine with new photo URL
-        await updateWine.mutateAsync({
-          id,
-          photo_url: photoUrl,
-        })
+        const photoUrl = await uploadPhoto.mutateAsync({ file: photo, wineId: id })
+        await updateWine.mutateAsync({ id, photo_url: photoUrl })
       }
 
       navigate({ to: '/wines/$id', params: { id } })

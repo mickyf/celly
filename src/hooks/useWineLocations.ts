@@ -6,142 +6,272 @@ import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
 
 type WineLocation = Database['public']['Tables']['wine_locations']['Row']
-type NewWineLocation = Database['public']['Tables']['wine_locations']['Insert']
-type UpdateWineLocation = Database['public']['Tables']['wine_locations']['Update']
-
 type Wine = Database['public']['Tables']['wines']['Row']
 
+export type SlotWithWine = WineLocation & {
+  cellar: { name: string } | null
+  wine: Wine | null
+}
+
 export const useWineLocations = (wineId?: string, cellarId?: string) => {
-    return useQuery({
-        queryKey: wineId ? ['wine_locations', 'wine', wineId] : cellarId ? ['wine_locations', 'cellar', cellarId] : ['wine_locations'],
-        queryFn: async () => {
-            let query = supabase
-                .from('wine_locations')
-                .select(`
+  return useQuery({
+    queryKey: wineId ? ['wine_locations', 'wine', wineId] : cellarId ? ['wine_locations', 'cellar', cellarId] : ['wine_locations'],
+    queryFn: async () => {
+      let query = supabase
+        .from('wine_locations')
+        .select(`
           *,
           cellar:cellars(name),
           wine:wines(*, winery:wineries(name))
         `)
-                .order('created_at', { ascending: true })
+        .order('shelf', { ascending: true })
+        .order('row', { ascending: true })
+        .order('column', { ascending: true })
 
-            if (wineId) {
-                query = query.eq('wine_id', wineId)
-            }
-            if (cellarId) {
-                query = query.eq('cellar_id', cellarId)
-            }
+      if (wineId) {
+        query = query.eq('wine_id', wineId)
+      }
+      if (cellarId) {
+        query = query.eq('cellar_id', cellarId)
+      }
 
-            const { data, error } = await query
+      const { data, error } = await query
 
-            if (error) {
-                Sentry.captureException(error)
-                throw error
-            }
+      if (error) {
+        Sentry.captureException(error)
+        throw error
+      }
 
-            return data as (WineLocation & {
-                cellar: { name: string },
-                wine: Wine
-            })[]
-        },
-    })
+      return data as SlotWithWine[]
+    },
+  })
 }
 
-export const useAddWineLocation = () => {
-    const { t } = useTranslation(['wines'])
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async (location: NewWineLocation) => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) throw new Error('Not authenticated')
-
-            const { data, error } = await supabase
-                .from('wine_locations')
-                .insert({ ...location, user_id: user.id })
-                .select()
-                .single()
-
-            if (error) {
-                Sentry.captureException(error, {
-                    tags: { errorType: 'supabase_mutation', table: 'wine_locations', operation: 'insert' },
-                    contexts: {
-                        supabase: { error_code: error.code, error_hint: error.hint, error_details: error.details },
-                        wine_location: {
-                            wine_id: location.wine_id,
-                            cellar_id: location.cellar_id,
-                            quantity: location.quantity,
-                        },
-                    },
-                })
-                throw error
-            }
-
-            return data as WineLocation
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
-            queryClient.invalidateQueries({ queryKey: ['wine_locations', data.wine_id] })
-            queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
-        },
-        onError: (error) => {
-            notifications.show({
-                title: t('wines:notifications.locationError.title', { defaultValue: 'Location not saved' }),
-                message: error instanceof Error ? error.message : String(error),
-                color: 'red',
-                autoClose: 8000,
-            })
-        },
-    })
+interface CreateShelfInput {
+  cellarId: string
+  shelf: number
+  rows: number
+  columns: number
 }
 
-export const useUpdateWineLocation = () => {
-    const queryClient = useQueryClient()
+export const useCreateShelf = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
 
-    return useMutation({
-        mutationFn: async ({ id, ...location }: UpdateWineLocation & { id: string }) => {
-            const { data, error } = await supabase
-                .from('wine_locations')
-                .update(location)
-                .eq('id', id)
-                .select()
-                .single()
+  return useMutation({
+    mutationFn: async ({ cellarId, shelf, rows, columns }: CreateShelfInput) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
 
-            if (error) {
-                Sentry.captureException(error)
-                throw error
-            }
+      const slots: Database['public']['Tables']['wine_locations']['Insert'][] = []
+      for (let row = 1; row <= rows; row++) {
+        for (let column = 1; column <= columns; column++) {
+          slots.push({ cellar_id: cellarId, shelf, row, column, user_id: user.id })
+        }
+      }
 
-            return data as WineLocation
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
-            queryClient.invalidateQueries({ queryKey: ['wine_locations', data.wine_id] })
-            queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
-        },
-    })
+      const { error } = await supabase.from('wine_locations').insert(slots)
+
+      if (error) {
+        Sentry.captureException(error, {
+          tags: { errorType: 'supabase_mutation', table: 'wine_locations', operation: 'bulk_insert' },
+          contexts: { supabase: { error_code: error.code, error_hint: error.hint, error_details: error.details } },
+        })
+        throw error
+      }
+    },
+    onSuccess: (_, { cellarId }) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not create shelf' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
 }
 
-export const useDeleteWineLocation = () => {
-    const queryClient = useQueryClient()
+interface AddSlotsInput {
+  cellarId: string
+  shelf: number
+  coords: { row: number; column: number }[]
+}
 
-    return useMutation({
-        mutationFn: async ({ id, wineId }: { id: string, wineId: string }) => {
-            const { error } = await supabase
-                .from('wine_locations')
-                .delete()
-                .eq('id', id)
+export const useAddSlots = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
 
-            if (error) {
-                Sentry.captureException(error)
-                throw error
-            }
+  return useMutation({
+    mutationFn: async ({ cellarId, shelf, coords }: AddSlotsInput) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
 
-            return { id, wineId }
-        },
-        onSuccess: ({ wineId }) => {
-            queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
-            queryClient.invalidateQueries({ queryKey: ['wine_locations', wineId] })
-            queryClient.invalidateQueries({ queryKey: ['wines', wineId] })
-        },
-    })
+      const slots: Database['public']['Tables']['wine_locations']['Insert'][] = coords.map(
+        ({ row, column }) => ({ cellar_id: cellarId, shelf, row, column, user_id: user.id })
+      )
+
+      const { error } = await supabase.from('wine_locations').insert(slots)
+
+      if (error) {
+        Sentry.captureException(error, {
+          tags: { errorType: 'supabase_mutation', table: 'wine_locations', operation: 'add_slots' },
+        })
+        throw error
+      }
+    },
+    onSuccess: (_, { cellarId }) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not add slots' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
+export const useDeleteSlots = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ slotIds, cellarId }: { slotIds: string[]; cellarId: string }) => {
+      if (slotIds.length === 0) return
+      const { error } = await supabase.from('wine_locations').delete().in('id', slotIds)
+
+      if (error) {
+        Sentry.captureException(error)
+        throw error
+      }
+      return { cellarId }
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      if (result?.cellarId) {
+        queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', result.cellarId] })
+      }
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not remove slots' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
+export const useDeleteShelf = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ cellarId, shelf }: { cellarId: string; shelf: number }) => {
+      const { error } = await supabase
+        .from('wine_locations')
+        .delete()
+        .eq('cellar_id', cellarId)
+        .eq('shelf', shelf)
+
+      if (error) {
+        Sentry.captureException(error)
+        throw error
+      }
+    },
+    onSuccess: (_, { cellarId }) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not delete shelf' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
+export const usePlaceWine = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ slotId, wineId }: { slotId: string; wineId: string }) => {
+      const { data, error } = await supabase
+        .from('wine_locations')
+        .update({ wine_id: wineId })
+        .eq('id', slotId)
+        .select()
+        .single()
+
+      if (error) {
+        Sentry.captureException(error)
+        throw error
+      }
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', data.cellar_id] })
+      if (data.wine_id) {
+        queryClient.invalidateQueries({ queryKey: ['wine_locations', 'wine', data.wine_id] })
+      }
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.placeError.title', { defaultValue: 'Could not place wine' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
+export const useUnplaceWine = () => {
+  const { t } = useTranslation(['wines'])
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ slotId }: { slotId: string }) => {
+      const { data, error } = await supabase
+        .from('wine_locations')
+        .update({ wine_id: null })
+        .eq('id', slotId)
+        .select()
+        .single()
+
+      if (error) {
+        Sentry.captureException(error)
+        throw error
+      }
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
+      queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', data.cellar_id] })
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:notifications.placeError.title', { defaultValue: 'Could not update slot' }),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
 }

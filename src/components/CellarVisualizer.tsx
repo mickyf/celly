@@ -6,150 +6,274 @@ import {
     Tooltip,
     Box,
     Badge,
-    useMantineTheme
+    Button,
+    ActionIcon,
+    Modal,
+    Menu,
+    useMantineTheme,
 } from '@mantine/core'
-import { IconBottle, IconInfoCircle } from '@tabler/icons-react'
+import { IconBottle, IconTrash, IconPlus, IconPencil, IconEye, IconGlass, IconArrowBackUp } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import type { Database } from '../types/database'
-
-type Wine = Database['public']['Tables']['wines']['Row']
-type WineLocation = Database['public']['Tables']['wine_locations']['Row']
+import { useMemo, useState } from 'react'
+import { useDisclosure } from '@mantine/hooks'
+import { useDeleteShelf, useUnplaceWine, type SlotWithWine } from '../hooks/useWineLocations'
+import { useAddStockMovement } from '../hooks/useStockMovements'
 
 interface CellarVisualizerProps {
     cellarId: string
-    locations: (WineLocation & { wine: Wine })[]
+    slots: SlotWithWine[]
+    onAddShelf: () => void
+    onSlotClick: (slot: SlotWithWine) => void
+    onEditShelf: (shelf: number) => void
 }
 
-export function CellarVisualizer({ locations }: CellarVisualizerProps) {
+export function CellarVisualizer({ cellarId, slots, onAddShelf, onSlotClick, onEditShelf }: CellarVisualizerProps) {
     const { t } = useTranslation(['wines', 'common'])
     const theme = useMantineTheme()
     const navigate = useNavigate()
+    const deleteShelf = useDeleteShelf()
+    const unplaceWine = useUnplaceWine()
+    const addStockMovement = useAddStockMovement()
+    const [confirmOpened, { open: openConfirm, close: closeConfirm }] = useDisclosure(false)
+    const [shelfToDelete, setShelfToDelete] = useState<number | null>(null)
 
-    // Calculate grid dimensions
-    const maxShelf = Math.max(...locations.map(w => w.shelf || 0), 1)
-    const maxRow = Math.max(...locations.map(w => w.row || 0), 1)
-    const maxColumn = Math.max(...locations.map(w => w.column || 0), 1)
+    const handleDrink = (slot: SlotWithWine) => {
+        if (!slot.wine_id) return
+        addStockMovement.mutate({
+            wine_id: slot.wine_id,
+            user_id: '',
+            movement_type: 'out',
+            quantity: 1,
+            movement_date: new Date().toISOString().slice(0, 10),
+            notes: null,
+        })
+        unplaceWine.mutate({ slotId: slot.id })
+    }
 
-    // Map locations to a 3D-ish structure (Shelves -> Rows -> Columns)
-    // For now, we take the first wine in a slot if multiple exist (unlikely in this UI)
-    const locationMap = new Map<string, WineLocation & { wine: Wine }>()
-    locations.forEach(loc => {
-        if (loc.shelf !== null && loc.row !== null && loc.column !== null) {
-            locationMap.set(`${loc.shelf}-${loc.row}-${loc.column}`, loc)
+    const handleUnplace = (slot: SlotWithWine) => {
+        unplaceWine.mutate({ slotId: slot.id })
+    }
+
+    const shelves = useMemo(() => {
+        const byShelf = new Map<number, SlotWithWine[]>()
+        for (const slot of slots) {
+            const arr = byShelf.get(slot.shelf) ?? []
+            arr.push(slot)
+            byShelf.set(slot.shelf, arr)
         }
-    })
+        return Array.from(byShelf.entries())
+            .map(([shelf, shelfSlots]) => ({
+                shelf,
+                rows: Math.max(...shelfSlots.map((s) => s.row)),
+                columns: Math.max(...shelfSlots.map((s) => s.column)),
+                slots: shelfSlots,
+            }))
+            .sort((a, b) => a.shelf - b.shelf)
+    }, [slots])
 
-    const shelves = Array.from({ length: maxShelf }, (_, i) => i + 1)
-    const rows = Array.from({ length: maxRow }, (_, i) => i + 1)
-    const columns = Array.from({ length: maxColumn }, (_, i) => i + 1)
-
-    const getWineColor = (grapes: string[]) => {
-        const mainGrape = grapes[0]?.toLowerCase() || ''
+    const getWineColor = (grapes: string[] | null) => {
+        const mainGrape = grapes?.[0]?.toLowerCase() || ''
         if (mainGrape.includes('pinot noir') || mainGrape.includes('cabernet') || mainGrape.includes('merlot')) return theme.colors.red[7]
         if (mainGrape.includes('chardonnay') || mainGrape.includes('riesling') || mainGrape.includes('sauvignon')) return theme.colors.yellow[2]
-        if (mainGrape.includes('rosé')) return theme.colors.pink[3]
+        if (mainGrape.includes('rosé') || mainGrape.includes('rose')) return theme.colors.pink[3]
         return theme.colors.grape[6]
     }
 
-    return (
-        <Stack gap="xl">
-            {shelves.map(shelf => (
-                <Paper key={shelf} shadow="xs" p="md" withBorder>
-                    <Group justify="space-between" mb="md">
-                        <Text fw={700} size="lg">
-                            {t('wines:form.labels.shelf')} {shelf}
-                        </Text>
-                        <Badge variant="light" color="gray">
-                            {locations.filter(w => w.shelf === shelf).reduce((acc, curr) => acc + curr.quantity, 0)} {t('common:plurals.bottle_other')}
-                        </Badge>
-                    </Group>
+    const handleDeleteShelf = (shelf: number) => {
+        setShelfToDelete(shelf)
+        openConfirm()
+    }
 
-                    <Stack gap="xs">
-                        {rows.map(row => (
-                            <Group key={row} wrap="nowrap" gap="xs">
-                                <Text size="xs" w={20} c="dimmed" ta="right">{row}</Text>
-                                <Group gap="xs" style={{ flex: 1 }}>
-                                    {columns.map(col => {
-                                        const loc = locationMap.get(`${shelf}-${row}-${col}`)
-                                        const wine = loc?.wine
-                                        return (
-                                            <Tooltip
-                                                key={col}
-                                                label={loc ? `${wine?.name} (${wine?.vintage}) - ${loc.quantity} ${t('common:plurals.bottle_other')}` : `${t('wines:form.labels.row')} ${row}, ${t('wines:form.labels.column')} ${col}`}
-                                                position="top"
-                                                withArrow
-                                                disabled={!loc}
-                                            >
+    const confirmDelete = () => {
+        if (shelfToDelete !== null) {
+            deleteShelf.mutate({ cellarId, shelf: shelfToDelete })
+        }
+        closeConfirm()
+        setShelfToDelete(null)
+    }
+
+    if (shelves.length === 0) {
+        return (
+            <Paper shadow="xs" p="xl" withBorder>
+                <Stack align="center" gap="md">
+                    <Text c="dimmed" ta="center">{t('wines:overview.noShelves')}</Text>
+                    <Button leftSection={<IconPlus size={18} />} onClick={onAddShelf}>
+                        {t('wines:overview.addShelf')}
+                    </Button>
+                </Stack>
+            </Paper>
+        )
+    }
+
+    return (
+        <>
+        <Modal
+            opened={confirmOpened}
+            onClose={closeConfirm}
+            title={t('wines:overview.deleteShelf')}
+            centered
+        >
+            <Stack>
+                <Text size="sm">
+                    {shelfToDelete !== null && t('wines:overview.confirmDeleteShelf', { n: shelfToDelete })}
+                </Text>
+                <Group justify="flex-end">
+                    <Button variant="default" onClick={closeConfirm}>
+                        {t('common:buttons.cancel')}
+                    </Button>
+                    <Button color="red" onClick={confirmDelete} loading={deleteShelf.isPending}>
+                        {t('common:buttons.delete')}
+                    </Button>
+                </Group>
+            </Stack>
+        </Modal>
+        <Stack gap="xl">
+            {shelves.map(({ shelf, rows, columns, slots: shelfSlots }) => {
+                const slotMap = new Map<string, SlotWithWine>()
+                for (const slot of shelfSlots) {
+                    slotMap.set(`${slot.row}-${slot.column}`, slot)
+                }
+                const occupied = shelfSlots.filter((s) => s.wine_id).length
+
+                return (
+                    <Paper key={shelf} shadow="xs" p="md" withBorder>
+                        <Group justify="space-between" mb="md">
+                            <Group gap="sm">
+                                <Text fw={700} size="lg">
+                                    {t('wines:overview.shelfNumber', { n: shelf })}
+                                </Text>
+                                <Badge variant="light" color="gray">
+                                    {occupied} / {shelfSlots.length}
+                                </Badge>
+                            </Group>
+                            <Group gap="xs">
+                                <ActionIcon
+                                    variant="subtle"
+                                    onClick={() => onEditShelf(shelf)}
+                                    aria-label={t('common:buttons.edit')}
+                                >
+                                    <IconPencil size={16} />
+                                </ActionIcon>
+                                <Tooltip
+                                    label={t('wines:overview.cannotDeleteOccupied')}
+                                    disabled={occupied === 0}
+                                >
+                                    <ActionIcon
+                                        variant="subtle"
+                                        color="red"
+                                        onClick={() => handleDeleteShelf(shelf)}
+                                        disabled={occupied > 0}
+                                        aria-label={t('wines:overview.deleteShelf')}
+                                    >
+                                        <IconTrash size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+                            </Group>
+                        </Group>
+
+                        <Stack gap="xs">
+                            {Array.from({ length: rows }, (_, i) => i + 1).map((row) => (
+                                <Group key={row} wrap="nowrap" gap="xs">
+                                    <Text size="xs" w={20} c="dimmed" ta="right">{row}</Text>
+                                    <Group gap="xs" style={{ flex: 1 }}>
+                                        {Array.from({ length: columns }, (_, i) => i + 1).map((col) => {
+                                            const slot = slotMap.get(`${row}-${col}`)
+                                            if (!slot) {
+                                                return <Box key={col} style={{ width: 40, height: 40 }} />
+                                            }
+                                            const wine = slot.wine
+                                            const occupied = !!wine
+                                            const slotBox = (
                                                 <Box
-                                                    onClick={() => wine && navigate({ to: `/wines/${wine.id}` })}
+                                                    onClick={() => {
+                                                        if (!occupied) onSlotClick(slot)
+                                                    }}
                                                     style={{
                                                         width: 40,
                                                         height: 40,
                                                         borderRadius: theme.radius.sm,
-                                                        backgroundColor: wine ? getWineColor(wine.grapes) : theme.colors.gray[1],
+                                                        backgroundColor: occupied ? getWineColor(wine?.grapes ?? null) : theme.colors.gray[1],
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        position: 'relative',
-                                                        cursor: wine ? 'pointer' : 'default',
-                                                        transition: 'transform 0.1s ease, background-color 0.2s ease',
-                                                        border: `1px solid ${wine ? 'transparent' : theme.colors.gray[3]}`
+                                                        cursor: 'pointer',
+                                                        border: `1px dashed ${occupied ? 'transparent' : theme.colors.gray[4]}`,
                                                     }}
                                                 >
-                                                    {wine && <IconBottle size={24} color="white" stroke={1.5} />}
-                                                    {loc && loc.quantity > 1 && (
-                                                        <Badge
-                                                            size="xs"
-                                                            circle
-                                                            color="dark"
-                                                            style={{
-                                                                position: 'absolute',
-                                                                top: -8,
-                                                                right: -8,
-                                                                zIndex: 1
-                                                            }}
-                                                        >
-                                                            {loc.quantity}
-                                                        </Badge>
-                                                    )}
+                                                    {occupied && <IconBottle size={24} color="white" stroke={1.5} />}
                                                 </Box>
-                                            </Tooltip>
-                                        )
-                                    })}
-                                </Group>
-                            </Group>
-                        ))}
-                    </Stack>
-                </Paper>
-            ))}
+                                            )
+                                            const tooltipLabel = wine
+                                                ? `${wine.name}${wine.vintage ? ` (${wine.vintage})` : ''}`
+                                                : `${t('wines:overview.slotEmpty')} — ${t('wines:form.labels.row')} ${row}, ${t('wines:form.labels.column')} ${col}`
 
-            {locations.filter(w => w.shelf === null || w.row === null || w.column === null).length > 0 && (
-                <Paper shadow="xs" p="md" withBorder bg="gray.0">
-                    <Group mb="xs">
-                        <IconInfoCircle size={20} color={theme.colors.blue[6]} />
-                        <Text fw={600}>{t('wines:overview.unpositionedWines')}</Text>
-                    </Group>
-                    <Text size="sm" c="dimmed" mb="md">
-                        {t('wines:overview.unpositionedWinesDesc')}
-                    </Text>
-                    <Group gap="xs">
-                        {locations
-                            .filter(w => w.shelf === null || w.row === null || w.column === null)
-                            .map(loc => (
-                                <Badge
-                                    key={loc.id}
-                                    variant="outline"
-                                    color="gray"
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => navigate({ to: `/wines/${loc.wine.id}` })}
-                                >
-                                    {loc.wine.name} ({loc.quantity})
-                                </Badge>
+                                            if (occupied && wine) {
+                                                return (
+                                                    <Menu key={col} position="top" withArrow shadow="md">
+                                                        <Menu.Target>
+                                                            {slotBox}
+                                                        </Menu.Target>
+                                                        <Menu.Dropdown p="xs">
+                                                            <Stack gap="xs" align="center">
+                                                                <Text size="xs" fw={600} ta="center" maw={200}>
+                                                                    {wine.name}{wine.vintage ? ` (${wine.vintage})` : ''}
+                                                                </Text>
+                                                                <Group gap="xs" wrap="nowrap">
+                                                                    <Tooltip label={t('wines:overview.actions.openDetail')} withArrow>
+                                                                        <ActionIcon
+                                                                            variant="light"
+                                                                            onClick={() => navigate({ to: `/wines/${wine.id}` })}
+                                                                            aria-label={t('wines:overview.actions.openDetail')}
+                                                                        >
+                                                                            <IconEye size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                    <Tooltip label={t('wines:overview.actions.drink')} withArrow>
+                                                                        <ActionIcon
+                                                                            variant="light"
+                                                                            color="grape"
+                                                                            onClick={() => handleDrink(slot)}
+                                                                            aria-label={t('wines:overview.actions.drink')}
+                                                                        >
+                                                                            <IconGlass size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                    <Tooltip label={t('wines:overview.actions.unplace')} withArrow>
+                                                                        <ActionIcon
+                                                                            variant="light"
+                                                                            color="gray"
+                                                                            onClick={() => handleUnplace(slot)}
+                                                                            aria-label={t('wines:overview.actions.unplace')}
+                                                                        >
+                                                                            <IconArrowBackUp size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                </Group>
+                                                            </Stack>
+                                                        </Menu.Dropdown>
+                                                    </Menu>
+                                                )
+                                            }
+
+                                            return (
+                                                <Tooltip key={col} label={tooltipLabel} position="top" withArrow>
+                                                    {slotBox}
+                                                </Tooltip>
+                                            )
+                                        })}
+                                    </Group>
+                                </Group>
                             ))}
-                    </Group>
-                </Paper>
-            )}
+                        </Stack>
+                    </Paper>
+                )
+            })}
+
+            <Button leftSection={<IconPlus size={18} />} variant="light" onClick={onAddShelf}>
+                {t('wines:overview.addShelf')}
+            </Button>
         </Stack>
+        </>
     )
 }
