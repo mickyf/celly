@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { notifications } from '@mantine/notifications'
+import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
 
@@ -45,6 +47,7 @@ export const useWineLocations = (wineId?: string, cellarId?: string) => {
 }
 
 export const useAddWineLocation = () => {
+    const { t } = useTranslation(['wines'])
     const queryClient = useQueryClient()
 
     return useMutation({
@@ -59,7 +62,17 @@ export const useAddWineLocation = () => {
                 .single()
 
             if (error) {
-                Sentry.captureException(error)
+                Sentry.captureException(error, {
+                    tags: { errorType: 'supabase_mutation', table: 'wine_locations', operation: 'insert' },
+                    contexts: {
+                        supabase: { error_code: error.code, error_hint: error.hint, error_details: error.details },
+                        wine_location: {
+                            wine_id: location.wine_id,
+                            cellar_id: location.cellar_id,
+                            quantity: location.quantity,
+                        },
+                    },
+                })
                 throw error
             }
 
@@ -69,6 +82,14 @@ export const useAddWineLocation = () => {
             queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
             queryClient.invalidateQueries({ queryKey: ['wine_locations', data.wine_id] })
             queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
+        },
+        onError: (error) => {
+            notifications.show({
+                title: t('wines:notifications.locationError.title', { defaultValue: 'Location not saved' }),
+                message: error instanceof Error ? error.message : String(error),
+                color: 'red',
+                autoClose: 8000,
+            })
         },
     })
 }

@@ -206,6 +206,10 @@
       "title": "Niedrige Identifikationssicherheit",
       "message": "Die KI war bei dieser Identifikation nicht sehr sicher. Bitte überprüfen Sie die vorgeschlagenen Daten."
     },
+    "noChanges": {
+      "title": "Nichts anzureichern",
+      "message": "Alle Felder enthalten bereits Daten, oder die KI konnte keine zusätzlichen Informationen liefern."
+    },
     "errors": {
       "title": "Anreicherung fehlgeschlagen",
       "allFieldsFilled": "Alle Felder enthalten bereits Daten. Nichts anzureichern.",

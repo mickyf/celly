@@ -206,6 +206,10 @@
       "title": "Low confidence identification",
       "message": "The AI was not highly confident in this identification. Please review the suggested data."
     },
+    "noChanges": {
+      "title": "Nothing to enrich",
+      "message": "All fields already have data, or the AI could not provide additional information."
+    },
     "errors": {
       "title": "Enrichment failed",
       "allFieldsFilled": "All fields already have data. Nothing to enrich.",

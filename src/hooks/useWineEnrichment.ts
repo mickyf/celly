@@ -14,6 +14,7 @@ type Wine = Database['public']['Tables']['wines']['Row']
 interface EnrichmentResult {
   fieldsUpdated: string[]
   wineryCreated: boolean
+  noChanges?: boolean
 }
 
 interface BulkEnrichmentResult {
@@ -59,14 +60,7 @@ export const useEnrichWine = () => {
           const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
 
           if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings) {
-            const error = new Error(t('wines:enrichment.errors.allFieldsFilled'))
-            Sentry.captureException(error, {
-              tags: {
-                errorType: 'validation',
-                operation: 'enrichWine',
-              },
-            })
-            throw error
+            return { fieldsUpdated: [], wineryCreated: false, noChanges: true }
           }
 
           // Fetch existing wineries for AI matching
@@ -207,14 +201,8 @@ export const useEnrichWine = () => {
 
           // Check if any fields were actually updated
           if (fieldsUpdated.length === 0) {
-            const error = new Error(t('wines:enrichment.errors.noUpdates'))
-            Sentry.captureException(error, {
-              tags: {
-                errorType: 'validation',
-                operation: 'enrichWine',
-              },
-            })
-            throw error
+            span.setStatus({ code: 1, message: 'ok' })
+            return { fieldsUpdated: [], wineryCreated, noChanges: true }
           }
 
           // Update the wine (errors tracked in updateWine hook)
@@ -231,10 +219,19 @@ export const useEnrichWine = () => {
         }
       )
     },
-    onSuccess: ({ fieldsUpdated, wineryCreated }) => {
-      // Invalidate queries
+    onSuccess: ({ fieldsUpdated, wineryCreated, noChanges }) => {
       queryClient.invalidateQueries({ queryKey: ['wines'] })
       queryClient.invalidateQueries({ queryKey: ['wineries'] })
+
+      if (noChanges) {
+        notifications.show({
+          title: t('wines:enrichment.noChanges.title'),
+          message: t('wines:enrichment.noChanges.message'),
+          color: 'blue',
+          autoClose: 5000,
+        })
+        return
+      }
 
       Sentry.addBreadcrumb({
         category: 'ai.enrichment',
@@ -246,7 +243,6 @@ export const useEnrichWine = () => {
         },
       })
 
-      // Show success notification
       notifications.show({
         title: t('wines:enrichment.success.title'),
         message: t('wines:enrichment.success.message', {
@@ -257,7 +253,6 @@ export const useEnrichWine = () => {
         autoClose: 5000,
       })
 
-      // Show winery created notification if applicable
       if (wineryCreated) {
         notifications.show({
           title: t('wines:enrichment.wineryCreated.title'),

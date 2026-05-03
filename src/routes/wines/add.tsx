@@ -43,51 +43,46 @@ function AddWine() {
   }, [])
 
   const handleSubmit = async (values: WineFormValues, photo?: File) => {
+    const { locations, ...wineValues } = values
+
+    let wine
     try {
-      let photoUrl: string | null = null
-
-      // Extract locations from values
-      const { locations, ...wineValues } = values
-
-      // First create the wine
-      const wine = await addWine.mutateAsync({
+      wine = await addWine.mutateAsync({
         ...wineValues,
-        photo_url: photoUrl,
+        photo_url: null,
         user_id: '',
       })
+    } catch {
+      // handled in mutation onError; stay on form so user can retry
+      return
+    }
 
-      if (!wine.id) throw new Error('Failed to create wine')
+    if (!wine?.id) return
 
-      // Save locations
-      await Promise.all(
-        locations.map((loc) =>
+    // Locations and photo are best-effort — wine is created, so navigate either way.
+    // Skip rows without a cellar (cellar_id is NOT NULL).
+    await Promise.allSettled(
+      locations
+        .filter((loc) => loc.cellar_id)
+        .map((loc) =>
           addLocation.mutateAsync({
             ...loc,
             wine_id: wine.id,
-            user_id: '', // Hook will replace this with real user ID
+            user_id: '',
           })
         )
-      )
+    )
 
-      // If there's a photo, upload it and update the wine
-      if (photo) {
-        photoUrl = await uploadPhoto.mutateAsync({
-          file: photo,
-          wineId: wine.id,
-        })
-
-        // Update the wine record with the photo URL
-        await supabase
-          .from('wines')
-          .update({ photo_url: photoUrl })
-          .eq('id', wine.id)
+    if (photo) {
+      try {
+        const photoUrl = await uploadPhoto.mutateAsync({ file: photo, wineId: wine.id })
+        await supabase.from('wines').update({ photo_url: photoUrl }).eq('id', wine.id)
+      } catch {
+        // photo errors surfaced via the upload hook
       }
-
-      // Navigate to the newly created wine detail page
-      navigate({ to: '/wines/$id', params: { id: wine.id } })
-    } catch {
-      // handled in mutation onError
     }
+
+    navigate({ to: '/wines/$id', params: { id: wine.id } })
   }
 
   if (loading) {
