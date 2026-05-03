@@ -96,6 +96,10 @@
     "updateAvailable": "Neue Version verfügbar! Neu laden, um zu aktualisieren?",
     "offlineReady": "App ist bereit für Offline-Nutzung"
   },
+  "offline": {
+    "title": "Sie sind offline",
+    "message": "Lesezugriffe nutzen die gecachten Daten; neue Änderungen werden erst gespeichert, wenn Sie wieder online sind."
+  },
   "errors": {
     "boundary": {
       "title": "Ein Fehler ist aufgetreten",

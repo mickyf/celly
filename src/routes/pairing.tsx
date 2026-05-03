@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
   Container,
@@ -74,7 +75,7 @@ function FoodPairing() {
   }
 
   if (authLoading) {
-    return null
+    return <AuthSplash />
   }
 
   if (!user) {

@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { supabase } from '../../lib/supabase'
@@ -57,7 +58,7 @@ function AddWinery() {
   }
 
   if (loading) {
-    return null
+    return <AuthSplash />
   }
 
   if (!user) {

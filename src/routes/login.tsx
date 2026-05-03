@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
   Container,
@@ -115,7 +116,7 @@ function Login() {
   }
 
   if (loading) {
-    return null
+    return <AuthSplash />
   }
 
   if (user) {

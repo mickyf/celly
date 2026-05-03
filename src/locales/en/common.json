@@ -96,6 +96,10 @@
     "updateAvailable": "New version available! Reload to update?",
     "offlineReady": "App ready to work offline"
   },
+  "offline": {
+    "title": "You're offline",
+    "message": "Reads use the cached data; new changes won't save until you're back online."
+  },
   "errors": {
     "boundary": {
       "title": "Something went wrong",

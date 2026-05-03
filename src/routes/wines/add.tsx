@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { AuthSplash } from '../../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { supabase } from '../../lib/supabase'
@@ -85,13 +86,12 @@ function AddWine() {
       // Navigate to the newly created wine detail page
       navigate({ to: '/wines/$id', params: { id: wine.id } })
     } catch {
-      // Error is captured by the mutation's own Sentry handler and surfaced
-      // to the user via Mantine notification.
+      // handled in mutation onError
     }
   }
 
   if (loading) {
-    return null
+    return <AuthSplash />
   }
 
   if (!user) {
