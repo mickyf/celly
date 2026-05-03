@@ -72,7 +72,7 @@ function Login() {
     if (error) {
       notifications.show({
         title: t('notifications.loginFailed'),
-        message: error.message,
+        message: t('notifications.loginFailedMessage'),
         color: 'red',
       })
     } else {
@@ -96,7 +96,7 @@ function Login() {
     if (error) {
       notifications.show({
         title: t('notifications.signupFailed'),
-        message: error.message,
+        message: t('notifications.signupFailedMessage'),
         color: 'red',
       })
     } else {
