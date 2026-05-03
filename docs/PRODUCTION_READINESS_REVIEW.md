@@ -136,7 +136,7 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - ✅ **P2-8.** `src/components/AuthSplash.tsx` replaces `return null` in 7 routes' auth-check branches with a centered loader.
 - ✅ **P2-9.** `useOnlineStatus` hook + `OfflineBanner` mounted in `__root.tsx`. EN/de-CH locale strings under `common:offline.{title,message}`.
 - ✅ **P2-10.** Global `autoClose={5000}` on `<Notifications />`. `showMutationError` overrides to `8000` + `withCloseButton: true` so error toasts have time to be read.
-- 🖱️ **P2-11.** *Manual browser task.* Run the live app through axe DevTools or WAVE for WCAG AA contrast on `grape.4` and `c="dimmed"` text. Adjust the palette where flagged. ~10 minutes with a Chrome extension; can't be done from CLI.
+- ✅ **P2-11.** Programmatic audit of the grape palette + Mantine `c="dimmed"` against `#fff`. Findings: `grape.0`–`grape.5` fail AA text contrast but aren't used as text colour anywhere — they only appear as decorative icon fill (`grape.4` icon in `EmptyState` at 3.18:1 still passes the 3:1 non-text-UI threshold). The real issue was Mantine's default `c="dimmed"` (`#868e96`, **3.32:1**), used in 30+ text spots. Fixed by overriding `--mantine-color-dimmed` to `#6c757d` (**4.69:1**) in `src/styles/contrast.css`.
 
 ### Code health
 - ✅ **P2-12.** All 15 stray `console.error` calls removed. Route-level catches now empty (`// handled in mutation onError`); `CameraCapture` and `useWineEnrichment` swallowed paths now `Sentry.captureException`. `console.log` survives only in dev-gated paths (`main.tsx` PWA banner, `lib/sentry.ts`).
@@ -154,7 +154,6 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 
 ## Outstanding work
 
-- **P2-11** — WCAG AA contrast audit of the grape theme (axe DevTools or WAVE).
 - **P2-18 follow-up** — after the deploy that ships the new `_headers`, exercise the app and check the browser console for CSP violations. Tighten the policy if any legitimate flows are blocked, then flip `Content-Security-Policy-Report-Only` → `Content-Security-Policy` to enforce.
 
 ## Deferred to P3 (future batch)
