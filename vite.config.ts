@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -14,7 +14,7 @@ export default defineConfig({
     css: false,
   },
   plugins: [
-    TanStackRouterVite(),
+    tanstackRouter({ autoCodeSplitting: true }),
     react(),
 
     // PWA plugin
@@ -96,5 +96,16 @@ export default defineConfig({
 
   build: {
     sourcemap: true, // Generate source maps for Sentry
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('@mantine')) return 'mantine'
+          if (id.includes('@tanstack')) return 'tanstack'
+          if (id.includes('@sentry')) return 'sentry'
+          if (id.includes('@tabler/icons-react')) return 'icons'
+        },
+      },
+    },
   },
 })
