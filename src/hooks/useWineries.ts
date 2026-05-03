@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { showMutationError } from '../lib/mutationError'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import type { Tables, TablesInsert, TablesUpdate } from '../types/database'
@@ -21,7 +22,7 @@ export const useWineries = () => {
 
       const { data, error } = await supabase
         .from('wineries')
-        .select('*')
+        .select('id, name, country_code')
         .order('name', { ascending: true })
 
       if (error) {
@@ -204,13 +205,7 @@ export const useAddWinery = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wineries:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -270,13 +265,7 @@ export const useUpdateWinery = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wineries:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -352,13 +341,7 @@ export const useDeleteWinery = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wineries:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -462,12 +445,6 @@ export const useMergeWineries = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wineries:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }

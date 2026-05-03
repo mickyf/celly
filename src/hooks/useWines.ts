@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { showMutationError } from '../lib/mutationError'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import { resizeImage } from '../lib/imageResize'
@@ -152,14 +153,7 @@ export const useAddWine = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      // Error already captured in mutationFn
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -220,13 +214,7 @@ export const useUpdateWine = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -279,13 +267,7 @@ export const useDeleteWine = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -364,13 +346,7 @@ export const useUploadWinePhoto = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -536,12 +512,6 @@ export const useMergeWines = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }

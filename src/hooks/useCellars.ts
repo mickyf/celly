@@ -20,7 +20,7 @@ export const useCellars = () => {
 
             const { data, error } = await supabase
                 .from('cellars')
-                .select('*')
+                .select('id, name')
                 .order('name', { ascending: true })
 
             if (error) {

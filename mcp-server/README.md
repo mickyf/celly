@@ -80,6 +80,8 @@ The server uses a **secure Edge Function proxy** to communicate with Supabase.
 - ✅ **Authenticated**: All requests use your personal `USER_AUTH_TOKEN`.
 - ✅ **Isolated**: Row Level Security (RLS) ensures only your wines are accessible.
 
+> ⚠️ **Token caveat:** `USER_AUTH_TOKEN` is a long-lived plaintext value stored in `claude_desktop_config.json`. There's no automatic refresh — when it expires you'll need to grab a fresh one from the app's Supabase session and update the config. Never commit this file. Acceptable for a personal/single-user setup, but treat the token like a password.
+
 ### Data Flow
 ```text
 Claude Desktop → MCP Server (stdio) → Supabase Edge Function → Database (RLS)

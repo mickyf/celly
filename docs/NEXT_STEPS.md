@@ -63,5 +63,6 @@
 - feature: add multiple wines from order document
 - feature: password change function is missing
 
-## security
+## security/technical
 - upgrade dependencies
+- add a central error handling function

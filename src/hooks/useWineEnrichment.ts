@@ -200,7 +200,7 @@ export const useEnrichWine = () => {
                 wineryCreated = true
               } catch (error) {
                 // If winery creation fails, continue without it
-                console.error('Failed to create winery:', error)
+                Sentry.captureException(error, { level: "warning", tags: { source: "wine-enrichment", op: "create-winery" } })
               }
             }
           }
@@ -371,7 +371,7 @@ export const useEnrichWineFromImage = () => {
                 })
               } catch (error) {
                 // If winery creation fails, continue without it
-                console.error('Failed to create winery:', error)
+                Sentry.captureException(error, { level: "warning", tags: { source: "wine-enrichment", op: "create-winery" } })
               }
             }
           }
@@ -570,7 +570,7 @@ export const useBulkEnrichWines = () => {
                           })
                         }
                       } catch (error) {
-                        console.error('Failed to create winery:', error)
+                        Sentry.captureException(error, { level: "warning", tags: { source: "wine-enrichment", op: "create-winery" } })
                       }
                     }
                   }

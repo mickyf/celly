@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
+import { showMutationError } from '../lib/mutationError'
 import type { Database } from '../types/database'
 
 type UserSettingRow = Database['public']['Tables']['user_settings']['Row']
@@ -121,12 +122,6 @@ export const useUpdateUserSetting = () => {
                 color: 'green',
             })
         },
-        onError: (error) => {
-            notifications.show({
-                title: t('common:notifications.error.title'),
-                message: error.message,
-                color: 'red',
-            })
-        },
+        onError: (error) => showMutationError(t, error),
     })
 }

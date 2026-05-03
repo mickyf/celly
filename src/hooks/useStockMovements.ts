@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { notifications } from '@mantine/notifications'
+import { showMutationError } from '../lib/mutationError'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
 
 type StockMovement = Database['public']['Tables']['stock_movements']['Row']
 type NewStockMovement = Database['public']['Tables']['stock_movements']['Insert']
+type Wine = Database['public']['Tables']['wines']['Row']
 type UpdateStockMovement = Database['public']['Tables']['stock_movements']['Update']
 
 export const useStockMovements = (wineId?: string) => {
@@ -22,7 +24,7 @@ export const useStockMovements = (wineId?: string) => {
 
       let query = supabase
         .from('stock_movements')
-        .select('*')
+        .select('id, wine_id, movement_type, quantity, movement_date, notes, user_id')
         .order('movement_date', { ascending: false })
 
       if (wineId) {
@@ -59,6 +61,21 @@ export const useAddStockMovement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
+    onMutate: async (movement: NewStockMovement) => {
+      // Snapshot wines list and apply the quantity delta optimistically so
+      // the dashboard / wines list reflects the change before the round-trip
+      // completes. The DB trigger updates wine.quantity authoritatively; we
+      // refetch the affected wine in onSuccess.
+      await queryClient.cancelQueries({ queryKey: ['wines'] })
+      const previousWines = queryClient.getQueryData<Wine[]>(['wines'])
+      const delta = movement.movement_type === 'in' ? movement.quantity : -movement.quantity
+      queryClient.setQueryData<Wine[]>(['wines'], (old) =>
+        old?.map((w) =>
+          w.id === movement.wine_id ? { ...w, quantity: (w.quantity ?? 0) + delta } : w,
+        ),
+      )
+      return { previousWines }
+    },
     mutationFn: async (movement: NewStockMovement) => {
       Sentry.addBreadcrumb({
         category: 'data.mutation',
@@ -119,7 +136,8 @@ export const useAddStockMovement = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['stock_movements'] })
       queryClient.invalidateQueries({ queryKey: ['stock_movements', data.wine_id] })
-      queryClient.invalidateQueries({ queryKey: ['wines'] })
+      // Refetch the canonical quantity for the affected wine. The wines list
+      // was already updated optimistically in onMutate.
       queryClient.invalidateQueries({ queryKey: ['wines', data.wine_id] })
 
       Sentry.addBreadcrumb({
@@ -134,12 +152,12 @@ export const useAddStockMovement = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
+    onError: (error, _variables, context) => {
+      // Roll back the optimistic wines list update if it was applied.
+      if (context?.previousWines) {
+        queryClient.setQueryData(['wines'], context.previousWines)
+      }
+      showMutationError(t, error)
     },
   })
 }
@@ -202,13 +220,7 @@ export const useUpdateStockMovement = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
 
@@ -268,12 +280,6 @@ export const useDeleteStockMovement = () => {
         color: 'green',
       })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.error.title'),
-        message: error.message,
-        color: 'red',
-      })
-    },
+    onError: (error) => showMutationError(t, error),
   })
 }
