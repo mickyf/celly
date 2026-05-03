@@ -23,10 +23,12 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 - **Why it mattered:** Calling `setState` inside `useMemo` can cause infinite render loops in React 19 — latent bug, not a style issue.
 - **Fix applied:** Replaced the `useMemo`-with-side-effect with a derived value computed during render (`effectiveCellarId = selectedCellarId ?? cellars?.[0]?.id ?? null`). Local state retained for the dropdown's onChange and post-add selection.
 
-### P0-2. Bundle is a single 1.65 MB chunk (~495 KB gzipped), no code splitting
+### ~~P0-2. Bundle is a single 1.65 MB chunk (~495 KB gzipped), no code splitting~~ ✅ Done
 - **File:** `vite.config.ts`
-- **Why it matters:** Cold load on mobile 3G is multi-second; PWA install size is bloated; build warns about chunk size. The biggest single production-readiness win.
-- **Fix:** Add `build.rollupOptions.manualChunks` to split vendor chunks (React, Mantine, TanStack, Sentry, charts). TanStack Router routes are already file-based — verify they're lazy-loaded; if not, switch to `createLazyFileRoute` for non-critical routes (pairing, settings, edit forms).
+- **Why it mattered:** Cold load on mobile 3G was multi-second; PWA install size was bloated; build warned about chunk size.
+- **Fix applied:** Enabled `autoCodeSplitting: true` on the TanStack Router Vite plugin (so each route component becomes its own on-demand chunk) and added `manualChunks` to split `@mantine`, `@tanstack`, `@sentry`, and `@tabler/icons-react` into cacheable vendor chunks.
+- **Result:** Single 1.65 MB / 495 KB gzip chunk → split into 30+ chunks. Largest is now `mantine` at 136 KB gzip. Other routes (e.g. `wines/add`) are 4 KB gzip on-demand. Build no longer warns about chunk size.
+- **Still possible:** Lazy-load `@mantine/charts` inside the dashboard component for users who don't reach the dashboard immediately. P2 follow-up if first paint becomes a hot path again.
 
 ### ~~P0-3. Zero test infrastructure~~ ✅ Scaffolded
 - **Files:** `vite.config.ts`, `src/test/setup.ts`, `src/constants/countries.test.ts`, `.husky/pre-push`
