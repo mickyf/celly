@@ -12,7 +12,8 @@
     "readyToDrink": "Trinkreif",
     "topGrapes": "Top Rebsorten",
     "recentNotes": "Neueste Degustationsnotizen",
-    "quickActions": "Schnellaktionen"
+    "quickActions": "Schnellaktionen",
+    "consumption": "Verbrauch"
   },
   "readyText": "{{count}} von {{total}} Weinen befinden sich in ihrem optimalen Trinkfenster",
   "readyCount": "{{count}} Weine",
@@ -41,5 +42,11 @@
     "wine": "Wein",
     "rating": "Bewertung",
     "date": "Datum"
+  },
+  "consumption": {
+    "noData": "Keine Verbrauchsdaten verfügbar",
+    "count": "Flaschenanzahl",
+    "month": "Monat",
+    "description": "Zeigt die Anzahl Weinflaschen über die Zeit an"
   }
 }

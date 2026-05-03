@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react'
 import { useDashboardStats } from '../hooks/useDashboard'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import { ConsumptionChart } from '../components/ConsumptionChart'
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
@@ -275,6 +276,10 @@ function Dashboard() {
             </Stack>
           </Paper>
         </SimpleGrid>
+
+        {/* Consumption Chart */}
+        <ConsumptionChart data={stats.consumptionData} />
+
       </Stack>
     </Container>
   )

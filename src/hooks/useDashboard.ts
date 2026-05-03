@@ -15,6 +15,10 @@ export interface DashboardStats {
     rating: number
     tasted_at: string | null
   }[]
+  consumptionData: {
+    date: string
+    count: number
+  }[]
 }
 
 export const useDashboardStats = () => {
@@ -138,6 +142,65 @@ export const useDashboardStats = () => {
         })
       )
 
+      // Fetch stock movements for bottle count data
+      const { data: stockMovements, error: stockMovementsError } = await supabase
+        .from('stock_movements')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('movement_date', { ascending: true })
+
+      if (stockMovementsError) {
+        Sentry.captureException(stockMovementsError, {
+          tags: {
+            errorType: 'supabase_query',
+            table: 'stock_movements',
+            operation: 'select',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'select',
+              error_code: stockMovementsError.code,
+              error_hint: stockMovementsError.hint,
+            },
+          },
+        })
+        throw stockMovementsError
+      }
+
+      // Build a monthly bottle-count series by walking movements forward from
+      // the implied initial count. The initial count is `totalBottles` minus
+      // the net delta of all movements, so the final point reconciles with the
+      // current inventory.
+      const sortedMovements = [...(stockMovements || [])].sort(
+        (a, b) =>
+          new Date(a.movement_date).getTime() - new Date(b.movement_date).getTime()
+      )
+
+      const netDelta = sortedMovements.reduce((sum, m) => {
+        const qty = m.quantity || 0
+        if (m.movement_type === 'in') return sum + qty
+        if (m.movement_type === 'out') return sum - qty
+        return sum
+      }, 0)
+
+      const monthKey = (date: Date) =>
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+
+      const monthlyCount: Record<string, number> = {}
+      let count = totalBottles - netDelta
+
+      for (const movement of sortedMovements) {
+        const qty = movement.quantity || 0
+        if (movement.movement_type === 'in') count += qty
+        else if (movement.movement_type === 'out') count -= qty
+        monthlyCount[monthKey(new Date(movement.movement_date))] = count
+      }
+
+      const consumptionData = Object.entries(monthlyCount)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+
       const stats: DashboardStats = {
         totalBottles,
         totalValue,
@@ -146,6 +209,7 @@ export const useDashboardStats = () => {
         tastingNotesCount: tastingNotes?.length || 0,
         topGrapes,
         recentTastings,
+        consumptionData,
       }
 
       return stats
