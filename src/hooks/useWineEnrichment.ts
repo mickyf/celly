@@ -273,6 +273,99 @@ export const useEnrichWine = () => {
   })
 }
 
+export const useIdentifyWineByName = () => {
+  const { t } = useTranslation(['wines'])
+  const addWinery = useAddWinery()
+
+  return useMutation({
+    mutationFn: async ({ name }: { name: string }) => {
+      return Sentry.startSpan(
+        {
+          name: 'wine.identifyByName',
+          op: 'ai.enrichment',
+          attributes: { 'wine.name': name },
+        },
+        async (span) => {
+          Sentry.addBreadcrumb({
+            category: 'ai.enrichment',
+            message: 'Identifying wine by name',
+            level: 'info',
+            data: { name },
+          })
+
+          const { data: existingWineries } = await supabase
+            .from('wineries')
+            .select('id, name, country_code')
+            .order('name', { ascending: true })
+
+          const validWineries = (existingWineries || []).filter(
+            (w): w is { id: string; name: string; country_code: string } => w.country_code !== null,
+          )
+
+          const { enrichmentData, error } = await enrichWineData(name)
+
+          if (error || !enrichmentData) {
+            const err = new Error(error || t('wines:enrichment.errors.noData'))
+            Sentry.captureException(err)
+            throw err
+          }
+
+          if (enrichmentData.winery && enrichmentData.winery.name) {
+            const { name: wineryName, countryCode } = enrichmentData.winery
+            const fuse = new Fuse(validWineries, {
+              keys: ['name'],
+              threshold: 0.3,
+              includeScore: true,
+            })
+            const searchResults = fuse.search(wineryName)
+            if (searchResults.length > 0) {
+              enrichmentData.winery.matchedExistingId = searchResults[0].item.id
+            } else {
+              try {
+                const newWinery = await addWinery.mutateAsync({ name: wineryName, country_code: countryCode })
+                enrichmentData.winery.matchedExistingId = newWinery.id
+              } catch (e) {
+                Sentry.captureException(e, {
+                  level: 'warning',
+                  tags: { source: 'wine-identify-by-name', op: 'create-winery' },
+                })
+              }
+            }
+          }
+
+          if (enrichmentData.confidence === 'low') {
+            notifications.show({
+              title: t('wines:enrichment.lowConfidence.title'),
+              message: t('wines:enrichment.lowConfidence.message'),
+              color: 'yellow',
+              autoClose: 8000,
+            })
+          }
+
+          span.setStatus({ code: 1, message: 'ok' })
+          return enrichmentData
+        },
+      )
+    },
+    onSuccess: (data) => {
+      notifications.show({
+        title: t('wines:enrichment.success.title'),
+        message: t('wines:enrichment.successIdentified', { name: data.name }),
+        color: 'green',
+        autoClose: 5000,
+      })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: t('wines:enrichment.errors.title'),
+        message: error instanceof Error ? error.message : String(error),
+        color: 'red',
+        autoClose: 8000,
+      })
+    },
+  })
+}
+
 export const useEnrichWineFromImage = () => {
   const { t } = useTranslation(['wines'])
   const addWinery = useAddWinery()

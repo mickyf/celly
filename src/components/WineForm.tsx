@@ -16,7 +16,7 @@ import {
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import { IconUpload, IconPhoto, IconX, IconCamera, IconPlus, IconSparkles } from '@tabler/icons-react'
-import { useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries, useAddWinery } from '../hooks/useWineries'
 import { useEnrichWineFromImage } from '../hooks/useWineEnrichment'
@@ -29,6 +29,8 @@ type Wine = Database['public']['Tables']['wines']['Row']
 
 interface WineFormProps {
   wine?: Wine
+  prefill?: Partial<WineFormValues>
+  initialPhoto?: File | null
   onSubmit: (values: WineFormValues, photo?: File, photoCleared?: boolean) => void
   onCancel?: () => void
   isLoading?: boolean
@@ -47,13 +49,20 @@ export interface WineFormValues {
   food_pairings: string | null
 }
 
-export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps) {
+export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLoading }: WineFormProps) {
   const { t } = useTranslation(['wines', 'common'])
   const { data: wineries } = useWineries()
   const addWinery = useAddWinery()
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(initialPhoto ?? null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoCleared, setPhotoCleared] = useState(false)
+
+  useEffect(() => {
+    if (!initialPhoto) return
+    const reader = new FileReader()
+    reader.onload = () => setPhotoPreview(reader.result as string)
+    reader.readAsDataURL(initialPhoto)
+  }, [initialPhoto])
   const { data: signedExistingPhotoUrl } = useWinePhotoUrl(wine?.photo_url)
   const displayPhotoUrl =
     photoPreview ?? (photoCleared ? null : signedExistingPhotoUrl ?? null)
@@ -76,16 +85,16 @@ export function WineForm({ wine, onSubmit, onCancel, isLoading }: WineFormProps)
 
   const form = useForm<WineFormValues>({
     initialValues: {
-      name: wine?.name || '',
-      winery_id: wine?.winery_id || null,
-      grapes: wine?.grapes || [],
-      vintage: wine?.vintage || null,
-      quantity: wine?.quantity || 1,
-      price: wine?.price ? Number(wine.price) : null,
-      bottle_size: wine?.bottle_size || null,
-      drink_window_start: wine?.drink_window_start || null,
-      drink_window_end: wine?.drink_window_end || null,
-      food_pairings: wine?.food_pairings || null,
+      name: wine?.name ?? prefill?.name ?? '',
+      winery_id: wine?.winery_id ?? prefill?.winery_id ?? null,
+      grapes: wine?.grapes ?? prefill?.grapes ?? [],
+      vintage: wine?.vintage ?? prefill?.vintage ?? null,
+      quantity: wine?.quantity ?? prefill?.quantity ?? 1,
+      price: wine?.price != null ? Number(wine.price) : prefill?.price ?? null,
+      bottle_size: wine ? wine.bottle_size : (prefill?.bottle_size ?? '75cl'),
+      drink_window_start: wine?.drink_window_start ?? prefill?.drink_window_start ?? null,
+      drink_window_end: wine?.drink_window_end ?? prefill?.drink_window_end ?? null,
+      food_pairings: wine?.food_pairings ?? prefill?.food_pairings ?? null,
     },
     transformValues: (values: WineFormValues) => ({
       ...values,

@@ -37,6 +37,26 @@
     "title": "Add Wine",
     "subtitle": "Add a new bottle to your cellar"
   },
+  "addChooser": {
+    "title": "Add a wine",
+    "subtitle": "Pick how you'd like to start. AI will fill in the details where it can — you can always tweak them in the next step.",
+    "identifying": "Identifying wine…",
+    "photo": {
+      "title": "From a photo",
+      "description": "Drop or take a photo of the bottle or label. We'll identify the wine for you."
+    },
+    "text": {
+      "title": "By name",
+      "description": "Type a wine name and we'll look up the details.",
+      "placeholder": "e.g. Château Margaux 2015",
+      "button": "Find with AI"
+    },
+    "manual": {
+      "title": "Manually",
+      "description": "Skip AI and fill in everything yourself.",
+      "button": "Add manually"
+    }
+  },
   "edit": {
     "title": "Edit Wine",
     "subtitle": "Update wine information"
