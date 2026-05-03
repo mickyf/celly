@@ -58,6 +58,7 @@
 - ~~move the merge button from the wine card to the detail view (next to edit)~~
 - ~~wine detail view: set an image max height~~
 - ~~remove obvious comments~~
+- mobile: we should reduce the gaps everywhere to save some space on mobile. So we have more space for the content.
 
 ## major
 - cellar overview: 
@@ -65,7 +66,7 @@
   - ~~click on a placed wine and select if remove from the place or open the wine~~ (also added "drink" which decrements stock)
   - add wine: display the cellar overview and let the user click the places, where the bottles were placed. Like on a seat-booking-overview.
   - ~~wine location flow is unreliable: insert returns 409 Conflict, UX needs a rethink~~ (redesigned: each row is now a slot, wine_id nullable)
-  - simplify stock changes with an up- and down-button on the card
+  - ~~simplify stock changes with an up- and down-button on the card~~
   - hide wines when drunken out in all the places, add a filter on the wine list to display "drunken" wines
 - feature: add wine from free text input
 - feature: add multiple wines from order document

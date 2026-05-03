@@ -28,7 +28,9 @@
     "confirmDelete": "Möchten Sie diesen Wein wirklich löschen? Dies löscht auch alle zugehörigen Degustationsnotizen.",
     "confirmDeleteNote": "Möchten Sie diese Degustationsnotiz wirklich löschen?",
     "modalEdit": "Degustationsnotiz bearbeiten",
-    "modalAdd": "Degustationsnotiz hinzufügen"
+    "modalAdd": "Degustationsnotiz hinzufügen",
+    "increaseQuantity": "Eine Flasche hinzufügen",
+    "decreaseQuantity": "Eine Flasche entfernen"
   },
   "add": {
     "title": "Wein hinzufügen",

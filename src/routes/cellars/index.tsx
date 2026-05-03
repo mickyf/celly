@@ -322,15 +322,15 @@ function CellarOverview() {
         />
 
         <Paper shadow="sm" p="md" withBorder>
-          <Group justify="space-between" align="flex-end">
-            <Group align="flex-end">
+          <Group justify="space-between" align="flex-end" wrap="nowrap" gap="md">
+            <Group align="flex-end" gap="xs" style={{ flex: 1, minWidth: 0 }}>
               <Select
                 label={t('wines:form.labels.cellar')}
                 placeholder={t('wines:form.placeholders.cellar')}
                 data={cellarOptions}
                 value={effectiveCellarId}
                 onChange={setSelectedCellarId}
-                style={{ width: 300 }}
+                style={{ flex: 1, minWidth: 0, maxWidth: 300 }}
               />
               <ActionIcon
                 variant="subtle"

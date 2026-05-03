@@ -28,7 +28,9 @@
     "confirmDelete": "Are you sure you want to delete this wine? This will also delete all associated tasting notes.",
     "confirmDeleteNote": "Are you sure you want to delete this tasting note?",
     "modalEdit": "Edit Tasting Note",
-    "modalAdd": "Add Tasting Note"
+    "modalAdd": "Add Tasting Note",
+    "increaseQuantity": "Add one bottle",
+    "decreaseQuantity": "Remove one bottle"
   },
   "add": {
     "title": "Add Wine",
