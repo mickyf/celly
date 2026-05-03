@@ -30,7 +30,8 @@
     "modalEdit": "Edit Tasting Note",
     "modalAdd": "Add Tasting Note",
     "increaseQuantity": "Add one bottle",
-    "decreaseQuantity": "Remove one bottle"
+    "decreaseQuantity": "Remove one bottle",
+    "placeInCellar": "Place in cellar"
   },
   "add": {
     "title": "Add Wine",
@@ -335,5 +336,15 @@
       "drink": "Drink (−1 bottle)",
       "unplace": "Remove from slot"
     }
+  },
+  "placeWine": {
+    "title": "Place {{name}} in your cellar",
+    "subtitle": "Tap an empty slot to place a bottle. Tap one of your placed bottles to remove it from its slot.",
+    "breadcrumb": "Place in cellar",
+    "progress": "{{placed}} of {{total}} placed",
+    "allPlaced": "All bottles are placed.",
+    "unplacedHint_one": "{{count}} bottle still to place",
+    "unplacedHint_other": "{{count}} bottles still to place",
+    "done": "Done"
   }
 }

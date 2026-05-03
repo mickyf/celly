@@ -63,7 +63,11 @@ function AddWine() {
       }
     }
 
-    navigate({ to: '/wines/$id', params: { id: wine.id } })
+    if (values.quantity > 0) {
+      navigate({ to: '/wines/$id/place', params: { id: wine.id } })
+    } else {
+      navigate({ to: '/wines/$id', params: { id: wine.id } })
+    }
   }
 
   if (loading) {

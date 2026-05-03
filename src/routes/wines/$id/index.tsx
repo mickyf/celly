@@ -26,6 +26,7 @@ import {
   IconBottle,
   IconSparkles,
   IconGitMerge,
+  IconMapPin,
 } from '@tabler/icons-react'
 import { supabase } from '../../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
@@ -339,6 +340,25 @@ function WineDetail() {
                     </ActionIcon>
                   </>
                 )}
+                <Button
+                  variant="light"
+                  color="grape"
+                  leftSection={<IconMapPin size={20} />}
+                  onClick={() => navigate({ to: '/wines/$id/place', params: { id } })}
+                  visibleFrom="sm"
+                >
+                  {t('wines:detail.placeInCellar')}
+                </Button>
+                <ActionIcon
+                  size="lg"
+                  variant="light"
+                  color="grape"
+                  onClick={() => navigate({ to: '/wines/$id/place', params: { id } })}
+                  hiddenFrom="sm"
+                  aria-label={t('wines:detail.placeInCellar')}
+                >
+                  <IconMapPin size={20} />
+                </ActionIcon>
                 <Button
                   variant="light"
                   leftSection={<IconEdit size={20} />}
