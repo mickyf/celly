@@ -124,43 +124,44 @@ Each item links to a concrete file (verified) where possible. Items marked *(unv
 ## P2 — Polish & optimization
 
 ### Performance
-- **P2-1.** Add DB indexes on `wines.winery_id`, `wine_locations.wine_id`, `tasting_notes.wine_id`, `stock_movements.wine_id` (`supabase/migrations/`).
-- **P2-2.** Replace `select('*')` with explicit column lists in `src/hooks/useWines.ts`, `useDashboard.ts`, `useStockMovements.ts`, `useWineries.ts` — only the columns each view actually uses.
-- **P2-3.** Tune TanStack Query cache: set a `gcTime` (default 5 min eviction is too eager); raise `staleTime` for dashboard/winery list (rarely changes), keep wine list low.
-- **P2-4.** Stock-movement mutation invalidates the entire `['wines']` list. Use `setQueryData` for the optimistic quantity update, then invalidate `['wines', wine_id]` exact-only. (`src/hooks/useStockMovements.ts:120-123`)
-- **P2-5.** PWA runtime cache name `'supabase-cache'` has no version. Bump on schema changes or include app version. (`vite.config.ts:53`)
-- **P2-6.** Verify Mantine tree-shaking — confirm imports are destructured (`import { Button } from '@mantine/core'`) and that `postcss-preset-mantine` is wired up.
+- ✅ **P2-1.** `wines.winery_id` index added (`supabase/migrations/20260503160000_add_wines_winery_id_index.sql`). The other FK columns flagged in the original review were already indexed.
+- ✅ **P2-2.** `select('*')` narrowed to explicit column lists in `useWineries`, `useTastingNotes`, `useStockMovements`, `useCellars` (list queries only — singletons keep `*`). `useWines` list left as-is: 12 of 14 columns are used by the card so the savings are marginal.
+- ✅ **P2-3.** Global `gcTime: 30 min` set in `src/App.tsx`. Per-hook staleTime not tuned — explicit invalidation already handles the freshness side.
+- ✅ **P2-4.** `useAddStockMovement` does an `onMutate` optimistic delta on the wines list with `previousWines` rollback in `onError`. `onSuccess` invalidates only `['wines', wine_id]`, not the whole list. (`src/hooks/useStockMovements.ts`)
+- ✅ **P2-5.** Cache renamed `supabase-cache` → `supabase-cache-v2` in `vite.config.ts`.
+- ✅ **P2-6.** Verified — `postcss-preset-mantine` is wired in `postcss.config.cjs`, all imports are destructured (no `import *`), and the `mantine` manual chunk lands at ~136 KB gzip.
 
 ### UX & a11y
-- **P2-7.** Add Mantine `Skeleton` for wine list / dashboard loading states (replaces `<Loader />` flashes).
-- **P2-8.** Auth check returns `null` initially → blank flash. Show a minimal splash. (`src/routes/index.tsx:50-52`, `wines/index.tsx:360-365`)
-- **P2-9.** Offline indicator: `navigator.onLine` + `useNetworkStatus`-style hook → banner in `__root.tsx`. Mutations while offline currently fail silently against PWA cache expectations.
-- **P2-10.** Standardize notification autoClose timing (success and error) and ensure errors include a close button.
-- **P2-11.** Run grape theme through axe/WAVE for WCAG AA contrast on `grape.4` text and similar light shades. (`src/main.tsx:18-32`)
+- ✅ **P2-7.** `src/components/skeletons.tsx` — `WineCardSkeleton`, `WineGridSkeleton`, `StatCardSkeleton`, `DashboardStatsSkeleton`. Used in dashboard and wines list during initial load.
+- ✅ **P2-8.** `src/components/AuthSplash.tsx` replaces `return null` in 7 routes' auth-check branches with a centered loader.
+- ✅ **P2-9.** `useOnlineStatus` hook + `OfflineBanner` mounted in `__root.tsx`. EN/de-CH locale strings under `common:offline.{title,message}`.
+- ✅ **P2-10.** Global `autoClose={5000}` on `<Notifications />`. `showMutationError` overrides to `8000` + `withCloseButton: true` so error toasts have time to be read.
+- 🖱️ **P2-11.** *Manual browser task.* Run the live app through axe DevTools or WAVE for WCAG AA contrast on `grape.4` and `c="dimmed"` text. Adjust the palette where flagged. ~10 minutes with a Chrome extension; can't be done from CLI.
 
 ### Code health
-- **P2-12.** Remove 18 stray `console.log/error` calls (route through Sentry instead). Worst: `src/lib/claude.ts`, `src/routes/cellars/index.tsx:48`, `src/components/WineryForm.tsx:72`.
-- **P2-13.** Dead code: `handleWineryEnrichment` in `supabase/functions/claude-proxy/index.ts:545` is never called; unused `settingsError` (line 75), `currentYear` (line 148).
-- **P2-14.** Form boilerplate is duplicated across `WineForm`, `WineryForm`, `TastingNoteForm`, `StockMovementForm`. Consider a small `useFormSubmit({ mutation, onSuccessNav })` helper — *only if* you'll add a 5th form, otherwise leave it.
-- **P2-15.** Centralize mutation error handling: one helper that sends to Sentry + shows a notification, replacing the scattered `onError` closures.
-- **P2-16.** `npm audit --production`: 4 HIGH, 1 MODERATE — all in dev/transitive deps (minimatch/picomatch ReDoS, seroval). Run `npm audit fix`; nothing exploitable in shipped code.
-- **P2-17.** Bring TanStack libs current — they're 10–25 minor versions behind. Patch React 19.2.3 → 19.2.5. Skip TS 5→6 and react-i18next 16→17 majors for now.
-- **P2-18.** Add CSP / security headers via Cloudflare Pages `_headers`: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`.
+- ✅ **P2-12.** All 15 stray `console.error` calls removed. Route-level catches now empty (`// handled in mutation onError`); `CameraCapture` and `useWineEnrichment` swallowed paths now `Sentry.captureException`. `console.log` survives only in dev-gated paths (`main.tsx` PWA banner, `lib/sentry.ts`).
+- ✅ **P2-13.** `handleWineryEnrichment` and the `WineryEnrichmentRequest` type deleted; unused `settingsError` and `currentYear` removed (during P1-15 lint sweep).
+- ⏭️ **P2-14.** Form boilerplate dedup deferred — only worthwhile if a fifth form arrives.
+- ✅ **P2-15.** `src/lib/mutationError.ts` exports `showMutationError(t, error)` that captures to Sentry and shows a red toast. Wired into 19 onError sites across hooks. Stock movement keeps its bespoke onError to retain the optimistic rollback.
+- ✅ **P2-16.** `npm audit fix` ran. 13 → 4 vulnerabilities; the remaining 4 are in `serialize-javascript` via `vite-plugin-pwa` → `workbox-build` → `@rollup/plugin-terser`. Build-time only, fix would require a breaking downgrade of `vite-plugin-pwa` — not worth it.
+- ⏸️ **P2-17.** Deferred to a P3 batch covering TS 5 → 6, TanStack minor bumps, React 19.2 patch, and other major dep updates together.
+- 🖱️ **P2-18.** *Manual browser task.* Add `public/_headers` with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`, and a basic CSP. CSP needs browser testing against the live app to whitelist Supabase, Sentry, and the Anthropic console; doing it blind would break things.
 
 ### MCP server
-- **P2-19.** `USER_AUTH_TOKEN` in `mcp-server/src/config.ts` is a long-lived plaintext env var with no refresh. Acceptable for personal use; flag it in the README so it doesn't get checked in.
+- ✅ **P2-19.** Token caveat documented in `mcp-server/README.md`.
 
 ---
 
-## Suggested order of execution
+## Outstanding work
 
-1. **One PR for P0**: cellars `setState`-in-`useMemo` fix, code splitting via `manualChunks` + lazy routes, Vitest scaffolding with 2–3 starter tests. Establishes the baseline.
-2. **One PR for security P1s** (1–7): tighten edge functions, storage policy, login error message, password policy. Small surface area, easy to review.
-3. **One PR for reliability P1s** (8–12): mutation buttons, session expiry handler, error boundaries, empty states, aria-labels.
-4. **One PR for performance P1s** (13–15): image resizing, dashboard query refactor, lint/`any` cleanup. Bigger; do this with the tests from step 1 in place.
-5. **P2 items**: triage in batches as they touch the same files.
+Two items left in this review, both browser tasks:
 
-Total estimate: ~5–7 days of focused work to clear P0+P1.
+- **P2-11** — WCAG AA contrast audit of the grape theme (axe DevTools or WAVE).
+- **P2-18** — Cloudflare `_headers` with security headers + CSP (CSP needs live testing to whitelist Supabase, Sentry, and Anthropic).
+
+## Deferred to P3 (future batch)
+
+- **P2-17** — major dependency updates: TS 5 → 6, react-i18next 16 → 17, TanStack libs minor bumps, React 19.2 patch. Group these together and budget time for testing breaking changes.
 
 ---
 
