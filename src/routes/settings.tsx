@@ -9,27 +9,68 @@ import {
     Text,
     Anchor,
     Alert,
+    Group,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
-import { IconSettings, IconKey, IconExternalLink, IconAlertCircle } from '@tabler/icons-react'
+import { IconSettings, IconKey, IconLock, IconExternalLink, IconAlertCircle } from '@tabler/icons-react'
 import { useUserSetting, useUpdateUserSetting } from '../hooks/useUserSettings'
-import { useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { validatePasswordComplexity } from '../lib/passwordPolicy'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/settings')({
     component: SettingsPage,
 })
 
 function SettingsPage() {
-    const { t } = useTranslation(['common', 'settings'])
+    const { t } = useTranslation(['common', 'settings', 'auth'])
     const { data: claudeKeySetting, isLoading } = useUserSetting('claude_api_key')
     const updateSetting = useUpdateUserSetting()
+    const [changingPassword, setChangingPassword] = useState(false)
 
     const form = useForm({
         initialValues: {
             claude_api_key: '',
         },
     })
+
+    const passwordForm = useForm({
+        initialValues: {
+            password: '',
+            confirmPassword: '',
+        },
+        validate: {
+            password: (value) => {
+                const err = validatePasswordComplexity(value)
+                return err ? t(`auth:${err}`) : null
+            },
+            confirmPassword: (value, values) =>
+                value !== values.password ? t('auth:validation.passwordsDoNotMatch') : null,
+        },
+    })
+
+    const handlePasswordSubmit = async (values: typeof passwordForm.values) => {
+        setChangingPassword(true)
+        const { error } = await supabase.auth.updateUser({ password: values.password })
+
+        if (error) {
+            notifications.show({
+                title: t('auth:notifications.loginFailed'),
+                message: error.message,
+                color: 'red',
+            })
+        } else {
+            notifications.show({
+                title: t('auth:notifications.success'),
+                message: t('auth:validation.passwordResetSuccess'),
+                color: 'green',
+            })
+            passwordForm.reset()
+        }
+        setChangingPassword(false)
+    }
 
     useEffect(() => {
         if (claudeKeySetting) {
@@ -107,6 +148,46 @@ function SettingsPage() {
                 </Paper>
 
                 <Paper shadow="sm" p="lg" radius="md" withBorder>
+                    <form onSubmit={passwordForm.onSubmit(handlePasswordSubmit)}>
+                        <Stack gap="md">
+                            <Title order={4}>
+                                <Stack gap="xs" align="center" style={{ flexDirection: 'row' }}>
+                                    <IconLock size={20} stroke={1.5} />
+                                    {t('settings:password.title', { defaultValue: 'Change password' })}
+                                </Stack>
+                            </Title>
+
+                            <Text size="sm" c="dimmed">
+                                {t('settings:password.description', {
+                                    defaultValue: 'Set a new password for your account.'
+                                })}
+                            </Text>
+
+                            <PasswordInput
+                                label={t('auth:fields.password')}
+                                placeholder={t('auth:placeholders.password')}
+                                required
+                                {...passwordForm.getInputProps('password')}
+                            />
+                            <PasswordInput
+                                label={t('auth:fields.confirmPassword')}
+                                placeholder={t('auth:placeholders.confirmPassword')}
+                                required
+                                {...passwordForm.getInputProps('confirmPassword')}
+                            />
+
+                            <Button
+                                type="submit"
+                                loading={changingPassword}
+                                leftSection={<IconLock size={18} />}
+                            >
+                                {t('auth:buttons.updatePassword')}
+                            </Button>
+                        </Stack>
+                    </form>
+                </Paper>
+
+                <Paper shadow="sm" p="lg" radius="md" withBorder>
                     <Stack gap="sm">
                         <Title order={4}>{t('settings:about.title', { defaultValue: 'About Celly' })}</Title>
                         <Text size="sm">
@@ -123,6 +204,3 @@ function SettingsPage() {
         </Container>
     )
 }
-
-// Minimal Group import fix
-import { Group } from '@mantine/core'
