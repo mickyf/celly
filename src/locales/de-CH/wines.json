@@ -33,6 +33,26 @@
     "decreaseQuantity": "Eine Flasche entfernen",
     "placeInCellar": "Im Keller platzieren"
   },
+  "addChooser": {
+    "title": "Wein hinzufügen",
+    "subtitle": "Wählen Sie, wie Sie starten möchten. Die KI füllt die Details aus, wo sie kann – im nächsten Schritt können Sie alles anpassen.",
+    "identifying": "Wein wird identifiziert…",
+    "photo": {
+      "title": "Vom Foto",
+      "description": "Foto der Flasche oder des Etiketts hochladen oder aufnehmen. Wir identifizieren den Wein für Sie."
+    },
+    "text": {
+      "title": "Nach Name",
+      "description": "Weinnamen eingeben und wir suchen die Details heraus.",
+      "placeholder": "z.B. Château Margaux 2015",
+      "button": "Mit KI suchen"
+    },
+    "manual": {
+      "title": "Manuell",
+      "description": "KI überspringen und alles selbst ausfüllen.",
+      "button": "Manuell erfassen"
+    }
+  },
   "add": {
     "title": "Wein hinzufügen",
     "subtitle": "Fügen Sie eine neue Flasche zu Ihrem Keller hinzu"
