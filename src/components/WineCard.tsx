@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
 import { useWinePhotoUrl } from '../hooks/useWinePhotoUrl'
+import { getDrinkWindowStatus } from '../lib/wineFilters'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
@@ -32,12 +33,7 @@ export function WineCard({
   const recentMovement = recentStockMovement
 
   const BADGE_GAP = 3;
-  const currentYear = new Date().getFullYear()
-  const isReadyToDrink =
-    wine.drink_window_start &&
-    wine.drink_window_end &&
-    currentYear >= wine.drink_window_start &&
-    currentYear <= wine.drink_window_end
+  const isReadyToDrink = getDrinkWindowStatus(wine) === 'ready'
 
   const photoBlock = signedPhotoUrl ? (
     <Image src={signedPhotoUrl} height={200} alt={wine.name} fit='contain' loading="lazy" />
