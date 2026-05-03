@@ -8,10 +8,10 @@ export interface Wine {
   vintage?: number;
   grapes?: string[];
   quantity: number;
-  drink_from?: number;
-  drink_until?: number;
+  drink_window_start?: number;
+  drink_window_end?: number;
   price?: number;
-  bottle_size?: number;
+  bottle_size?: string;
   food_pairings?: string;
   photo_url?: string;
   winery_id?: string;
@@ -42,12 +42,17 @@ export interface AddWineParams {
   vintage?: number;
   grapes?: string[];
   quantity?: number;
-  drink_from?: number;
-  drink_until?: number;
+  drink_window_start?: number;
+  drink_window_end?: number;
   price?: number;
-  bottle_size?: number;
+  bottle_size?: string;
   food_pairings?: string;
   winery_id?: string;
+}
+
+export interface AddWineryParams {
+  name: string;
+  country_code?: string;
 }
 
 export interface SupabaseResponse<T> {
