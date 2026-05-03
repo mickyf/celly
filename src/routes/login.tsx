@@ -16,6 +16,7 @@ import { Link } from '@tanstack/react-router'
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { supabase } from '../lib/supabase'
+import { validatePasswordComplexity } from '../lib/passwordPolicy'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -37,7 +38,7 @@ function Login() {
     },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : t('validation.invalidEmail')),
-      password: (value) => (value.length >= 6 ? null : t('validation.passwordTooShort')),
+      password: (value) => (value.length > 0 ? null : t('validation.passwordRequired')),
     },
   })
 
@@ -49,7 +50,10 @@ function Login() {
     },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : t('validation.invalidEmail')),
-      password: (value) => (value.length >= 6 ? null : t('validation.passwordTooShort')),
+      password: (value) => {
+        const err = validatePasswordComplexity(value)
+        return err ? t(err) : null
+      },
       confirmPassword: (value, values) =>
         value !== values.password ? t('validation.passwordsDoNotMatch') : null,
     },

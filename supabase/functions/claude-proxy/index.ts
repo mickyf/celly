@@ -4,9 +4,19 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import Anthropic from "npm:@anthropic-ai/sdk@0.32.1"
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+const ALLOWED_ORIGINS = [
+  "https://celly.pages.dev",
+  "http://localhost:5173",
+]
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") ?? ""
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  }
 }
 
 // Strip our sandbox delimiters from user input so it can't break out of the
@@ -81,6 +91,7 @@ type ClaudeProxyRequest =
   | WineryEnrichmentRequest
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req)
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
@@ -89,13 +100,13 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return Response.json({ msg: 'No JWT provided' }, { status: 401 })
+      return new Response(JSON.stringify({ msg: 'No JWT provided' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     const token = authHeader.replace('Bearer ', '')
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
     const userId = claimsData?.claims?.sub
     if (!userId || claimsError) {
-      return Response.json({ msg: 'Invalid JWT' }, { status: 401 })
+      return new Response(JSON.stringify({ msg: 'Invalid JWT' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     // Get Claude API key from user settings first

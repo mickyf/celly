@@ -11,6 +11,7 @@ import {
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { supabase } from '../lib/supabase'
+import { validatePasswordComplexity } from '../lib/passwordPolicy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -29,7 +30,10 @@ function ResetPassword() {
             confirmPassword: '',
         },
         validate: {
-            password: (value) => (value.length >= 6 ? null : t('validation.passwordTooShort')),
+            password: (value) => {
+                const err = validatePasswordComplexity(value)
+                return err ? t(err) : null
+            },
             confirmPassword: (value, values) =>
                 value !== values.password ? t('validation.passwordsDoNotMatch') : null,
         },
