@@ -104,32 +104,38 @@ function RootLayout() {
           {user ? (
             <>
               <NavLink
-                href="/"
+                component={Link}
+                to="/"
                 label={t('nav.dashboard')}
                 leftSection={<IconHome size={24} stroke={1.5} />}
               />
               <NavLink
-                href="/wines"
+                component={Link}
+                to="/wines"
                 label={t('nav.myWines')}
                 leftSection={<IconBottle size={24} stroke={1.5} />}
               />
               <NavLink
-                href="/cellars"
+                component={Link}
+                to="/cellars"
                 label={t('nav.cellarOverview')}
                 leftSection={<IconGridDots size={24} stroke={1.5} />}
               />
               <NavLink
-                href="/wineries"
+                component={Link}
+                to="/wineries"
                 label={t('nav.wineries')}
                 leftSection={<IconBuilding size={24} stroke={1.5} />}
               />
               <NavLink
-                href="/pairing"
+                component={Link}
+                to="/pairing"
                 label={t('nav.foodPairing')}
                 leftSection={<IconChefHat size={24} stroke={1.5} />}
               />
               <NavLink
-                href="/settings"
+                component={Link}
+                to="/settings"
                 label={t('nav.settings')}
                 leftSection={<IconSettings size={24} stroke={1.5} />}
               />
@@ -142,7 +148,8 @@ function RootLayout() {
             </>
           ) : (
             <NavLink
-              href="/login"
+              component={Link}
+              to="/login"
               label={t('actions.signIn')}
               leftSection={<IconLogin size={20} stroke={1.5} />}
             />
