@@ -12,7 +12,8 @@
     "clearAll": "Clear All",
     "showFilters": "Show Filters",
     "hideFilters": "Hide Filters",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "removeFilter": "Remove filter"
   },
   "actions": {
     "search": "Search",

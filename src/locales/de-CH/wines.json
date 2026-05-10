@@ -162,6 +162,9 @@
       "all": "Alle Weine",
       "complete": "Vollständige Daten",
       "incomplete": "Unvollständige Daten"
+    },
+    "activeChips": {
+      "search": "Suche"
     }
   },
   "tastingNote": {
