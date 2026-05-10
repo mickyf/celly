@@ -1,0 +1,10 @@
+/* Tighten Mantine's larger spacing tokens below the sm breakpoint so Stack
+   gaps, SimpleGrid spacing, and Paper paddings reclaim vertical space on
+   phones. xs/sm/md are left alone — they're used in inputs and small UI
+   chrome where shrinking causes layout problems. */
+@media (max-width: 48em) {
+  :root {
+    --mantine-spacing-lg: 1rem;
+    --mantine-spacing-xl: 1.25rem;
+  }
+}
