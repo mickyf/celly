@@ -2,6 +2,7 @@ import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
+  ActionIcon,
   Container,
   Title,
   Text,
@@ -18,6 +19,7 @@ import {
   IconChefHat,
   IconCurrencyDollar,
   IconArrowRight,
+  IconPlus,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
@@ -72,6 +74,11 @@ function Dashboard() {
     ? Math.round((stats.readyToDrink / stats.totalWines) * 100)
     : 0
 
+  const goToAdd = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation()
+    navigate({ to: '/wines/add' })
+  }
+
   return (
     <Container size="lg">
       <Stack gap="xl">
@@ -81,6 +88,23 @@ function Dashboard() {
             {t('dashboard:subtitle')}
           </Text>
         </div>
+
+        {stats.totalWines === 0 && (
+          <Paper shadow="sm" p="xl" radius="md" withBorder>
+            <Stack gap="md" align="center">
+              <IconBottle size={48} stroke={1.5} />
+              <Text size="lg" fw={700} ta="center">
+                {t('dashboard:quickActions.addWine.title')}
+              </Text>
+              <Text size="sm" c="dimmed" ta="center">
+                {t('dashboard:quickActions.addWine.description')}
+              </Text>
+              <Button onClick={() => navigate({ to: '/wines/add' })}>
+                {t('dashboard:quickActions.addWine.button')}
+              </Button>
+            </Stack>
+          </Paper>
+        )}
 
         {/* Stats Grid */}
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
@@ -95,16 +119,27 @@ function Dashboard() {
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
           >
-            <Group>
-              <IconBottle size={32} stroke={1.5} />
-              <div>
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  {t('dashboard:stats.totalBottles')}
-                </Text>
-                <Text size="xl" fw={700}>
-                  {stats.totalBottles}
-                </Text>
-              </div>
+            <Group justify="space-between" align="flex-start" wrap="nowrap">
+              <Group wrap="nowrap">
+                <IconBottle size={32} stroke={1.5} />
+                <div>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                    {t('dashboard:stats.totalBottles')}
+                  </Text>
+                  <Text size="xl" fw={700}>
+                    {stats.totalBottles}
+                  </Text>
+                </div>
+              </Group>
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                aria-label={t('common:actions.addWine')}
+                onClick={goToAdd}
+                onKeyDown={(e) => { if (e.key === 'Enter') goToAdd(e) }}
+              >
+                <IconPlus size={20} />
+              </ActionIcon>
             </Group>
           </Paper>
 
@@ -119,16 +154,27 @@ function Dashboard() {
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
           >
-            <Group>
-              <IconBottle size={32} stroke={1.5} />
-              <div>
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  {t('dashboard:stats.uniqueWines')}
-                </Text>
-                <Text size="xl" fw={700}>
-                  {stats.totalWines}
-                </Text>
-              </div>
+            <Group justify="space-between" align="flex-start" wrap="nowrap">
+              <Group wrap="nowrap">
+                <IconBottle size={32} stroke={1.5} />
+                <div>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                    {t('dashboard:stats.uniqueWines')}
+                  </Text>
+                  <Text size="xl" fw={700}>
+                    {stats.totalWines}
+                  </Text>
+                </div>
+              </Group>
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                aria-label={t('common:actions.addWine')}
+                onClick={goToAdd}
+                onKeyDown={(e) => { if (e.key === 'Enter') goToAdd(e) }}
+              >
+                <IconPlus size={20} />
+              </ActionIcon>
             </Group>
           </Paper>
 
@@ -228,25 +274,9 @@ function Dashboard() {
           </Paper>
         </SimpleGrid>
 
-        {/* Quick Actions */}
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
           <Paper shadow="sm" p="xl" radius="md" withBorder>
-            <Stack gap="md" align="center">
-              <IconBottle size={48} stroke={1.5} />
-              <Text size="lg" fw={700} ta="center">
-                {t('dashboard:quickActions.addWine.title')}
-              </Text>
-              <Text size="sm" c="dimmed" ta="center">
-                {t('dashboard:quickActions.addWine.description')}
-              </Text>
-              <Button onClick={() => navigate({ to: '/wines/add' })}>
-                {t('dashboard:quickActions.addWine.button')}
-              </Button>
-            </Stack>
-          </Paper>
-
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
-            <Stack gap="md" align="center">
+            <Stack gap="md" align="center" justify="center" h="100%">
               <IconChefHat size={48} stroke={1.5} />
               <Text size="lg" fw={700} ta="center">
                 {t('dashboard:quickActions.getPairing.title')}
@@ -259,10 +289,9 @@ function Dashboard() {
               </Button>
             </Stack>
           </Paper>
-        </SimpleGrid>
 
-        {/* Consumption Chart */}
-        <ConsumptionChart data={stats.consumptionData} />
+          <ConsumptionChart data={stats.consumptionData} />
+        </SimpleGrid>
 
       </Stack>
     </Container>

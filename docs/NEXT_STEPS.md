@@ -60,8 +60,8 @@
 - ~~remove obvious comments~~
 - mobile: we should reduce the gaps everywhere to save some space on mobile. So we have more space for the content.
 - mobile: the back button on all sub pages is not aligned on the left with the breadcrumbs or other content.
-- dashboard: "add your first wine" card makes no sense, when there are already wines. And it should be on top.
-- dashboard: the total and different wines cards should have a plus button to add wine from there.
+- ~~dashboard: "add your first wine" card makes no sense, when there are already wines. And it should be on top.~~
+- ~~dashboard: the total and different wines cards should have a plus button to add wine from there.~~
 
 ## major
 - ~~feature: password change function is missing~~
