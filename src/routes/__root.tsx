@@ -83,7 +83,7 @@ function RootLayout() {
           breakpoint: 'sm',
           collapsed: { mobile: !opened },
         }}
-        padding="md"
+        padding={{ base: 'xs', sm: 'md' }}
       >
         <AppShell.Header>
           <Group h="100%" px="md" justify="space-between">

@@ -41,6 +41,7 @@ export function PageHeader({ breadcrumbs, onBack, title, actions }: PageHeaderPr
         variant="subtle"
         leftSection={<IconArrowLeft size={20} />}
         onClick={handleBack}
+        pl={0}
         style={{ alignSelf: 'flex-start' }}
       >
         {t('buttons.back')}
