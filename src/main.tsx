@@ -14,6 +14,7 @@ import '@mantine/dates/styles.css'
 import '@mantine/charts/styles.css'
 import './styles/contrast.css'
 import './styles/mobile.css'
+import './styles/slider.css'
 
 const theme = createTheme({
   primaryColor: 'grape',

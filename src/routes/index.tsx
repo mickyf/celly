@@ -250,20 +250,29 @@ function Dashboard() {
               </Text>
               {stats.topGrapes.length > 0 ? (
                 <Group gap="xs">
-                  {stats.topGrapes.map((item) => (
-                    <Badge
-                      key={item.grape}
-                      variant="light"
-                      size="lg"
-                      rightSection={
-                        <Text size="xs" fw={700}>
-                          {item.count}
-                        </Text>
-                      }
-                    >
-                      {item.grape}
-                    </Badge>
-                  ))}
+                  {stats.topGrapes.map((item) => {
+                    const goToGrape = () =>
+                      navigate({ to: '/wines', search: { grapes: [item.grape] } })
+                    return (
+                      <Badge
+                        key={item.grape}
+                        variant="light"
+                        size="lg"
+                        rightSection={
+                          <Text size="xs" fw={700}>
+                            {item.count}
+                          </Text>
+                        }
+                        style={clickableCardSx}
+                        role="link"
+                        tabIndex={0}
+                        onClick={goToGrape}
+                        onKeyDown={(e) => { if (e.key === 'Enter') goToGrape() }}
+                      >
+                        {item.grape}
+                      </Badge>
+                    )
+                  })}
                 </Group>
               ) : (
                 <Text size="sm" c="dimmed">

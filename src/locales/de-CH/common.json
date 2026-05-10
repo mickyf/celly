@@ -12,7 +12,8 @@
     "clearAll": "Alle löschen",
     "showFilters": "Filter anzeigen",
     "hideFilters": "Filter ausblenden",
-    "openMenu": "Menü öffnen"
+    "openMenu": "Menü öffnen",
+    "removeFilter": "Filter entfernen"
   },
   "actions": {
     "search": "Suchen",

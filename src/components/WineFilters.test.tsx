@@ -51,19 +51,29 @@ const defaultFilters: WineFilterValues = {
 }
 
 describe('WineFilters', () => {
-  it('shows the active filter count badge when activeFilterCount > 0', () => {
+  it('renders chips for active filters and removing one fires onFiltersChange', async () => {
+    const user = userEvent.setup()
+    const onFiltersChange = vi.fn()
+
     renderWithProviders(
       <WineFilters
         wines={[wine()]}
-        filters={defaultFilters}
-        onFiltersChange={vi.fn()}
-        activeFilterCount={3}
+        filters={{ ...defaultFilters, search: 'foo', vintageMin: 2018, vintageMax: 2022 }}
+        onFiltersChange={onFiltersChange}
+        activeFilterCount={2}
       />,
     )
-    expect(screen.getByText(/3/)).toBeInTheDocument()
+
+    expect(screen.getByText(/foo/)).toBeInTheDocument()
+    expect(screen.getByText(/2018.*2022/)).toBeInTheDocument()
+
+    const removeButtons = screen.getAllByRole('button', { name: /remove filter/i })
+    expect(removeButtons.length).toBeGreaterThanOrEqual(2)
+    await user.click(removeButtons[0])
+    expect(onFiltersChange).toHaveBeenCalledTimes(1)
   })
 
-  it('hides the badge and clear button when no filters are active', () => {
+  it('renders no chips and hides the clear button when no filters are active', () => {
     renderWithProviders(
       <WineFilters
         wines={[wine()]}
@@ -73,6 +83,7 @@ describe('WineFilters', () => {
       />,
     )
     expect(screen.queryByRole('button', { name: /clear all/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /remove/i })).toBeNull()
   })
 
   it('emits a filter change when the user types in the search box', async () => {

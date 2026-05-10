@@ -1,0 +1,20 @@
+/* Mantine RangeSlider centers each mark label on its position. At the track
+   ends that means half the label overflows past the track edge. Anchor the
+   first label to the start of the track and the last label to the end so
+   they grow inward instead of overflowing. The Y component and the
+   slider-size/2 correction match Mantine's default markLabel transform. */
+.mantine-RangeSlider-markWrapper:first-of-type .mantine-RangeSlider-markLabel,
+.mantine-Slider-markWrapper:first-of-type .mantine-Slider-markLabel {
+  transform: translate(
+    calc(var(--slider-size) / 2),
+    calc(var(--mantine-spacing-xs) / 2)
+  );
+}
+
+.mantine-RangeSlider-markWrapper:last-of-type .mantine-RangeSlider-markLabel,
+.mantine-Slider-markWrapper:last-of-type .mantine-Slider-markLabel {
+  transform: translate(
+    calc(var(--slider-size) / 2 - 100%),
+    calc(var(--mantine-spacing-xs) / 2)
+  );
+}
