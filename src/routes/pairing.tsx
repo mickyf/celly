@@ -15,6 +15,8 @@ import {
   Alert,
   Loader,
   Center,
+  ActionIcon,
+  Divider,
 } from '@mantine/core'
 import {
   IconChefHat,
@@ -22,17 +24,38 @@ import {
   IconInfoCircle,
   IconBottle,
   IconArrowRight,
+  IconRefresh,
+  IconHistory,
+  IconTrash,
 } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useWines } from '../hooks/useWines'
 import { useFoodPairing } from '../hooks/useFoodPairing'
 import { useTranslation } from 'react-i18next'
-import type { PairingRecommendation } from '../lib/claude'
+import {
+  addPairingEntry,
+  clearPairingHistory,
+  findCachedPairing,
+  loadPairingHistory,
+  savePairingHistory,
+  type PairingHistoryEntry,
+} from '../lib/pairingHistory'
 
 export const Route = createFileRoute('/pairing')({
   component: FoodPairing,
 })
+
+function formatRelativeTime(timestamp: number, locale: string, now: number = Date.now()): string {
+  const diffMs = timestamp - now
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  const minutes = Math.round(diffMs / 60000)
+  const hours = Math.round(diffMs / 3600000)
+  const days = Math.round(diffMs / 86400000)
+  if (Math.abs(minutes) < 60) return rtf.format(minutes, 'minute')
+  if (Math.abs(hours) < 24) return rtf.format(hours, 'hour')
+  return rtf.format(days, 'day')
+}
 
 function FoodPairing() {
   const { t, i18n } = useTranslation(['pairing', 'common'])
@@ -40,39 +63,83 @@ function FoodPairing() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [menu, setMenu] = useState('')
-  const [recommendations, setRecommendations] = useState<PairingRecommendation[]>([])
+  const [history, setHistory] = useState<PairingHistoryEntry[]>([])
+  const [activeEntry, setActiveEntry] = useState<PairingHistoryEntry | null>(null)
+  const [resultsFromCache, setResultsFromCache] = useState(false)
 
   const { data: wines, isLoading: winesLoading } = useWines()
   const pairingMutation = useFoodPairing()
+
+  // Drunken wines are never pairable. Within those, prefer ones in the
+  // drinking window; if none qualify, fall back to all available wines.
+  const pairableWines = useMemo(() => {
+    if (!wines) return []
+    const available = wines.filter((w) => (w.quantity ?? 0) > 0)
+    const currentYear = new Date().getFullYear()
+    const inWindow = available.filter(
+      (w) =>
+        !w.drink_window_start ||
+        !w.drink_window_end ||
+        (currentYear >= w.drink_window_start && currentYear <= w.drink_window_end),
+    )
+    return inWindow.length > 0 ? inWindow : available
+  }, [wines])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setAuthLoading(false)
     })
+    setHistory(loadPairingHistory())
   }, [])
 
-  const handleGetPairing = async () => {
-    if (!wines || wines.length === 0) return
+  const handleGetPairing = async (force = false) => {
+    if (pairableWines.length === 0) return
 
-    // Filter to only wines in drinking window or without drinking window set
-    const currentYear = new Date().getFullYear()
-    const availableWines = wines.filter(
-      (wine) =>
-        (wine.quantity ?? 0) > 0 &&
-        (!wine.drink_window_start ||
-          !wine.drink_window_end ||
-          (currentYear >= wine.drink_window_start && currentYear <= wine.drink_window_end))
-    )
+    const language = i18n.language as 'en' | 'de-CH'
+    const wineIds = pairableWines.map((w) => w.id)
+
+    if (!force) {
+      const cached = findCachedPairing(history, { menu, wineIds, language })
+      if (cached) {
+        setActiveEntry(cached)
+        setResultsFromCache(true)
+        return
+      }
+    }
 
     const result = await pairingMutation.mutateAsync({
       menu,
-      wines: availableWines.length > 0 ? availableWines : wines,
-      language: i18n.language as 'en' | 'de-CH',
+      wines: pairableWines,
+      language,
     })
 
-    setRecommendations(result.recommendations)
+    const updated = addPairingEntry(history, {
+      menu,
+      wineIds,
+      language,
+      recommendations: result.recommendations,
+    })
+    setHistory(updated)
+    savePairingHistory(updated)
+    setActiveEntry(updated[0])
+    setResultsFromCache(false)
   }
+
+  const handleReplay = (entry: PairingHistoryEntry) => {
+    setMenu(entry.menu)
+    setActiveEntry(entry)
+    setResultsFromCache(false)
+  }
+
+  const handleClearHistory = () => {
+    clearPairingHistory()
+    setHistory([])
+    setActiveEntry(null)
+    setResultsFromCache(false)
+  }
+
+  const recommendations = activeEntry?.recommendations ?? []
 
   if (authLoading) {
     return <AuthSplash />
@@ -145,37 +212,59 @@ function FoodPairing() {
               value={menu}
               onChange={(e) => setMenu(e.currentTarget.value)}
             />
-            <Button
-              leftSection={
-                pairingMutation.isPending ? (
-                  <Loader size={20} color="white" />
-                ) : (
-                  <IconSparkles size={20} />
-                )
-              }
-              disabled={!menu.trim() || pairingMutation.isPending}
-              size="lg"
-              onClick={handleGetPairing}
-              loading={pairingMutation.isPending}
-            >
-              {pairingMutation.isPending ? t('pairing:buttons.analyzing') : t('pairing:buttons.getPairing')}
-            </Button>
+            <Group gap="xs">
+              <Button
+                leftSection={
+                  pairingMutation.isPending ? (
+                    <Loader size={20} color="white" />
+                  ) : (
+                    <IconSparkles size={20} />
+                  )
+                }
+                disabled={!menu.trim() || pairingMutation.isPending}
+                size="lg"
+                onClick={() => handleGetPairing(false)}
+                loading={pairingMutation.isPending}
+                style={{ flex: 1 }}
+              >
+                {pairingMutation.isPending ? t('pairing:buttons.analyzing') : t('pairing:buttons.getPairing')}
+              </Button>
+              {activeEntry && (
+                <ActionIcon
+                  variant="light"
+                  size="xl"
+                  onClick={() => handleGetPairing(true)}
+                  disabled={!menu.trim() || pairingMutation.isPending}
+                  aria-label={t('pairing:buttons.refresh')}
+                  title={t('pairing:buttons.refresh')}
+                >
+                  <IconRefresh size={20} />
+                </ActionIcon>
+              )}
+            </Group>
 
-            {wines && (
-              <Text size="sm" c="dimmed">
-                {t('pairing:wineCount', { count: wines.length })}
-              </Text>
-            )}
+            <Text size="sm" c="dimmed">
+              {t('pairing:wineCount', { count: pairableWines.length })}
+            </Text>
           </Stack>
         </Paper>
 
         {recommendations.length > 0 && (
           <Stack gap="md">
-            <Group>
-              <IconChefHat size={24} stroke={1.5} />
-              <Text size="lg" fw={700}>
-                {t('pairing:results.title')}
-              </Text>
+            <Group justify="space-between" align="flex-start">
+              <Group>
+                <IconChefHat size={24} stroke={1.5} />
+                <Text size="lg" fw={700}>
+                  {t('pairing:results.title')}
+                </Text>
+              </Group>
+              {activeEntry && (
+                <Badge variant="light" color={resultsFromCache ? 'blue' : 'gray'}>
+                  {resultsFromCache
+                    ? t('pairing:cache.fromCache')
+                    : formatRelativeTime(activeEntry.createdAt, i18n.language)}
+                </Badge>
+              )}
             </Group>
 
             {recommendations.map((rec) => (
@@ -231,10 +320,57 @@ function FoodPairing() {
               </Paper>
             ))}
 
-            <Button variant="subtle" onClick={() => setRecommendations([])}>
+            <Button variant="subtle" onClick={() => setActiveEntry(null)}>
               {t('pairing:buttons.clearResults')}
             </Button>
           </Stack>
+        )}
+
+        {history.length > 0 && (
+          <>
+            <Divider />
+            <Stack gap="sm">
+              <Group justify="space-between">
+                <Group gap="xs">
+                  <IconHistory size={20} />
+                  <Text fw={600}>{t('pairing:history.title')}</Text>
+                </Group>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  leftSection={<IconTrash size={14} />}
+                  onClick={handleClearHistory}
+                >
+                  {t('pairing:history.clearAll')}
+                </Button>
+              </Group>
+              <Stack gap="xs">
+                {history.map((entry) => (
+                  <Paper
+                    key={entry.id}
+                    p="sm"
+                    radius="md"
+                    withBorder
+                    style={{
+                      cursor: 'pointer',
+                      borderColor:
+                        activeEntry?.id === entry.id ? 'var(--mantine-color-grape-4)' : undefined,
+                    }}
+                    onClick={() => handleReplay(entry)}
+                  >
+                    <Group justify="space-between" wrap="nowrap" gap="sm">
+                      <Text size="sm" lineClamp={1} style={{ flex: 1 }}>
+                        {entry.menu}
+                      </Text>
+                      <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
+                        {formatRelativeTime(entry.createdAt, i18n.language)}
+                      </Text>
+                    </Group>
+                  </Paper>
+                ))}
+              </Stack>
+            </Stack>
+          </>
         )}
       </Stack>
     </Container>
