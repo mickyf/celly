@@ -84,8 +84,43 @@ interface WineryEnrichmentRequest {
   wineryName: string
 }
 
+export type OrderDocumentMediaType =
+  | 'application/pdf'
+  | 'image/jpeg'
+  | 'image/png'
+  | 'image/webp'
+  | 'image/gif'
+
+const ORDER_DOCUMENT_MEDIA_TYPES: readonly OrderDocumentMediaType[] = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]
+
+interface OrderParseRequest {
+  type: 'parse-order-document'
+  base64File: string
+  mediaType: OrderDocumentMediaType
+}
+
+export interface ParsedWine {
+  name: string
+  vintage: number | null
+  quantity: number | null
+  price: number | null
+  bottleSize: string | null
+  winery: { name: string; countryCode: string } | null
+}
+
+export interface OrderParseResponse {
+  wines: ParsedWine[]
+  explanation: string
+}
+
 async function callClaudeProxy<T>(
-  request: FoodPairingRequest | WineEnrichmentRequest | WineEnrichmentFromImageRequest | WineryEnrichmentRequest
+  request: FoodPairingRequest | WineEnrichmentRequest | WineEnrichmentFromImageRequest | WineryEnrichmentRequest | OrderParseRequest
 ): Promise<T> {
   // Use Supabase's built-in functions.invoke() method
   // This automatically includes the auth token from the current session
@@ -372,5 +407,68 @@ export async function enrichWineryData(
         }
       }
     }
+  )
+}
+
+function isOrderDocumentMediaType(value: string): value is OrderDocumentMediaType {
+  return (ORDER_DOCUMENT_MEDIA_TYPES as readonly string[]).includes(value)
+}
+
+export async function parseOrderDocument(file: File): Promise<OrderParseResponse> {
+  return Sentry.startSpan(
+    {
+      name: 'claude.parseOrderDocument',
+      op: 'ai.request',
+      attributes: {
+        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.request.file_size': file.size,
+        'ai.request.file_type': file.type,
+      },
+    },
+    async (span) => {
+      try {
+        if (!isOrderDocumentMediaType(file.type)) {
+          throw new Error(`Unsupported file type: ${file.type || 'unknown'}`)
+        }
+
+        Sentry.addBreadcrumb({
+          category: 'ai.request',
+          message: 'Parsing order document',
+          level: 'info',
+          data: { fileSize: file.size, fileType: file.type },
+        })
+
+        const base64File = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            const result = reader.result as string
+            resolve(result.split(',')[1])
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        const request: OrderParseRequest = {
+          type: 'parse-order-document',
+          base64File,
+          mediaType: file.type,
+        }
+
+        const result = await callClaudeProxy<OrderParseResponse>(request)
+
+        span.setStatus({ code: 1, message: 'ok' })
+        return result
+      } catch (error) {
+        span.setStatus({ code: 2, message: 'error' })
+        Sentry.captureException(error, {
+          tags: {
+            errorType: 'claude_api_error',
+            component: 'ClaudeAPI',
+            operation: 'parseOrderDocument',
+          },
+        })
+        throw error
+      }
+    },
   )
 }

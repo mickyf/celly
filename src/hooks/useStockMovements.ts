@@ -24,7 +24,7 @@ export const useStockMovements = (wineId?: string) => {
 
       let query = supabase
         .from('stock_movements')
-        .select('id, wine_id, movement_type, quantity, movement_date, notes, user_id')
+        .select('id, wine_id, movement_type, quantity, movement_date, notes, user_id, import_batch_id')
         .order('movement_date', { ascending: false })
 
       if (wineId) {

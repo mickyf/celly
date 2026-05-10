@@ -5,10 +5,62 @@
     "showingCount": "{{filtered}} von {{total}} Weinen angezeigt",
     "showingCountSingle": "{{filtered}} von {{total}} Wein angezeigt",
     "addButton": "Wein hinzufügen",
+    "importButton": "Importieren",
     "emptyState": "Noch keine Weine vorhanden. Fügen Sie Ihre erste Flasche hinzu!",
     "emptyStateTitle": "Ihr Keller ist leer",
     "emptyStateAction": "Ersten Wein hinzufügen",
     "noResults": "Keine Weine entsprechen Ihren Filtern. Versuchen Sie, Ihre Suchkriterien anzupassen."
+  },
+  "import": {
+    "title": "Weine aus Bestelldokument importieren",
+    "subtitle": "Laden Sie ein PDF oder Foto einer Weinhändlerbestellung hoch. Wir extrahieren die Weine und Sie können sie vor dem Speichern überprüfen.",
+    "parsing": "Dokument wird gelesen…",
+    "save": "{{count}} Weine speichern",
+    "stockNote": "Aus Bestelldokument importiert",
+    "batchBadge": "Importiert am {{date}} ({{count}} Weine)",
+    "upload": {
+      "dropPdfOrImage": "PDF oder Bild hierher ziehen oder klicken zum Auswählen",
+      "sizeLimit": "PDF oder Bild — max. 5 MB",
+      "takePhoto": "Foto aufnehmen",
+      "rejected": "Datei abgelehnt. Bitte ein PDF oder Bild unter 5 MB verwenden."
+    },
+    "empty": {
+      "title": "Keine Weine erkannt",
+      "message": "Im Dokument wurden keine Weine gefunden. Versuchen Sie es mit einem klareren Scan oder einer anderen Datei."
+    },
+    "saved": {
+      "title": "Import abgeschlossen",
+      "message": "{{created}} Weine hinzugefügt, {{restocked}} aufgestockt."
+    },
+    "errors": {
+      "parseTitle": "Dokument konnte nicht verarbeitet werden",
+      "saveTitle": "Importierte Weine konnten nicht gespeichert werden",
+      "notAuthenticated": "Sie müssen angemeldet sein, um Weine zu importieren."
+    },
+    "review": {
+      "title": "Importierte Weine überprüfen",
+      "summary": "{{new}} neu, {{restock}} aufstocken, {{skip}} ignoriert",
+      "includeRow": "Diese Zeile importieren",
+      "restockBadge": "Aufstocken",
+      "pickExisting": "Bestehenden Wein wählen",
+      "noMatches": "Keine passenden Weine",
+      "clearMatch": "Auswahl entfernen",
+      "columns": {
+        "name": "Name",
+        "vintage": "Jahrgang",
+        "qty": "Menge",
+        "price": "Preis (CHF)",
+        "bottle": "Flasche",
+        "winery": "Weingut"
+      },
+      "wineryBadges": {
+        "existing": "Vorhanden",
+        "new": "Neu"
+      },
+      "errors": {
+        "nameRequired": "Erforderlich"
+      }
+    }
   },
   "detail": {
     "notFound": "Wein nicht gefunden",

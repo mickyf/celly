@@ -51,6 +51,7 @@ const fullyPopulatedWine = {
   user_id: 'u',
   created_at: null,
   updated_at: null,
+  import_batch_id: null,
 }
 
 const sparseWine = {

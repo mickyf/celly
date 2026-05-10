@@ -67,6 +67,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          import_batch_id: string | null
           movement_date: string
           movement_type: Database["public"]["Enums"]["movement_type"]
           notes: string | null
@@ -77,6 +78,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          import_batch_id?: string | null
           movement_date?: string
           movement_type: Database["public"]["Enums"]["movement_type"]
           notes?: string | null
@@ -87,6 +89,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          import_batch_id?: string | null
           movement_date?: string
           movement_type?: Database["public"]["Enums"]["movement_type"]
           notes?: string | null
@@ -253,6 +256,7 @@ export type Database = {
           food_pairings: string | null
           grapes: string[]
           id: string
+          import_batch_id: string | null
           name: string
           photo_url: string | null
           price: number | null
@@ -270,6 +274,7 @@ export type Database = {
           food_pairings?: string | null
           grapes?: string[]
           id?: string
+          import_batch_id?: string | null
           name: string
           photo_url?: string | null
           price?: number | null
@@ -287,6 +292,7 @@ export type Database = {
           food_pairings?: string | null
           grapes?: string[]
           id?: string
+          import_batch_id?: string | null
           name?: string
           photo_url?: string | null
           price?: number | null

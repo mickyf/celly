@@ -76,7 +76,8 @@
     "wineries": "Weingüter",
     "addWine": "Neuen Wein hinzufügen",
     "addWinery": "Neues Weingut hinzufügen",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "import": "Importieren"
   },
   "countries": {
     "AR": "Argentinien",

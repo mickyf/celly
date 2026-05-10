@@ -24,6 +24,7 @@ import { useWinePhotoUrl } from '../hooks/useWinePhotoUrl'
 import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
 import { getCountryOptions } from '../constants/countries'
+import { BOTTLE_SIZE_OPTIONS } from '../constants/bottleSizes'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
@@ -395,14 +396,7 @@ export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLo
                 label={t('wines:form.labels.bottleSize')}
                 placeholder={t('wines:form.placeholders.bottleSize')}
                 description={t('wines:form.descriptions.bottleSize')}
-                data={[
-                  { value: '37.5cl', label: '37.5cl (Halbe Flasche)' },
-                  { value: '75cl', label: '75cl (Standard)' },
-                  { value: '150cl', label: '150cl (Magnum)' },
-                  { value: '300cl', label: '300cl (Double Magnum)' },
-                  { value: '500cl', label: '500cl (Jeroboam)' },
-                  { value: '600cl', label: '600cl (Imperial)' },
-                ]}
+                data={BOTTLE_SIZE_OPTIONS}
                 searchable
                 clearable
                 {...form.getInputProps('bottle_size')}

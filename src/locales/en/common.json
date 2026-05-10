@@ -76,7 +76,8 @@
     "wineries": "Wineries",
     "addWine": "Add New Wine",
     "addWinery": "Add New Winery",
-    "edit": "Edit"
+    "edit": "Edit",
+    "import": "Import"
   },
   "countries": {
     "AR": "Argentina",
