@@ -152,6 +152,26 @@ describe('applyWineFilters', () => {
     })
   })
 
+  describe('wine state', () => {
+    const available = wine({ id: 'available', quantity: 3 })
+    const drunken = wine({ id: 'drunken', quantity: 0 })
+
+    it('default "available" hides wines with quantity 0', () => {
+      const out = applyWineFilters([available, drunken], wineries, filters())
+      expect(out.map((w) => w.id)).toEqual(['available'])
+    })
+
+    it('"drunken" keeps only wines with quantity 0', () => {
+      const out = applyWineFilters([available, drunken], wineries, filters({ wineState: 'drunken' }))
+      expect(out.map((w) => w.id)).toEqual(['drunken'])
+    })
+
+    it('"all" keeps both', () => {
+      const out = applyWineFilters([available, drunken], wineries, filters({ wineState: 'all' }))
+      expect(out.map((w) => w.id).sort()).toEqual(['available', 'drunken'])
+    })
+  })
+
   describe('data completeness', () => {
     const complete = wine({
       id: 'complete',

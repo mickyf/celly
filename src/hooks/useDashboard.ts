@@ -69,26 +69,29 @@ export const useDashboardStats = () => {
         throw stockMovementsError
       }
 
-      // Calculate statistics
-      const totalBottles = wines?.reduce((sum, wine) => sum + (wine.quantity || 0), 0) || 0
-      const totalValue =
-        wines?.reduce((sum, wine) => sum + (wine.price || 0) * (wine.quantity || 0), 0) || 0
-      const totalWines = wines?.length || 0
+      // Drunken wines (quantity 0) shouldn't show up in the cellar overview.
+      const availableWines = (wines ?? []).filter((w) => (w.quantity ?? 0) > 0)
+
+      const totalBottles = availableWines.reduce((sum, wine) => sum + (wine.quantity || 0), 0)
+      const totalValue = availableWines.reduce(
+        (sum, wine) => sum + (wine.price || 0) * (wine.quantity || 0),
+        0,
+      )
+      const totalWines = availableWines.length
 
       // Count wines ready to drink
       const currentYear = new Date().getFullYear()
-      const readyToDrink =
-        wines?.filter(
-          (wine) =>
-            wine.drink_window_start &&
-            wine.drink_window_end &&
-            currentYear >= wine.drink_window_start &&
-            currentYear <= wine.drink_window_end
-        ).length || 0
+      const readyToDrink = availableWines.filter(
+        (wine) =>
+          wine.drink_window_start &&
+          wine.drink_window_end &&
+          currentYear >= wine.drink_window_start &&
+          currentYear <= wine.drink_window_end,
+      ).length
 
       // Count all grapes
       const grapeCount: { [key: string]: number } = {}
-      wines?.forEach((wine) => {
+      availableWines.forEach((wine) => {
         wine.grapes?.forEach((grape) => {
           grapeCount[grape] = (grapeCount[grape] || 0) + 1
         })

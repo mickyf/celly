@@ -15,6 +15,7 @@ export const DEFAULT_WINE_FILTERS: WineFilterValues = {
   priceMax: null,
   drinkingWindow: 'all',
   dataCompleteness: 'all',
+  wineState: 'available',
 }
 
 export function applyWineFilters(
@@ -71,6 +72,12 @@ export function applyWineFilters(
       if (filters.dataCompleteness === 'incomplete' && isComplete) return false
     }
 
+    if (filters.wineState !== 'all') {
+      const isDrunken = (wine.quantity ?? 0) === 0
+      if (filters.wineState === 'available' && isDrunken) return false
+      if (filters.wineState === 'drunken' && !isDrunken) return false
+    }
+
     return true
   })
 }
@@ -85,6 +92,7 @@ export function countActiveWineFilters(filters: WineFilterValues): number {
   if (filters.priceMin !== null || filters.priceMax !== null) count++
   if (filters.drinkingWindow !== 'all') count++
   if (filters.dataCompleteness !== 'all') count++
+  if (filters.wineState !== 'available') count++
   return count
 }
 
