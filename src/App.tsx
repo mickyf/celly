@@ -1,5 +1,5 @@
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as Sentry from '@sentry/react'
 import { instrumentRouter } from './lib/sentry'
 
@@ -19,8 +19,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Create a query client (error tracking handled in individual hooks)
+// Safety net for unhandled query errors; toasts are surfaced per-hook.
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      Sentry.captureException(error, {
+        tags: { source: 'query-cache-onError' },
+        contexts: { query: { queryKey: JSON.stringify(query.queryKey) } },
+      })
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,

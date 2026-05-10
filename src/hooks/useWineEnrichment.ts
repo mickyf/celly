@@ -7,6 +7,7 @@ import { enrichWineData, enrichWineFromImage } from '../lib/claude'
 import { useAddWinery } from './useWineries'
 import { useUpdateWine } from './useWines'
 import { supabase } from '../lib/supabase'
+import { showMutationError } from '../lib/mutationError'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -262,14 +263,11 @@ export const useEnrichWine = () => {
         })
       }
     },
-    onError: (error) => {
-      notifications.show({
+    onError: (error) =>
+      showMutationError(t, error, {
         title: t('wines:enrichment.errors.title'),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+        hook: 'useEnrichWine',
+      }),
   })
 }
 
@@ -355,14 +353,11 @@ export const useIdentifyWineByName = () => {
         autoClose: 5000,
       })
     },
-    onError: (error) => {
-      notifications.show({
+    onError: (error) =>
+      showMutationError(t, error, {
         title: t('wines:enrichment.errors.title'),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+        hook: 'useIdentifyWineByName',
+      }),
   })
 }
 
@@ -486,14 +481,11 @@ export const useEnrichWineFromImage = () => {
         autoClose: 5000,
       })
     },
-    onError: (error) => {
-      notifications.show({
+    onError: (error) =>
+      showMutationError(t, error, {
         title: t('wines:enrichment.errors.title'),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+        hook: 'useEnrichWineFromImage',
+      }),
   })
 }
 
@@ -749,13 +741,10 @@ export const useBulkEnrichWines = () => {
         })
       }
     },
-    onError: (error) => {
-      notifications.show({
+    onError: (error) =>
+      showMutationError(t, error, {
         title: t('wines:bulkEnrichment.errors.title'),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+        hook: 'useBulkEnrichWines',
+      }),
   })
 }

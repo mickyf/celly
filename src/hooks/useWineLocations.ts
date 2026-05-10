@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { notifications } from '@mantine/notifications'
 import { useTranslation } from 'react-i18next'
 import * as Sentry from '@sentry/react'
+import { showMutationError } from '../lib/mutationError'
 import type { Database } from '../types/database'
 
 type WineLocation = Database['public']['Tables']['wine_locations']['Row']
@@ -84,14 +84,7 @@ export const useCreateShelf = () => {
       queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
       queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not create shelf' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'useCreateShelf' }),
   })
 }
 
@@ -127,14 +120,7 @@ export const useAddSlots = () => {
       queryClient.invalidateQueries({ queryKey: ['wine_locations'] })
       queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not add slots' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'useAddSlots' }),
   })
 }
 
@@ -159,14 +145,7 @@ export const useDeleteSlots = () => {
         queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', result.cellarId] })
       }
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not remove slots' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'useDeleteSlots' }),
   })
 }
 
@@ -192,14 +171,7 @@ export const useDeleteShelf = () => {
       queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', cellarId] })
       queryClient.invalidateQueries({ queryKey: ['wines'] })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.shelfError.title', { defaultValue: 'Could not delete shelf' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'useDeleteShelf' }),
   })
 }
 
@@ -230,14 +202,7 @@ export const usePlaceWine = () => {
       }
       queryClient.invalidateQueries({ queryKey: ['wines'] })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.placeError.title', { defaultValue: 'Could not place wine' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'usePlaceWine' }),
   })
 }
 
@@ -265,13 +230,6 @@ export const useUnplaceWine = () => {
       queryClient.invalidateQueries({ queryKey: ['wine_locations', 'cellar', data.cellar_id] })
       queryClient.invalidateQueries({ queryKey: ['wines'] })
     },
-    onError: (error) => {
-      notifications.show({
-        title: t('wines:notifications.placeError.title', { defaultValue: 'Could not update slot' }),
-        message: error instanceof Error ? error.message : String(error),
-        color: 'red',
-        autoClose: 8000,
-      })
-    },
+    onError: (error) => showMutationError(t, error, { hook: 'useUnplaceWine' }),
   })
 }
