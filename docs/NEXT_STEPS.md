@@ -80,4 +80,4 @@
 
 ## security/technical
 - ~~upgrade dependencies~~
-- ~~add a central error handling function~~ (consolidated hook error toasts onto `mutationError.ts`; QueryCache `onError` captures unhandled query errors to Sentry)
+- ~~add a central error handling function (consolidated hook error toasts onto `mutationError.ts`; QueryCache `onError` captures unhandled query errors to Sentry)~~
