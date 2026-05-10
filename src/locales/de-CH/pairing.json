@@ -11,7 +11,15 @@
     "analyzing": "Analysiert...",
     "viewWine": "Wein anzeigen",
     "clearResults": "Ergebnisse löschen",
-    "addFirstWine": "Ersten Wein hinzufügen"
+    "addFirstWine": "Ersten Wein hinzufügen",
+    "refresh": "KI erneut fragen"
+  },
+  "cache": {
+    "fromCache": "Aus Cache"
+  },
+  "history": {
+    "title": "Letzte Pairings",
+    "clearAll": "Alle löschen"
   },
   "emptyState": {
     "title": "Keine Weine im Keller",

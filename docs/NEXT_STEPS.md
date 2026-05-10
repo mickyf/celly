@@ -46,6 +46,7 @@
 - ~~image delete is not stored on wine~~
 - ~~no feedback on single wine AI enrichement when there's nothing to enrich any more~~
 - ~~adding a wine doesn't close the form, it should move to the detail view on success~~
+- ~~find by AI: if the name was written wrong it finds the wine anyways, but the name is saved wrong. It should take the proper name then.~~
 
 ## minor
 - ~~remove degustation notes from dashboard~~
@@ -62,6 +63,7 @@
 - ~~mobile: the back button on all sub pages is not aligned on the left with the breadcrumbs or other content.~~
 - ~~dashboard: "add your first wine" card makes no sense, when there are already wines. And it should be on top.~~
 - ~~dashboard: the total and different wines cards should have a plus button to add wine from there.~~
+- ~~hide wines when drunken out in all the places, add a filter on the wine list to display "drunken" wines~~
 - ~~improve range filters with min and max values from the existing wines~~
 
 ## major
@@ -74,9 +76,7 @@
   - ~~simplify stock changes with an up- and down-button on the card~~
 - ~~feature: add wine from free text input~~
 - feature: add multiple wines from order document
-- ~~hide wines when drunken out in all the places, add a filter on the wine list to display "drunken" wines~~
 - Branding: icon and logo
-- ~~find by AI: if the name was written wrong it finds the wine anyways, but the name is saved wrong. It should take the proper name then.~~
 
 ## security/technical
 - ~~upgrade dependencies~~

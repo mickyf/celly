@@ -11,7 +11,15 @@
     "analyzing": "Analyzing...",
     "viewWine": "View Wine",
     "clearResults": "Clear Results",
-    "addFirstWine": "Add Your First Wine"
+    "addFirstWine": "Add Your First Wine",
+    "refresh": "Ask AI again"
+  },
+  "cache": {
+    "fromCache": "Cached"
+  },
+  "history": {
+    "title": "Recent pairings",
+    "clearAll": "Clear all"
   },
   "emptyState": {
     "title": "No wines in cellar",
