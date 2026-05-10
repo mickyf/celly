@@ -1,8 +1,8 @@
 import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { AuthSplash } from '../../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
-import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Modal, Progress, ActionIcon } from '@mantine/core'
-import { IconPlus, IconSparkles, IconBottle } from '@tabler/icons-react'
+import { Container, Title, Text, Button, Stack, Group, SimpleGrid, Modal, Progress, ActionIcon, Badge, CloseButton } from '@mantine/core'
+import { IconPlus, IconSparkles, IconBottle, IconFileImport } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useEffect, useState, useMemo } from 'react'
 import { useWines, useDeleteWine } from '../../hooks/useWines'
@@ -22,10 +22,12 @@ import {
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
 
+type WineSearchParams = Partial<WineFilterValues> & { importBatchId?: string }
+
 export const Route = createFileRoute('/wines/')({
   component: WineList,
-  validateSearch: (search: Record<string, unknown>): Partial<WineFilterValues> => {
-    const validated: Partial<WineFilterValues> = {}
+  validateSearch: (search: Record<string, unknown>): WineSearchParams => {
+    const validated: WineSearchParams = {}
 
     if (typeof search.search === 'string' && search.search) {
       validated.search = search.search
@@ -59,6 +61,9 @@ export const Route = createFileRoute('/wines/')({
     }
     if (['all', 'available', 'drunken'].includes(search.wineState as string)) {
       validated.wineState = search.wineState as WineFilterValues['wineState']
+    }
+    if (typeof search.importBatchId === 'string' && search.importBatchId) {
+      validated.importBatchId = search.importBatchId
     }
 
     return validated
@@ -109,7 +114,7 @@ function WineList() {
   // Update filters by navigating with new search params
   const setFilters = (newFilters: WineFilterValues) => {
     // Only include non-default values in URL to keep it clean
-    const searchParams: Partial<WineFilterValues> = {}
+    const searchParams: WineSearchParams = {}
 
     if (newFilters.search) searchParams.search = newFilters.search
     if (newFilters.winery) searchParams.winery = newFilters.winery
@@ -122,6 +127,8 @@ function WineList() {
     if (newFilters.drinkingWindow !== 'all') searchParams.drinkingWindow = newFilters.drinkingWindow
     if (newFilters.dataCompleteness !== 'all') searchParams.dataCompleteness = newFilters.dataCompleteness
     if (newFilters.wineState !== 'available') searchParams.wineState = newFilters.wineState
+    // Preserve the batch chip when other filters change.
+    if (search.importBatchId) searchParams.importBatchId = search.importBatchId
 
     navigate({
       to: '/wines',
@@ -137,12 +144,46 @@ function WineList() {
     })
   }, [])
 
-  const filteredWines = useMemo(
-    () => (wines ? applyWineFilters(wines, wineries, filters) : []),
-    [wines, wineries, filters],
-  )
+  const restockedWineIdsInBatch = useMemo(() => {
+    if (!search.importBatchId || !allStockMovements) return null
+    const ids = new Set<string>()
+    for (const m of allStockMovements) {
+      if (m.import_batch_id === search.importBatchId) ids.add(m.wine_id)
+    }
+    return ids
+  }, [search.importBatchId, allStockMovements])
+
+  const filteredWines = useMemo(() => {
+    if (!wines) return []
+    let result = applyWineFilters(wines, wineries, filters)
+    if (search.importBatchId) {
+      result = result.filter(
+        (w) =>
+          w.import_batch_id === search.importBatchId ||
+          restockedWineIdsInBatch?.has(w.id),
+      )
+    }
+    return result
+  }, [wines, wineries, filters, search.importBatchId, restockedWineIdsInBatch])
 
   const activeFilterCount = useMemo(() => countActiveWineFilters(filters), [filters])
+
+  const batchChipDate = useMemo(() => {
+    if (!search.importBatchId || !wines) return null
+    const inBatch = wines.find((w) => w.import_batch_id === search.importBatchId)
+    if (inBatch?.created_at) return inBatch.created_at
+    if (allStockMovements) {
+      const m = allStockMovements.find((mv) => mv.import_batch_id === search.importBatchId)
+      return m?.movement_date ?? null
+    }
+    return null
+  }, [search.importBatchId, wines, allStockMovements])
+
+  const handleClearBatch = () => {
+    const next: WineSearchParams = { ...search }
+    delete next.importBatchId
+    navigate({ to: '/wines', search: next, replace: true })
+  }
 
   const handleDelete = (id: string) => {
     setDeleteId(id)
@@ -240,6 +281,23 @@ function WineList() {
                 </>
               )}
               <Button
+                leftSection={<IconFileImport size={20} />}
+                onClick={() => navigate({ to: '/wines/import' })}
+                variant="default"
+                visibleFrom="sm"
+              >
+                {t('wines:list.importButton')}
+              </Button>
+              <ActionIcon
+                size="lg"
+                variant="default"
+                onClick={() => navigate({ to: '/wines/import' })}
+                hiddenFrom="sm"
+                aria-label={t('wines:list.importButton')}
+              >
+                <IconFileImport size={20} />
+              </ActionIcon>
+              <Button
                 leftSection={<IconPlus size={20} />}
                 onClick={() => navigate({ to: '/wines/add' })}
                 visibleFrom="sm"
@@ -268,6 +326,30 @@ function WineList() {
                 onFiltersChange={setFilters}
                 activeFilterCount={activeFilterCount}
               />
+
+              {search.importBatchId && (
+                <Group>
+                  <Badge
+                    size="lg"
+                    color="grape"
+                    variant="light"
+                    rightSection={
+                      <CloseButton
+                        size="xs"
+                        onClick={handleClearBatch}
+                        aria-label={t('common:buttons.clear', { defaultValue: 'Clear' })}
+                      />
+                    }
+                  >
+                    {t('wines:import.batchBadge', {
+                      date: batchChipDate
+                        ? new Date(batchChipDate).toLocaleDateString()
+                        : '',
+                      count: filteredWines.length,
+                    })}
+                  </Badge>
+                </Group>
+              )}
 
               {filteredWines.length > 0 ? (
                 <>

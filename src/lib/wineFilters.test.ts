@@ -19,6 +19,7 @@ const wine = (overrides: Partial<Wine> = {}): Wine => ({
   food_pairings: 'Cheese',
   grapes: ['Pinot Noir'],
   id: 'w-1',
+  import_batch_id: null,
   name: 'Test Wine',
   photo_url: null,
   price: 50,

@@ -46,6 +46,7 @@ describe('StockMovementForm', () => {
           notes: 'Drunk at dinner',
           movement_date: '2026-01-01',
           created_at: null,
+          import_batch_id: null,
         }}
         onSubmit={vi.fn()}
       />,

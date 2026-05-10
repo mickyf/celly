@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WinesIndexRouteImport } from './routes/wines/index'
 import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
 import { Route as CellarsIndexRouteImport } from './routes/cellars/index'
+import { Route as WinesImportRouteImport } from './routes/wines/import'
 import { Route as WinesAddRouteImport } from './routes/wines/add'
 import { Route as WineriesAddRouteImport } from './routes/wineries/add'
 import { Route as WinesIdIndexRouteImport } from './routes/wines/$id/index'
@@ -71,6 +72,11 @@ const CellarsIndexRoute = CellarsIndexRouteImport.update({
   path: '/cellars/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WinesImportRoute = WinesImportRouteImport.update({
+  id: '/wines/import',
+  path: '/wines/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WinesAddRoute = WinesAddRouteImport.update({
   id: '/wines/add',
   path: '/wines/add',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wines/import': typeof WinesImportRoute
   '/cellars/': typeof CellarsIndexRoute
   '/wineries/': typeof WineriesIndexRoute
   '/wines/': typeof WinesIndexRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wines/import': typeof WinesImportRoute
   '/cellars': typeof CellarsIndexRoute
   '/wineries': typeof WineriesIndexRoute
   '/wines': typeof WinesIndexRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/wineries/add': typeof WineriesAddRoute
   '/wines/add': typeof WinesAddRoute
+  '/wines/import': typeof WinesImportRoute
   '/cellars/': typeof CellarsIndexRoute
   '/wineries/': typeof WineriesIndexRoute
   '/wines/': typeof WinesIndexRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/wines/import'
     | '/cellars/'
     | '/wineries/'
     | '/wines/'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/wines/import'
     | '/cellars'
     | '/wineries'
     | '/wines'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wineries/add'
     | '/wines/add'
+    | '/wines/import'
     | '/cellars/'
     | '/wineries/'
     | '/wines/'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   WineriesAddRoute: typeof WineriesAddRoute
   WinesAddRoute: typeof WinesAddRoute
+  WinesImportRoute: typeof WinesImportRoute
   CellarsIndexRoute: typeof CellarsIndexRoute
   WineriesIndexRoute: typeof WineriesIndexRoute
   WinesIndexRoute: typeof WinesIndexRoute
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CellarsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wines/import': {
+      id: '/wines/import'
+      path: '/wines/import'
+      fullPath: '/wines/import'
+      preLoaderRoute: typeof WinesImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wines/add': {
       id: '/wines/add'
       path: '/wines/add'
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   WineriesAddRoute: WineriesAddRoute,
   WinesAddRoute: WinesAddRoute,
+  WinesImportRoute: WinesImportRoute,
   CellarsIndexRoute: CellarsIndexRoute,
   WineriesIndexRoute: WineriesIndexRoute,
   WinesIndexRoute: WinesIndexRoute,

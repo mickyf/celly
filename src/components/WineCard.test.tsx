@@ -29,6 +29,7 @@ const baseWine: Wine = {
   winery_id: null,
   created_at: null,
   updated_at: null,
+  import_batch_id: null,
 }
 
 describe('WineCard', () => {

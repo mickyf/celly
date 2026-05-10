@@ -5,10 +5,62 @@
     "showingCount": "Showing {{filtered}} of {{total}} wines",
     "showingCountSingle": "Showing {{filtered}} of {{total}} wine",
     "addButton": "Add Wine",
+    "importButton": "Import",
     "emptyState": "No wines yet. Start by adding your first bottle!",
     "emptyStateTitle": "Your cellar is empty",
     "emptyStateAction": "Add your first wine",
     "noResults": "No wines match your filters. Try adjusting your search criteria."
+  },
+  "import": {
+    "title": "Import wines from order document",
+    "subtitle": "Upload a PDF or image of a wine merchant's order. We'll extract the wines and let you review them before saving.",
+    "parsing": "Reading your document…",
+    "save": "Save {{count}} wines",
+    "stockNote": "Imported from order document",
+    "batchBadge": "Imported on {{date}} ({{count}} wines)",
+    "upload": {
+      "dropPdfOrImage": "Drag a PDF or image here, or click to choose",
+      "sizeLimit": "PDF or image — max 5 MB",
+      "takePhoto": "Take a photo",
+      "rejected": "File rejected. Please use a PDF or image under 5 MB."
+    },
+    "empty": {
+      "title": "No wines detected",
+      "message": "We couldn't find any wines in this document. Try a clearer scan or a different file."
+    },
+    "saved": {
+      "title": "Import complete",
+      "message": "{{created}} wines added, {{restocked}} restocked."
+    },
+    "errors": {
+      "parseTitle": "Could not parse document",
+      "saveTitle": "Could not save imported wines",
+      "notAuthenticated": "You must be signed in to import wines."
+    },
+    "review": {
+      "title": "Review imported wines",
+      "summary": "{{new}} new, {{restock}} restock, {{skip}} ignored",
+      "includeRow": "Import this row",
+      "restockBadge": "Restock",
+      "pickExisting": "Pick an existing wine",
+      "noMatches": "No matching wines",
+      "clearMatch": "Clear match",
+      "columns": {
+        "name": "Name",
+        "vintage": "Vintage",
+        "qty": "Qty",
+        "price": "Price (CHF)",
+        "bottle": "Bottle",
+        "winery": "Winery"
+      },
+      "wineryBadges": {
+        "existing": "Existing",
+        "new": "New"
+      },
+      "errors": {
+        "nameRequired": "Required"
+      }
+    }
   },
   "detail": {
     "notFound": "Wine not found",
