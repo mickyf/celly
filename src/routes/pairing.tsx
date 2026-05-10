@@ -63,7 +63,7 @@ function FoodPairing() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [menu, setMenu] = useState('')
-  const [history, setHistory] = useState<PairingHistoryEntry[]>([])
+  const [history, setHistory] = useState<PairingHistoryEntry[]>(() => loadPairingHistory())
   const [activeEntry, setActiveEntry] = useState<PairingHistoryEntry | null>(null)
   const [resultsFromCache, setResultsFromCache] = useState(false)
 
@@ -90,7 +90,6 @@ function FoodPairing() {
       setUser(session?.user ?? null)
       setAuthLoading(false)
     })
-    setHistory(loadPairingHistory())
   }, [])
 
   const handleGetPairing = async (force = false) => {
