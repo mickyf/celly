@@ -31,12 +31,11 @@ npm run gen-types
 # Generate PWA icons from SVG source
 npm run gen-icons
 
-# Supabase commands
-npx supabase start          # Start local Supabase (Docker required)
-npx supabase stop           # Stop local Supabase
-npx supabase status         # Check Supabase status
-npx supabase db reset       # Reset database and apply migrations
-npx supabase migration new <name>  # Create new migration
+# Supabase commands (cloud workflow — no Docker)
+npx supabase migration new <name>          # Scaffold a new migration file
+npx supabase db push                       # Apply pending migrations to the linked cloud project
+npx supabase functions deploy claude-proxy --no-verify-jwt
+npx supabase secrets set CLAUDE_API_KEY=<key>
 
 # MCP Server commands
 cd mcp-server && npm install && npm run build  # Build MCP server
@@ -124,9 +123,9 @@ All server state is managed through custom hooks in `src/hooks/`:
 
 **Database Schema** (see `supabase/migrations/`):
 - `wineries` table: Winery information (name, country_code) with RLS policies
-- `wines` table: Core wine data with optional `winery_id` foreign key (ON DELETE RESTRICT), includes grapes[], vintage, quantity, price, drinking window, bottle_size, food_pairings
+- `wines` table: Core wine data with optional `winery_id` foreign key (ON DELETE RESTRICT), includes grapes[], vintage, quantity, price, drinking window, bottle_size, food_pairings, optional `import_batch_id`
 - `tasting_notes` table: Rating (1-5 stars) + notes + date, cascades on wine deletion
-- `stock_movements` table: Track wine additions/removals with automatic quantity updates via database triggers
+- `stock_movements` table: Track wine additions/removals with automatic quantity updates via database triggers; carries `import_batch_id` so order-document imports can be retrieved as a unit
 - `cellars` table: Physical cellar locations (name) for organizing wine storage
 - `wine_locations` table: Maps wines to cellars with coordinates (shelf, row, column) and quantity per location. Supports multiple locations per wine (e.g., same wine in different cellars)
 - `user_settings` table: Generic key-value store for user preferences (key TEXT, value JSONB)
@@ -155,10 +154,12 @@ File-based routes in `src/routes/`:
 - `__root.tsx` - App shell with AppShell layout and auth check
 - `index.tsx` - Dashboard with statistics
 - `login.tsx` - Auth page (login/signup tabs)
-- `wines/index.tsx` - Wine list with search/filter
-- `wines/add.tsx` - Add wine form
+- `wines/index.tsx` - Wine list with search/filter; supports `?importBatchId=…` to filter by an import batch (union of newly-created wines and wines restocked in the same batch)
+- `wines/add.tsx` - Add wine form (chooser: photo / free-text / manual)
+- `wines/import.tsx` - Bulk import from a wine merchant's order document (PDF or image) — review table with editable rows and per-row include checkbox
 - `wines/$id/index.tsx` - Wine detail with tasting notes and stock movements
 - `wines/$id/edit.tsx` - Edit wine form
+- `wines/$id/place.tsx` - Place a wine in cellar slots
 - `wineries/index.tsx` - Winery list with search
 - `wineries/add.tsx` - Add winery form
 - `wineries/$id/index.tsx` - Winery detail with associated wines
@@ -308,9 +309,9 @@ mutationFn: async (winery: NewWinery) => {
 
 **Type Generation Workflow**:
 1. Create or modify migration in `supabase/migrations/`
-2. Apply migration: `npx supabase db reset`
-3. Regenerate types: `npm run gen-types`
-4. Types in `src/types/database.ts` now match database schema
+2. Apply migration to cloud: `npx supabase db push`
+3. Regenerate types from cloud: `npm run gen-types` (the script uses `--linked`)
+4. Types in `src/types/database.ts` now match the cloud schema
 
 ### Mantine UI Theme
 
@@ -383,8 +384,8 @@ npm run gen-icons  # Regenerate all PWA icons from app-icon.svg
 Required environment variables in `.env.local`:
 
 ```bash
-# Supabase (get from `npx supabase start` output)
-VITE_SUPABASE_URL=http://127.0.0.1:54321
+# Cloud Supabase project (no local Docker)
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
 ```
 
@@ -392,23 +393,17 @@ Note: Edge Function URL is automatically resolved from `VITE_SUPABASE_URL` using
 
 Copy `.env.example` to `.env.local` and fill in values.
 
-### Edge Function Environment Variables
+### Edge Function Secrets
 
-Required environment variables in `supabase/.env`:
+The Claude API key lives **server-side only** as a Supabase secret — never put it in `.env.local` or in browser-bound env vars.
 
 ```bash
-# Claude API (get from console.anthropic.com)
-CLAUDE_API_KEY=sk-ant-<your-key>
+npx supabase secrets set CLAUDE_API_KEY=sk-ant-<your-key>
 ```
 
-For local development:
-1. Copy `supabase/.env.example` to `supabase/.env`
-2. Add your Claude API key to `supabase/.env`
-3. The key is automatically loaded when running `npx supabase start`
+Or set it in the dashboard: Settings → Edge Functions → Secrets → `CLAUDE_API_KEY`.
 
-For production:
-1. Set secrets in Supabase Dashboard: Settings → Edge Functions → Secrets
-2. Add `CLAUDE_API_KEY` with your production API key
+End users can also bring their own Claude API key via the in-app Settings page; per-user keys are stored in `user_settings` and the `claude-proxy` Edge Function prefers them over the global secret.
 3. Secrets are automatically available to all Edge Functions
 
 ## Database Migrations
@@ -418,32 +413,25 @@ For production:
 npx supabase migration new <descriptive_name>
 ```
 
-**Applying Migrations**:
+**Applying Migrations** (cloud — no local Docker):
 ```bash
-npx supabase db reset  # Resets DB and applies all migrations + seed data
+npx supabase db push
 ```
 
 **Schema Changes Workflow**:
 1. Create migration file in `supabase/migrations/`
-2. Apply migration: `npx supabase db reset`
-3. Regenerate types: `npm run gen-types`
+2. Apply to cloud: `npx supabase db push`
+3. Regenerate types: `npm run gen-types` (script uses `--linked`)
 4. RLS policies must be included in migration for new tables
 5. Storage policies for new buckets must be defined in migrations
 
-**Seed Data** (`supabase/seed.sql`):
-- Contains test user creation and sample wine imports
-- Automatically applied during `npx supabase db reset`
-- Uses hardcoded UUID for test user (`87348a9f-513c-463d-82eb-89b883d4ddc6`)
-- Includes auth.users and auth.identities setup for local testing
+**Seed Data** (`supabase/seed.sql`): retained for completeness but not part of the regular workflow — the cloud DB is the source of truth and is not reset.
 
-**Migration History**:
-1. `20260103090129_create_wine_tables.sql` - Base schema (wineries, wines, tasting_notes)
-2. `20260108203902_add_stock_movements.sql` - Stock inventory with automatic quantity triggers
-3. `20260110081833_add_food_pairings_to_wines.sql` - Food pairings column (Swiss German)
-4. `20260110101108_add_bottle_size_to_wines.sql` - Bottle size tracking
-5. `20260113205000_add_user_settings.sql` - User settings table (generic key-value store)
-6. `20260115195100_add_cellars_and_location.sql` - Cellars table and location fields on wines
-7. `20260115203000_redesign_wine_locations.sql` - Wine locations table (replaces location fields on wines)
+**Migration history**: see `supabase/migrations/` directly. Recent additions worth knowing:
+- `20260115203000_redesign_wine_locations.sql` — slot-based `wine_locations` (replaced inline location fields on `wines`)
+- `20260503110000_make_wine_images_private.sql` — bucket flipped to private; consumers use `useWinePhotoUrl` (signed URLs)
+- `20260503180000_wine_locations_as_slots.sql` — each row is a slot, `wine_id` nullable
+- `20260510120000_add_import_batch_id.sql` — `import_batch_id` on `wines` and `stock_movements` for the order-document import feature
 
 ## Common Patterns
 
@@ -483,6 +471,28 @@ CREATE TRIGGER update_wine_quantity AFTER INSERT OR UPDATE OR DELETE ON stock_mo
 - Wines have optional `winery_id` foreign key
 - AI enrichment can automatically create wineries when needed
 - Winery matching prevents duplicates (handles spelling variations)
+
+### Bulk Import from Order Document
+
+**Architecture**:
+The user uploads a wine merchant's PDF or image; Claude extracts a list of wines that the user reviews in an editable table before persisting. Restocks of existing wines and creation of new ones happen in the same operation, grouped by a client-generated batch UUID.
+
+**Edge Function** (`supabase/functions/claude-proxy/index.ts`):
+A `parse-order-document` request type sends the file as either a `document` (PDFs) or `image` content block to Claude Sonnet 4.5 with a strict JSON-output prompt and an explicit injection-defense preamble. Server-side validates type + size (5 MB cap), runs every parsed row through whitelist checks (vintage range, bottle-size enum, ISO country code), and drops invalid rows.
+
+**Frontend** (`src/lib/claude.ts`, `src/hooks/useOrderImport.ts`):
+- `parseOrderDocument(file)` — base64-encodes the file and invokes the proxy. Rejects unsupported MIME types client-side before the call.
+- `useParseOrderDocument()` / `useBulkImportWines()` — TanStack mutations.
+
+**Bulk-save semantics** (`useBulkImportWines`):
+- Resolves wineries in two phases: Fuse fuzzy match (threshold 0.3, same as `useEnrichWine`), then a single batched insert for the unmatched names (deduped case-insensitively). Uses `supabase.from('wineries').insert()` directly to avoid the toast spam that `useAddWinery` would produce.
+- Single `supabase.from('wines').insert()` for all "create new" rows; single `supabase.from('stock_movements').insert()` for all restocks. Both writes carry the same `import_batch_id` UUID.
+- Returns `{ batchId, created, restocked, skipped, failures[] }` for a single summary toast.
+
+**UI**:
+- `/wines/import` — two-step page (upload → review). Dropzone accepts `[png, jpeg, gif, webp, pdf]` only (the full `IMAGE_MIME_TYPE` constant from `@mantine/dropzone` includes formats the edge function rejects).
+- `OrderImportTable` — checkbox per row toggles `included`; the Name column is a Mantine `Combobox` that lets the user either pick an existing wine (then row becomes a restock — vintage/price/bottle/winery editors disable since they're pinned) or type a new name (creates a new wine). Action shape is derived from `(included, existingWineId)`, not a separate radio.
+- After save, navigates to `/wines?importBatchId=…`. The wines list applies a union post-filter — `wines.import_batch_id === batchId OR a stock_movement.import_batch_id === batchId for that wine` — so newly-created wines and restocked wines both show up under the batch chip. Reuses the `useStockMovements()` query already loaded by the wines list, no extra fetch.
 
 ### Physical Location Tracking
 
@@ -581,7 +591,7 @@ Translation keys: `common:countries.FR`, `common:countries.IT`, etc.
 ### Adding a New Data Entity
 
 1. Create migration in `supabase/migrations/` with table definition and RLS policies
-2. Apply migration: `npx supabase db reset`
+2. Apply to cloud: `npx supabase db push`
 3. Generate types: `npm run gen-types` (updates `src/types/database.ts`)
 4. Create custom hooks in `src/hooks/use<Entity>.ts` with query/mutation functions
 5. Create form component in `src/components/<Entity>Form.tsx` using `@mantine/form`
@@ -727,9 +737,8 @@ See [mcp-server/README.md](mcp-server/README.md) for detailed documentation.
 ## Known Constraints
 
 - **Single User**: No multi-user/sharing features (intentionally scoped out)
-- **Local Development**: Supabase runs locally via Docker (requires Docker Desktop)
-- **No Import/Export**: Users cannot bulk import or export wine data
-- **AI Rate Limiting**: Bulk enrichment uses 1 second delay between requests to avoid API rate limits
+- **Cloud-Only Workflow**: We work directly against the linked cloud Supabase project — no local Docker / `supabase start` / `db reset`. Migrations land via `npx supabase db push`; types are regenerated from the cloud via `npm run gen-types` (already `--linked`).
+- **AI Rate Limiting**: Bulk enrichment uses a 1 second delay between requests to avoid API rate limits
 - **Food Pairing Language**: Food pairings must be in Swiss Standard German (Schweizer Hochdeutsch)
 
 ## Deployment Considerations
