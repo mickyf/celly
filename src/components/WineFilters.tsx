@@ -31,6 +31,7 @@ export interface WineFilterValues {
   priceMax: number | null
   drinkingWindow: 'all' | 'ready' | 'future' | 'past'
   dataCompleteness: 'all' | 'complete' | 'incomplete'
+  wineState: 'all' | 'available' | 'drunken'
 }
 
 interface WineFiltersProps {
@@ -94,6 +95,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       priceMax: null,
       drinkingWindow: 'all',
       dataCompleteness: 'all',
+      wineState: 'available',
     })
   }
 
@@ -181,6 +183,14 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       key: 'dataCompleteness',
       label: `${t('wines:filters.dataCompleteness')}: ${t(`wines:filters.dataCompletenessOptions.${filters.dataCompleteness}`)}`,
       onRemove: () => onFiltersChange({ ...filters, dataCompleteness: 'all' }),
+    })
+  }
+
+  if (filters.wineState !== 'available') {
+    chips.push({
+      key: 'wineState',
+      label: `${t('wines:filters.wineState')}: ${t(`wines:filters.wineStateOptions.${filters.wineState}`)}`,
+      onRemove: () => onFiltersChange({ ...filters, wineState: 'available' }),
     })
   }
 
@@ -377,6 +387,23 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
                 onFiltersChange({
                   ...filters,
                   dataCompleteness: (value as WineFilterValues['dataCompleteness']) || 'all',
+                })
+              }
+              clearable={false}
+            />
+
+            <Select
+              label={t('wines:filters.wineState')}
+              data={[
+                { value: 'available', label: t('wines:filters.wineStateOptions.available') },
+                { value: 'drunken', label: t('wines:filters.wineStateOptions.drunken') },
+                { value: 'all', label: t('wines:filters.wineStateOptions.all') },
+              ]}
+              value={filters.wineState}
+              onChange={(value) =>
+                onFiltersChange({
+                  ...filters,
+                  wineState: (value as WineFilterValues['wineState']) || 'available',
                 })
               }
               clearable={false}

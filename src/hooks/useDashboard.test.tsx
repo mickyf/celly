@@ -88,6 +88,30 @@ describe('useDashboardStats', () => {
     expect(stats.consumptionData).toEqual([])
   })
 
+  it('excludes drunken wines (quantity 0) from totals, ready count and top grapes', async () => {
+    mockClient.setTable(
+      'wines',
+      makeQueryBuilder({
+        data: [
+          { id: 'live', quantity: 2, price: 30, drink_window_start: 2000, drink_window_end: 2030, grapes: ['Merlot'] },
+          { id: 'drunken', quantity: 0, price: 100, drink_window_start: 2000, drink_window_end: 2030, grapes: ['Pinot Noir'] },
+        ],
+        error: null,
+      }),
+    )
+    mockClient.setTable('stock_movements', makeQueryBuilder({ data: [], error: null }))
+
+    const { result } = renderHookWithProviders(() => useDashboardStats())
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    const stats = result.current.data!
+    expect(stats.totalWines).toBe(1)
+    expect(stats.totalBottles).toBe(2)
+    expect(stats.totalValue).toBe(60)
+    expect(stats.readyToDrink).toBe(1)
+    expect(stats.topGrapes.map((g) => g.grape)).toEqual(['Merlot'])
+  })
+
   it('builds a monthly consumption series that ends at the current bottle count', async () => {
     mockClient.setTable(
       'wines',

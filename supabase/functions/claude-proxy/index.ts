@@ -313,15 +313,17 @@ ${sandbox(wineName)}${existingVintage ? ` (vintage: ${existingVintage})` : ""}
 </user_input>
 
 Please identify the wine and provide:
-1. Grape varieties used in this wine
-2. Vintage year (if not already provided and if it's a specific wine)
-3. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
-4. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
-5. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
-6. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
+1. Canonical wine name as it should be written officially — fix typos, casing, and accents in the user's input (e.g., "chateu margauux" → "Château Margaux"). Include the producer/cuvée but exclude the vintage year.
+2. Grape varieties used in this wine
+3. Vintage year (if not already provided and if it's a specific wine)
+4. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
+5. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
+6. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
+7. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
 
 Return your response as a JSON object with this exact structure:
 {
+  "name": "Château Margaux",
   "grapes": ["Cabernet Sauvignon", "Merlot"],
   "vintage": 2015,
   "drinkingWindow": {
@@ -372,6 +374,14 @@ Important guidelines:
   const enrichmentData: Record<string, unknown> = {
     confidence: parsedResponse.confidence || "low",
     explanation: parsedResponse.explanation || "No explanation provided",
+  }
+
+  // Validate canonical wine name
+  if (
+    typeof parsedResponse.name === "string" &&
+    parsedResponse.name.trim().length > 0
+  ) {
+    enrichmentData.name = parsedResponse.name.trim()
   }
 
   // Validate grapes

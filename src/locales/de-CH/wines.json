@@ -163,6 +163,12 @@
       "complete": "Vollständige Daten",
       "incomplete": "Unvollständige Daten"
     },
+    "wineState": "Bestand",
+    "wineStateOptions": {
+      "all": "Alle Weine",
+      "available": "Verfügbar",
+      "drunken": "Ausgetrunken"
+    },
     "activeChips": {
       "search": "Suche"
     }

@@ -163,6 +163,12 @@
       "complete": "Complete Data",
       "incomplete": "Incomplete Data"
     },
+    "wineState": "Stock",
+    "wineStateOptions": {
+      "all": "All Wines",
+      "available": "Available",
+      "drunken": "Drunken"
+    },
     "activeChips": {
       "search": "Search"
     }

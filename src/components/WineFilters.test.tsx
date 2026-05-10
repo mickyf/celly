@@ -48,6 +48,7 @@ const defaultFilters: WineFilterValues = {
   priceMax: null,
   drinkingWindow: 'all',
   dataCompleteness: 'all',
+  wineState: 'available',
 }
 
 describe('WineFilters', () => {

@@ -57,6 +57,9 @@ export const Route = createFileRoute('/wines/')({
     if (['complete', 'incomplete'].includes(search.dataCompleteness as string)) {
       validated.dataCompleteness = search.dataCompleteness as WineFilterValues['dataCompleteness']
     }
+    if (['all', 'available', 'drunken'].includes(search.wineState as string)) {
+      validated.wineState = search.wineState as WineFilterValues['wineState']
+    }
 
     return validated
   },
@@ -118,6 +121,7 @@ function WineList() {
     if (newFilters.priceMax !== null) searchParams.priceMax = newFilters.priceMax
     if (newFilters.drinkingWindow !== 'all') searchParams.drinkingWindow = newFilters.drinkingWindow
     if (newFilters.dataCompleteness !== 'all') searchParams.dataCompleteness = newFilters.dataCompleteness
+    if (newFilters.wineState !== 'available') searchParams.wineState = newFilters.wineState
 
     navigate({
       to: '/wines',
