@@ -21,6 +21,7 @@ export default defineConfig([
     },
     rules: {
       'react-refresh/only-export-components': ['error', { extraHOCs: ['withErrorBoundary', 'withProfiler'] }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
     },
   },
   {
