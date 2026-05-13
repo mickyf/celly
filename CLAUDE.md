@@ -44,7 +44,7 @@ cd mcp-server && npm run dev                   # Watch mode for development
 
 ## Git hooks
 
-A Husky pre-push hook (`.husky/pre-push`) runs `tsc -b && npm test` before every push. Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional. Lint is intentionally not in the hook yet (existing errors block all pushes); re-add once those are cleared.
+A Husky pre-push hook (`.husky/pre-push`) runs `tsgo -b && npm test` before every push. (Type-checking uses `@typescript/native-preview` — the Go-based TypeScript 7 preview — for speed; the stable `typescript` package remains for IDE language services and the eslint pipeline.) Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional. Lint is intentionally not in the hook yet (existing errors block all pushes); re-add once those are cleared.
 
 ## Testing rule (always consider tests)
 

@@ -12,4 +12,4 @@
 - Branding: icon and logo
 
 ## security/technical
-- upgrade to TypeScript 7 Beta
+- ~~upgrade to TypeScript 7 Beta~~
