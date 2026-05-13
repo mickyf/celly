@@ -1,6 +1,6 @@
 ## bugs
 - ~~mobile navigation item click doesnt close the navigation~~
-- logout does not redirect to sign in
+- ~~logout does not redirect to sign in~~
 
 ## minor improvments
 - wine badge clickable

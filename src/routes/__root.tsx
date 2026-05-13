@@ -72,6 +72,7 @@ function RootLayout() {
     intentionalSignOut.current = true
     await supabase.auth.signOut()
     setSentryUser(null)
+    navigate({ to: '/login' })
   }
 
   return (
