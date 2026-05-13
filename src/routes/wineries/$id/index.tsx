@@ -111,7 +111,7 @@ function WineryDetail() {
               <div>
                 <Title order={1}>{winery.name}</Title>
                 {country && (
-                  <Text c="dimmed" size="lg">
+                  <Text c="dimmed">
                     {country.flag} {country.name}
                   </Text>
                 )}

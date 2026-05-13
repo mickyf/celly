@@ -39,7 +39,7 @@ export function StockMovementHistory({ movements, wineId }: StockMovementHistory
   if (movements.length === 0) {
     return (
       <Paper p="md" radius="md" withBorder>
-        <Text size="sm" c="dimmed" ta="center">
+        <Text c="dimmed" ta="center">
           {t('wines:stockMovement.noMovements')}
         </Text>
       </Paper>

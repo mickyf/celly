@@ -65,6 +65,7 @@
   "detail": {
     "notFound": "Wein nicht gefunden",
     "sections": {
+      "vintage": "Jahrgang",
       "grapeVarieties": "Rebsorten",
       "quantity": "Anzahl",
       "pricePerBottle": "Preis pro Flasche",

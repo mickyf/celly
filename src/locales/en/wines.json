@@ -65,6 +65,7 @@
   "detail": {
     "notFound": "Wine not found",
     "sections": {
+      "vintage": "Vintage",
       "grapeVarieties": "Grape Varieties",
       "quantity": "Quantity",
       "pricePerBottle": "Price per Bottle",
