@@ -28,7 +28,7 @@ export const Route = createRootRoute({
 const PUBLIC_ROUTE_PREFIXES = ['/login', '/forgot-password', '/reset-password']
 
 function RootLayout() {
-  const [opened, { toggle }] = useDisclosure()
+  const [opened, { toggle, close }] = useDisclosure()
   const [user, setUser] = useState<User | null>(null)
   const { t } = useTranslation(['common', 'auth'])
   const navigate = useNavigate()
@@ -89,7 +89,7 @@ function RootLayout() {
           <Group h="100%" px="md" justify="space-between">
             <Group>
               <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" aria-label={t('buttons.openMenu')} />
-              <Anchor component={Link} to="/" underline="never" c="inherit">
+              <Anchor component={Link} to="/" underline="never" c="inherit" onClick={close}>
                 <Group gap="xs">
                   <IconBottle size={28} stroke={1.5} />
                   <Title order={3}>Celly</Title>
@@ -108,41 +108,50 @@ function RootLayout() {
                 to="/"
                 label={t('nav.dashboard')}
                 leftSection={<IconHome size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 component={Link}
                 to="/wines"
                 label={t('nav.myWines')}
                 leftSection={<IconBottle size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 component={Link}
                 to="/cellars"
                 label={t('nav.cellarOverview')}
                 leftSection={<IconGridDots size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 component={Link}
                 to="/wineries"
                 label={t('nav.wineries')}
                 leftSection={<IconBuilding size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 component={Link}
                 to="/pairing"
                 label={t('nav.foodPairing')}
                 leftSection={<IconChefHat size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 component={Link}
                 to="/settings"
                 label={t('nav.settings')}
                 leftSection={<IconSettings size={24} stroke={1.5} />}
+                onClick={close}
               />
               <NavLink
                 label={t('actions.signOut')}
                 leftSection={<IconLogout size={24} stroke={1.5} />}
-                onClick={handleSignOut}
+                onClick={() => {
+                  close()
+                  handleSignOut()
+                }}
                 style={{ marginTop: 'auto' }}
               />
             </>
@@ -152,6 +161,7 @@ function RootLayout() {
               to="/login"
               label={t('actions.signIn')}
               leftSection={<IconLogin size={20} stroke={1.5} />}
+              onClick={close}
             />
           )}
         </AppShell.Navbar>
