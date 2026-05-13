@@ -2,8 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
-// TanStack Router's <Link> needs a Router context that unit tests don't provide.
-// Render it as a plain anchor so component tests can mount without a full router.
+// Stub <Link> as a plain anchor so component tests don't need a Router context.
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-router')>()
   return {

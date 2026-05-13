@@ -1,6 +1,7 @@
 ## bugs
 - ~~mobile navigation item click doesnt close the navigation~~
 - ~~logout does not redirect to sign in~~
+- ~~initial language is wrong~~
 
 ## minor improvments
 - ~~winery badge on wine and wines badge on winery clickable~~
