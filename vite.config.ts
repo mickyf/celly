@@ -9,7 +9,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   test: {
     environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/test/setup.tsx'],
     globals: false,
     css: false,
   },

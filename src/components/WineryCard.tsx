@@ -1,5 +1,6 @@
 import { Card, Text, Badge, Group, Button, Stack } from '@mantine/core'
 import { IconTrash, IconEdit, IconEye, IconGitMerge } from '@tabler/icons-react'
+import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { getCountryByCode } from '../constants/countries'
 import type { Tables } from '../types/database'
@@ -28,9 +29,11 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerg
             </Text>
           </Group>
           <div>
-            <Badge variant="light" color="grape" mr={BADGE_GAP}>
-              {t('wineries:card.wineCount', { count: wineCount })}
-            </Badge>
+            <Link to="/wines" search={{ winery: winery.id }} style={{ textDecoration: 'none' }}>
+              <Badge variant="light" color="grape" mr={BADGE_GAP} style={{ cursor: 'pointer' }}>
+                {t('wineries:card.wineCount', { count: wineCount })}
+              </Badge>
+            </Link>
             {country && (
               <Badge variant='outline' color='yellow' mr={BADGE_GAP}>
                 {country.flag} {country.name}

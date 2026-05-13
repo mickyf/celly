@@ -1,6 +1,25 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, vi } from 'vitest'
+
+// TanStack Router's <Link> needs a Router context that unit tests don't provide.
+// Render it as a plain anchor so component tests can mount without a full router.
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+  return {
+    ...actual,
+    Link: ({ to, children, params: _params, search: _search, ...rest }: {
+      to?: string
+      children?: React.ReactNode
+      params?: unknown
+      search?: unknown
+      [key: string]: unknown
+    }) => {
+      const href = typeof to === 'string' ? to : undefined
+      return <a href={href} {...rest}>{children}</a>
+    },
+  }
+})
 
 // Mantine's autosize Textarea uses ResizeObserver; happy-dom doesn't ship it.
 class ResizeObserverStub {
