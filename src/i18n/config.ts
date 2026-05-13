@@ -44,11 +44,15 @@ i18n
       },
     },
     fallbackLng: 'en',
+    supportedLngs: ['en', 'de-CH'],
     defaultNS: 'common',
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
+      // Map any "de*" locale to de-CH; everything else to en.
+      convertDetectedLanguage: (lng: string) =>
+        lng.toLowerCase().startsWith('de') ? 'de-CH' : 'en',
     },
     interpolation: {
       escapeValue: false, // React already escapes

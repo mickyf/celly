@@ -9,14 +9,12 @@ const languages = {
 export function LanguageSelector() {
   const { i18n } = useTranslation()
 
-  // Safely determine current language with fallback
+  // Match i18next's resolved language so the flag never disagrees with the labels.
   const getCurrentLang = (): keyof typeof languages => {
-    const lang = i18n.language
-    if (lang in languages) {
-      return lang as keyof typeof languages
-    }
-    // Fallback to 'de-CH' if language not found
-    return 'de-CH'
+    const lang = i18n.resolvedLanguage || i18n.language || ''
+    if (lang in languages) return lang as keyof typeof languages
+    if (lang.toLowerCase().startsWith('de')) return 'de-CH'
+    return 'en'
   }
 
   const currentLang = getCurrentLang()
