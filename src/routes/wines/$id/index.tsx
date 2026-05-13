@@ -1,6 +1,7 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
 import type { User } from '@supabase/supabase-js'
 import {
+  Anchor,
   Container,
   Title,
   Text,
@@ -465,7 +466,9 @@ function WineDetail() {
                       Winery
                     </Text>
                     <Group mt="xs" gap="xs">
-                      <Text size="lg">{winery.name}</Text>
+                      <Anchor component={Link} to="/wineries/$id" params={{ id: winery.id } as never} size="lg">
+                        {winery.name}
+                      </Anchor>
                       {wineryCountry && (
                         <Text size="sm" c="dimmed">
                           {wineryCountry.flag}

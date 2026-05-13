@@ -1,5 +1,6 @@
 import { Card, Image, Text, Badge, Group, Button, Stack, Tooltip, Anchor, UnstyledButton } from '@mantine/core'
 import { IconGlass, IconTrash, IconEdit, IconEye, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
+import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { Database } from '../types/database'
 import dayjs from 'dayjs'
@@ -101,9 +102,15 @@ export function WineCard({
           )}
 
           {winery && (
-            <Badge color="grape" variant="outline" mr={BADGE_GAP}>
-              {winery.name}
-            </Badge>
+            <Link
+              to="/wineries/$id"
+              params={{ id: winery.id }}
+              style={{ textDecoration: 'none' }}
+            >
+              <Badge color="grape" variant="outline" mr={BADGE_GAP} style={{ cursor: 'pointer' }}>
+                {winery.name}
+              </Badge>
+            </Link>
           )}
 
           {wine.vintage && (
