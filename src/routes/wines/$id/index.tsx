@@ -24,7 +24,6 @@ import {
   IconTrash,
   IconPlus,
   IconMinus,
-  IconBottle,
   IconSparkles,
   IconGitMerge,
   IconMapPin,
@@ -307,11 +306,6 @@ function WineDetail() {
                     </Badge>
                   )}
                 </Group>
-                {wine.vintage && (
-                  <Text c="dimmed" size="lg">
-                    {t('common:labels.vintage')}: {wine.vintage}
-                  </Text>
-                )}
               </div>
             }
             actions={
@@ -419,10 +413,9 @@ function WineDetail() {
             }
           />
 
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-            {/* Wine Photo */}
-            <Paper shadow="sm" p="lg" radius="md" withBorder>
-              {signedPhotoUrl ? (
+          <SimpleGrid cols={{ base: 1, md: signedPhotoUrl ? 2 : 1 }} spacing="xl">
+            {signedPhotoUrl && (
+              <Paper shadow="sm" p="lg" radius="md" withBorder>
                 <Image
                   src={signedPhotoUrl}
                   alt={wine.name}
@@ -431,16 +424,21 @@ function WineDetail() {
                   fit="contain"
                   mah={500}
                 />
-              ) : (
-                <Center h={300} style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-                  <IconBottle size={80} stroke={1.5} color="#adb5bd" />
-                </Center>
-              )}
-            </Paper>
+              </Paper>
+            )}
 
             {/* Wine Details */}
             <Paper shadow="sm" p="lg" radius="md" withBorder>
               <Stack gap="md">
+                {wine.vintage && (
+                  <div>
+                    <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                      {t('wines:detail.sections.vintage')}
+                    </Text>
+                    <Text mt="xs">{wine.vintage}</Text>
+                  </div>
+                )}
+
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                     {t('wines:detail.sections.grapeVarieties')}
@@ -466,7 +464,7 @@ function WineDetail() {
                       Winery
                     </Text>
                     <Group mt="xs" gap="xs">
-                      <Anchor component={Link} to="/wineries/$id" params={{ id: winery.id } as never} size="lg">
+                      <Anchor component={Link} to="/wineries/$id" params={{ id: winery.id } as never} size="md">
                         {winery.name}
                       </Anchor>
                       {wineryCountry && (
@@ -494,7 +492,7 @@ function WineDetail() {
                     >
                       <IconMinus size={18} />
                     </ActionIcon>
-                    <Text size="lg">
+                    <Text size="md">
                       {t('common:counts.bottles', { count: wine.quantity || 0 })}
                     </Text>
                     <ActionIcon
@@ -516,7 +514,7 @@ function WineDetail() {
                     <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                       {t('wines:detail.sections.pricePerBottle')}
                     </Text>
-                    <Text size="lg" mt="xs">
+                    <Text size="md" mt="xs">
                       CHF {wine.price.toFixed(2)}
                     </Text>
                   </div>
@@ -527,7 +525,7 @@ function WineDetail() {
                     <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                       {t('wines:detail.sections.drinkingWindow')}
                     </Text>
-                    <Text size="lg" mt="xs">
+                    <Text size="md" mt="xs">
                       {wine.drink_window_start} - {wine.drink_window_end}
                     </Text>
                   </div>
@@ -538,7 +536,7 @@ function WineDetail() {
                     <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                       {t('wines:detail.sections.foodPairings')}
                     </Text>
-                    <Text size="sm" mt="xs" style={{ whiteSpace: 'pre-line' }}>
+                    <Text size="md" mt="xs" style={{ whiteSpace: 'pre-line' }}>
                       {wine.food_pairings}
                     </Text>
                   </div>

@@ -4,8 +4,8 @@
 
 ## minor improvments
 - ~~winery badge on wine and wines badge on winery clickable~~
-- wine detail page should hide the image placeholder (waste of space)
-- wine detail page uses different fontsizes for text
+- ~~wine detail page should hide the image placeholder (waste of space)~~
+- ~~wine detail page uses different fontsizes for text~~
 
 ## major functions
 - Branding: icon and logo

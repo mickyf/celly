@@ -1,4 +1,4 @@
-import { Card, Text, Badge, Group, Button, Stack } from '@mantine/core'
+import { Anchor, Card, Text, Badge, Group, Button, Stack } from '@mantine/core'
 import { IconTrash, IconEdit, IconEye, IconGitMerge } from '@tabler/icons-react'
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
@@ -24,9 +24,23 @@ export function WineryCard({ winery, wineCount, onView, onEdit, onDelete, onMerg
       <Stack gap="sm" mb="md">
         <div>
           <Group justify="space-between" mb={5}>
-            <Text fw={700} size="lg">
-              {winery.name}
-            </Text>
+            {onView ? (
+              <Anchor
+                component="button"
+                onClick={onView}
+                fw={700}
+                size="lg"
+                underline="never"
+                c="inherit"
+                style={{ cursor: 'pointer', border: 'none', background: 'none', padding: 0, textAlign: 'left' }}
+              >
+                {winery.name}
+              </Anchor>
+            ) : (
+              <Text fw={700} size="lg">
+                {winery.name}
+              </Text>
+            )}
           </Group>
           <div>
             <Link to="/wines" search={{ winery: winery.id }} style={{ textDecoration: 'none' }}>
