@@ -3,6 +3,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import Anthropic from "npm:@anthropic-ai/sdk@0.92.0"
+import { resolveClaudeApiKey } from "./resolveApiKey.ts"
 
 const ALLOWED_ORIGINS = [
   "https://celly.pages.dev",
@@ -129,12 +130,21 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders })
   }
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!)
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ msg: 'No JWT provided' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+
+    // Forward the caller's JWT so queries run as the user. Without this the client
+    // acts as `anon`, and the user_settings RLS policy (auth.uid() = user_id) hides
+    // the row — silently falling back to the global key.
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    )
+
     const token = authHeader.replace('Bearer ', '')
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
     const userId = claimsData?.claims?.sub
@@ -142,20 +152,22 @@ serve(async (req) => {
       return new Response(JSON.stringify({ msg: 'Invalid JWT' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Get Claude API key from user settings first
-    const { data: userSettings } = await supabase
+    // Prefer the caller's per-user key from user_settings, else the global secret.
+    const { data: userSettings, error: settingsError } = await supabase
       .from('user_settings')
       .select('value')
       .eq('user_id', userId)
       .eq('key', 'claude_api_key')
-      .single()
+      .maybeSingle()
 
-    let claudeApiKey = userSettings?.value as string | undefined
-
-    // Fallback to environment variable if no user-specific key is found
-    if (!claudeApiKey) {
-      claudeApiKey = Deno.env.get("CLAUDE_API_KEY")
+    if (settingsError) {
+      console.error('claude-proxy: failed to read per-user Claude key', settingsError)
     }
+
+    const claudeApiKey = resolveClaudeApiKey(
+      userSettings?.value as string | null | undefined,
+      Deno.env.get("CLAUDE_API_KEY"),
+    )
 
     if (!claudeApiKey) {
       return new Response(
