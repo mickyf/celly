@@ -248,8 +248,9 @@ async function handleFoodPairing(
       : "Write all explanations in English."
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
-    max_tokens: 2048,
+    model: "claude-sonnet-5",
+    max_tokens: 4096,
+    thinking: { type: "adaptive" },
     messages: [
       {
         role: "user",
@@ -295,8 +296,8 @@ Important:
   })
 
   // Parse the response
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : ""
+  const textBlock = message.content.find((b) => b.type === "text")
+  const responseText = textBlock?.type === "text" ? textBlock.text : ""
 
   const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
@@ -331,8 +332,9 @@ async function handleWineEnrichment(
   const currentYear = new Date().getFullYear()
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-5",
     max_tokens: 1024,
+    thinking: { type: "disabled" },
     messages: [
       {
         role: "user",
@@ -390,8 +392,8 @@ Important guidelines:
   })
 
   // Parse the response
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : ""
+  const textBlock = message.content.find((b) => b.type === "text")
+  const responseText = textBlock?.type === "text" ? textBlock.text : ""
 
   const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
@@ -501,8 +503,9 @@ async function handleWineEnrichmentFromImage(
   }
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-5",
     max_tokens: 1536,
+    thinking: { type: "disabled" },
     messages: [
       {
         role: "user",
@@ -563,8 +566,8 @@ Important guidelines:
   })
 
   // Parse the response
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : ""
+  const textBlock = message.content.find((b) => b.type === "text")
+  const responseText = textBlock?.type === "text" ? textBlock.text : ""
 
   const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
@@ -697,8 +700,9 @@ async function handleParseOrderDocument(
     }
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-5",
     max_tokens: 8192,
+    thinking: { type: "disabled" },
     messages: [
       {
         role: "user",
@@ -737,8 +741,8 @@ Rules:
     ],
   })
 
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : ""
+  const textBlock = message.content.find((b) => b.type === "text")
+  const responseText = textBlock?.type === "text" ? textBlock.text : ""
 
   const jsonMatch = extractJsonBlock(responseText)
   if (!jsonMatch) {
