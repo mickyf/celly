@@ -9,42 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PairingRouteImport } from './routes/pairing'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WinesIndexRouteImport } from './routes/wines/index'
-import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PairingRouteImport } from './routes/pairing'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as CellarsIndexRouteImport } from './routes/cellars/index'
-import { Route as WinesImportRouteImport } from './routes/wines/import'
-import { Route as WinesAddRouteImport } from './routes/wines/add'
+import { Route as WineriesIndexRouteImport } from './routes/wineries/index'
 import { Route as WineriesAddRouteImport } from './routes/wineries/add'
-import { Route as WinesIdIndexRouteImport } from './routes/wines/$id/index'
+import { Route as WinesIndexRouteImport } from './routes/wines/index'
+import { Route as WinesAddRouteImport } from './routes/wines/add'
+import { Route as WinesImportRouteImport } from './routes/wines/import'
 import { Route as WineriesIdIndexRouteImport } from './routes/wineries/$id/index'
-import { Route as WinesIdPlaceRouteImport } from './routes/wines/$id/place'
-import { Route as WinesIdEditRouteImport } from './routes/wines/$id/edit'
 import { Route as WineriesIdEditRouteImport } from './routes/wineries/$id/edit'
+import { Route as WinesIdIndexRouteImport } from './routes/wines/$id/index'
+import { Route as WinesIdEditRouteImport } from './routes/wines/$id/edit'
+import { Route as WinesIdPlaceRouteImport } from './routes/wines/$id/place'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PairingRoute = PairingRouteImport.update({
-  id: '/pairing',
-  path: '/pairing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -52,19 +37,24 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WinesIndexRoute = WinesIndexRouteImport.update({
-  id: '/wines/',
-  path: '/wines/',
+const PairingRoute = PairingRouteImport.update({
+  id: '/pairing',
+  path: '/pairing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WineriesIndexRoute = WineriesIndexRouteImport.update({
-  id: '/wineries/',
-  path: '/wineries/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CellarsIndexRoute = CellarsIndexRouteImport.update({
@@ -72,14 +62,9 @@ const CellarsIndexRoute = CellarsIndexRouteImport.update({
   path: '/cellars/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WinesImportRoute = WinesImportRouteImport.update({
-  id: '/wines/import',
-  path: '/wines/import',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WinesAddRoute = WinesAddRouteImport.update({
-  id: '/wines/add',
-  path: '/wines/add',
+const WineriesIndexRoute = WineriesIndexRouteImport.update({
+  id: '/wineries/',
+  path: '/wineries/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WineriesAddRoute = WineriesAddRouteImport.update({
@@ -87,9 +72,19 @@ const WineriesAddRoute = WineriesAddRouteImport.update({
   path: '/wineries/add',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WinesIdIndexRoute = WinesIdIndexRouteImport.update({
-  id: '/wines/$id/',
-  path: '/wines/$id/',
+const WinesIndexRoute = WinesIndexRouteImport.update({
+  id: '/wines/',
+  path: '/wines/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WinesAddRoute = WinesAddRouteImport.update({
+  id: '/wines/add',
+  path: '/wines/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WinesImportRoute = WinesImportRouteImport.update({
+  id: '/wines/import',
+  path: '/wines/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WineriesIdIndexRoute = WineriesIdIndexRouteImport.update({
@@ -97,9 +92,14 @@ const WineriesIdIndexRoute = WineriesIdIndexRouteImport.update({
   path: '/wineries/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WinesIdPlaceRoute = WinesIdPlaceRouteImport.update({
-  id: '/wines/$id/place',
-  path: '/wines/$id/place',
+const WineriesIdEditRoute = WineriesIdEditRouteImport.update({
+  id: '/wineries/$id/edit',
+  path: '/wineries/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WinesIdIndexRoute = WinesIdIndexRouteImport.update({
+  id: '/wines/$id/',
+  path: '/wines/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WinesIdEditRoute = WinesIdEditRouteImport.update({
@@ -107,9 +107,9 @@ const WinesIdEditRoute = WinesIdEditRouteImport.update({
   path: '/wines/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WineriesIdEditRoute = WineriesIdEditRouteImport.update({
-  id: '/wineries/$id/edit',
-  path: '/wineries/$id/edit',
+const WinesIdPlaceRoute = WinesIdPlaceRouteImport.update({
+  id: '/wines/$id/place',
+  path: '/wines/$id/place',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -253,32 +253,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pairing': {
-      id: '/pairing'
-      path: '/pairing'
-      fullPath: '/pairing'
-      preLoaderRoute: typeof PairingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -288,25 +267,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wines/': {
-      id: '/wines/'
-      path: '/wines'
-      fullPath: '/wines/'
-      preLoaderRoute: typeof WinesIndexRouteImport
+    '/pairing': {
+      id: '/pairing'
+      path: '/pairing'
+      fullPath: '/pairing'
+      preLoaderRoute: typeof PairingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wineries/': {
-      id: '/wineries/'
-      path: '/wineries'
-      fullPath: '/wineries/'
-      preLoaderRoute: typeof WineriesIndexRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cellars/': {
@@ -316,18 +302,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CellarsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wines/import': {
-      id: '/wines/import'
-      path: '/wines/import'
-      fullPath: '/wines/import'
-      preLoaderRoute: typeof WinesImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/wines/add': {
-      id: '/wines/add'
-      path: '/wines/add'
-      fullPath: '/wines/add'
-      preLoaderRoute: typeof WinesAddRouteImport
+    '/wineries/': {
+      id: '/wineries/'
+      path: '/wineries'
+      fullPath: '/wineries/'
+      preLoaderRoute: typeof WineriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wineries/add': {
@@ -337,11 +316,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WineriesAddRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wines/$id/': {
-      id: '/wines/$id/'
-      path: '/wines/$id'
-      fullPath: '/wines/$id/'
-      preLoaderRoute: typeof WinesIdIndexRouteImport
+    '/wines/': {
+      id: '/wines/'
+      path: '/wines'
+      fullPath: '/wines/'
+      preLoaderRoute: typeof WinesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wines/add': {
+      id: '/wines/add'
+      path: '/wines/add'
+      fullPath: '/wines/add'
+      preLoaderRoute: typeof WinesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wines/import': {
+      id: '/wines/import'
+      path: '/wines/import'
+      fullPath: '/wines/import'
+      preLoaderRoute: typeof WinesImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wineries/$id/': {
@@ -351,11 +344,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WineriesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wines/$id/place': {
-      id: '/wines/$id/place'
-      path: '/wines/$id/place'
-      fullPath: '/wines/$id/place'
-      preLoaderRoute: typeof WinesIdPlaceRouteImport
+    '/wineries/$id/edit': {
+      id: '/wineries/$id/edit'
+      path: '/wineries/$id/edit'
+      fullPath: '/wineries/$id/edit'
+      preLoaderRoute: typeof WineriesIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wines/$id/': {
+      id: '/wines/$id/'
+      path: '/wines/$id'
+      fullPath: '/wines/$id/'
+      preLoaderRoute: typeof WinesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wines/$id/edit': {
@@ -365,11 +365,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WinesIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wineries/$id/edit': {
-      id: '/wineries/$id/edit'
-      path: '/wineries/$id/edit'
-      fullPath: '/wineries/$id/edit'
-      preLoaderRoute: typeof WineriesIdEditRouteImport
+    '/wines/$id/place': {
+      id: '/wines/$id/place'
+      path: '/wines/$id/place'
+      fullPath: '/wines/$id/place'
+      preLoaderRoute: typeof WinesIdPlaceRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
