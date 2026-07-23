@@ -196,7 +196,7 @@ function SettingsPage() {
                             })}
                         </Text>
                         <Text size="xs" c="dimmed">
-                            Version 1.0.0
+                            Version {__APP_VERSION__}
                         </Text>
                     </Stack>
                 </Paper>

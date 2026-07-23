@@ -7,6 +7,7 @@
 - ~~winery badge on wine and wines badge on winery clickable~~
 - ~~wine detail page should hide the image placeholder (waste of space)~~
 - ~~wine detail page uses different fontsizes for text~~
+- ~~Add a proper app version with auto-increment~~
 
 ## major functions
 - Branding: icon and logo

@@ -1,12 +1,27 @@
 /// <reference types="vitest/config" />
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// CalVer version derived from git: <commit date>.<commit count>, e.g. 20260723.143
+function appVersion() {
+  try {
+    const date = execSync('git show -s --format=%cd --date=format:%Y%m%d HEAD').toString().trim()
+    const count = execSync('git rev-list --count HEAD').toString().trim()
+    return `${date}.${count}`
+  } catch {
+    return 'dev'
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion()),
+  },
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.tsx'],
