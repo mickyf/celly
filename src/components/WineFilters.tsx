@@ -16,6 +16,7 @@ import { IconSearch, IconFilter, IconX, IconChevronDown, IconChevronUp } from '@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWineries } from '../hooks/useWineries'
+import { getWineTypeOptions, getWineTypeLabel, isWineType } from '../constants/wineTypes'
 import type { Database } from '../types/database'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -24,6 +25,7 @@ export interface WineFilterValues {
   search: string
   winery: string | null
   grapes: string[]
+  wineTypes: string[]
   bottleSizes: string[]
   vintageMin: number | null
   vintageMax: number | null
@@ -66,6 +68,8 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
     label: size,
   }))
 
+  const wineTypeOptions = getWineTypeOptions(t)
+
   const wineryOptions = wineries?.map((winery) => ({
     value: winery.id,
     label: winery.name,
@@ -88,6 +92,7 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       search: '',
       winery: null,
       grapes: [],
+      wineTypes: [],
       bottleSizes: [],
       vintageMin: null,
       vintageMax: null,
@@ -126,6 +131,15 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
       label: grape,
       onRemove: () =>
         onFiltersChange({ ...filters, grapes: filters.grapes.filter((g) => g !== grape) }),
+    })
+  })
+
+  filters.wineTypes.forEach((type) => {
+    chips.push({
+      key: `wineType-${type}`,
+      label: isWineType(type) ? getWineTypeLabel(t, type) : type,
+      onRemove: () =>
+        onFiltersChange({ ...filters, wineTypes: filters.wineTypes.filter((x) => x !== type) }),
     })
   })
 
@@ -273,6 +287,15 @@ export function WineFilters({ wines, filters, onFiltersChange, activeFilterCount
               value={filters.winery}
               onChange={(value) => onFiltersChange({ ...filters, winery: value })}
               searchable
+              clearable
+            />
+
+            <MultiSelect
+              label={t('wines:filters.wineType')}
+              placeholder={t('wines:filters.wineTypeSelect')}
+              data={wineTypeOptions}
+              value={filters.wineTypes}
+              onChange={(value) => onFiltersChange({ ...filters, wineTypes: value })}
               clearable
             />
 

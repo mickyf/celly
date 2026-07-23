@@ -59,8 +59,9 @@ export const useEnrichWine = () => {
           const needsWinery = wine.winery_id === null
           const needsPrice = wine.price === null
           const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
+          const needsWineType = wine.wine_type === null
 
-          if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings) {
+          if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings && !needsWineType) {
             return { fieldsUpdated: [], wineryCreated: false, noChanges: true }
           }
 
@@ -124,6 +125,12 @@ export const useEnrichWine = () => {
           ) {
             updateData.grapes = enrichmentData.grapes
             fieldsUpdated.push(t('wines:form.labels.grapeVarieties'))
+          }
+
+          // Update wine type if needed
+          if (needsWineType && enrichmentData.wineType) {
+            updateData.wine_type = enrichmentData.wineType
+            fieldsUpdated.push(t('wines:form.labels.wineType'))
           }
 
           // Update vintage if needed
@@ -564,8 +571,9 @@ export const useBulkEnrichWines = () => {
                   const needsWinery = wine.winery_id === null
                   const needsPrice = wine.price === null
                   const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
+                  const needsWineType = wine.wine_type === null
 
-                  if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings) {
+                  if (!needsGrapes && !needsVintage && !needsDrinkWindow && !needsWinery && !needsPrice && !needsFoodPairings && !needsWineType) {
                     result.skipped++
                     return
                   }
@@ -595,6 +603,11 @@ export const useBulkEnrichWines = () => {
                     enrichmentData.grapes.length > 0
                   ) {
                     updateData.grapes = enrichmentData.grapes
+                  }
+
+                  // Update wine type if needed
+                  if (needsWineType && enrichmentData.wineType) {
+                    updateData.wine_type = enrichmentData.wineType
                   }
 
                   // Update vintage if needed

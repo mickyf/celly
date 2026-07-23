@@ -25,6 +25,7 @@ import { CameraCapture } from './CameraCapture'
 import type { Database } from '../types/database'
 import { getCountryOptions } from '../constants/countries'
 import { BOTTLE_SIZE_OPTIONS } from '../constants/bottleSizes'
+import { getWineTypeOptions } from '../constants/wineTypes'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
@@ -40,6 +41,7 @@ interface WineFormProps {
 export interface WineFormValues {
   name: string
   winery_id: string | null
+  wine_type: string | null
   grapes: string[]
   vintage: number | null
   quantity: number
@@ -74,6 +76,7 @@ export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLo
   const enrichFromImage = useEnrichWineFromImage()
 
   const countryOptions = useMemo(() => getCountryOptions(t), [t])
+  const wineTypeOptions = useMemo(() => getWineTypeOptions(t), [t])
 
   const wineryOptions = useMemo(
     () =>
@@ -88,6 +91,7 @@ export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLo
     initialValues: {
       name: wine?.name ?? prefill?.name ?? '',
       winery_id: wine?.winery_id ?? prefill?.winery_id ?? null,
+      wine_type: wine?.wine_type ?? prefill?.wine_type ?? null,
       grapes: wine?.grapes ?? prefill?.grapes ?? [],
       vintage: wine?.vintage ?? prefill?.vintage ?? null,
       quantity: wine?.quantity ?? prefill?.quantity ?? 1,
@@ -163,6 +167,7 @@ export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLo
         form.setValues({
           name: data.name || form.values.name,
           winery_id: data.winery?.matchedExistingId || form.values.winery_id,
+          wine_type: data.wineType || form.values.wine_type,
           grapes: data.grapes || form.values.grapes,
           vintage: data.vintage || form.values.vintage,
           price: data.price ? Number(data.price) : form.values.price,
@@ -357,6 +362,14 @@ export function WineForm({ wine, prefill, initialPhoto, onSubmit, onCancel, isLo
                   <IconPlus size={20} />
                 </ActionIcon>
               </Group>
+
+              <Select
+                label={t('wines:form.labels.wineType')}
+                placeholder={t('wines:form.placeholders.wineType')}
+                data={wineTypeOptions}
+                clearable
+                {...form.getInputProps('wine_type')}
+              />
 
               <TagsInput
                 label={t('wines:form.labels.grapeVarieties')}

@@ -70,6 +70,15 @@ function extractJsonBlock(text: string): string | null {
   return null
 }
 
+// Valid wine types (colour/category)
+const WINE_TYPES = ["red", "white", "rose", "sparkling", "dessert", "port"] as const
+
+function validWineType(value: unknown): string | null {
+  return typeof value === "string" && (WINE_TYPES as readonly string[]).includes(value)
+    ? value
+    : null
+}
+
 // Valid country codes
 const WINE_COUNTRIES = [
   "FR", "IT", "ES", "US", "AU", "AR", "CL", "DE", "PT", "NZ", "ZA", "AT",
@@ -350,16 +359,18 @@ ${sandbox(wineName)}${existingVintage ? ` (vintage: ${existingVintage})` : ""}
 Please identify the wine and provide:
 1. Canonical wine name as it should be written officially — fix typos, casing, and accents in the user's input (e.g., "chateu margauux" → "Château Margaux"). Include the producer/cuvée but exclude the vintage year.
 2. Grape varieties used in this wine
-3. Vintage year (if not already provided and if it's a specific wine)
-4. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
-5. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
-6. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
-7. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
+3. Wine type / colour — one of: red, white, rose, sparkling, dessert, port
+4. Vintage year (if not already provided and if it's a specific wine)
+5. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
+6. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
+7. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate based on the wine's reputation and vintage)
+8. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines that pair well with this wine based on its characteristics. Use Swiss Standard German, NOT dialect.
 
 Return your response as a JSON object with this exact structure:
 {
   "name": "Château Margaux",
   "grapes": ["Cabernet Sauvignon", "Merlot"],
+  "wineType": "red",
   "vintage": 2015,
   "drinkingWindow": {
     "start": 2020,
@@ -377,6 +388,7 @@ Return your response as a JSON object with this exact structure:
 
 Important guidelines:
 - Only include fields you can confidently identify
+- wineType must be exactly one of: ${WINE_TYPES.join(", ")}
 - If the wine name is too generic (e.g., just "Merlot") or you cannot identify it, set confidence to "low"
 - Vintage should be between 1800 and 2030
 - Drinking window start must be less than end
@@ -426,6 +438,12 @@ Important guidelines:
     parsedResponse.grapes.length > 0
   ) {
     enrichmentData.grapes = parsedResponse.grapes
+  }
+
+  // Validate wine type
+  const wineType = validWineType(parsedResponse.wineType)
+  if (wineType) {
+    enrichmentData.wineType = wineType
   }
 
   // Validate vintage
@@ -525,16 +543,18 @@ async function handleWineEnrichmentFromImage(
 Please identify the wine and provide:
 1. Exact wine name (including producer/brand and specific label name)
 2. Grape varieties used in this wine
-3. Vintage year (if clearly visible or identifiable from the label)
-4. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
-5. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
-6. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate)
-7. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines. Use Swiss Standard German, NOT dialect.
+3. Wine type / colour — one of: red, white, rose, sparkling, dessert, port
+4. Vintage year (if clearly visible or identifiable from the label)
+5. Recommended drinking window (earliest and latest year to drink this wine, considering the current year is ${currentYear})
+6. Winery name and country of origin (use ISO 3166-1 alpha-2 country code)
+7. Approximate retail price per bottle in USD (only if you can provide a reasonable estimate)
+8. Food pairing recommendations IN SWISS STANDARD GERMAN (Schweizer Hochdeutsch) - suggest dishes, ingredients, and cuisines. Use Swiss Standard German, NOT dialect.
 
 Return your response as a JSON object with this exact structure:
 {
   "name": "Château Margaux",
   "grapes": ["Cabernet Sauvignon", "Merlot"],
+  "wineType": "red",
   "vintage": 2015,
   "drinkingWindow": {
     "start": 2020,
@@ -553,6 +573,7 @@ Return your response as a JSON object with this exact structure:
 
 Important guidelines:
 - Only include fields you can confidently identify
+- wineType must be exactly one of: ${WINE_TYPES.join(", ")}
 - Vintage should be between 1800 and 2030
 - Country codes must be valid ISO 3166-1 alpha-2 codes: ${WINE_COUNTRIES.join(", ")}
 - price should be a reasonable retail price estimate in USD
@@ -593,6 +614,12 @@ Important guidelines:
     parsedResponse.grapes.length > 0
   ) {
     enrichmentData.grapes = parsedResponse.grapes
+  }
+
+  // Validate wine type
+  const wineType = validWineType(parsedResponse.wineType)
+  if (wineType) {
+    enrichmentData.wineType = wineType
   }
 
   // Validate vintage
@@ -666,6 +693,7 @@ const MAX_DOC_BYTES = 5 * 1024 * 1024
 
 interface ParsedWine {
   name: string
+  wineType: string | null
   vintage: number | null
   quantity: number | null
   price: number | null
@@ -716,6 +744,7 @@ You are extracting wines from a wine merchant's order document. Return ONLY a JS
 {
   "wines": [{
     "name": "string",
+    "wineType": "red" | "white" | "rose" | "sparkling" | "dessert" | "port" | null,
     "vintage": number | null,
     "quantity": number | null,
     "price": number | null,
@@ -729,6 +758,7 @@ If the document doesn't appear to contain wines, return {"wines": [], "explanati
 
 Rules:
 - Use Swiss conventions (75cl is the standard bottle size).
+- wineType must be one of the literals listed above (based on the wine), or null if uncertain.
 - price is per bottle in CHF. Only fill it when the document explicitly shows the price in CHF; if the document is in any other currency or no price is shown, leave price as null.
 - vintage must be between 1800 and ${currentYear + 1}, or null.
 - quantity is the number of bottles ordered (integer between 1 and 1000), or null.
@@ -774,6 +804,8 @@ Rules:
       continue
     }
 
+    const wineType = validWineType(r.wineType)
+
     let vintage: number | null = null
     if (typeof r.vintage === "number" && r.vintage >= 1800 && r.vintage <= currentYear + 1) {
       vintage = Math.trunc(r.vintage)
@@ -804,7 +836,7 @@ Rules:
       }
     }
 
-    wines.push({ name, vintage, quantity, price, bottleSize, winery })
+    wines.push({ name, wineType, vintage, quantity, price, bottleSize, winery })
   }
 
   return { wines, explanation }

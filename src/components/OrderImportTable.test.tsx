@@ -25,6 +25,7 @@ const wine = (overrides: Partial<Wine> = {}): Wine => ({
   updated_at: null,
   user_id: 'u',
   vintage: 2020,
+  wine_type: null,
   winery_id: null,
   ...overrides,
 })
@@ -45,6 +46,7 @@ function row(overrides: Partial<ImportRow> = {}): ImportRow {
     included: true,
     existingWineId: null,
     name: 'New Wine',
+    wineType: null,
     vintage: 2021,
     quantity: 6,
     price: null,

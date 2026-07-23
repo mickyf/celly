@@ -27,6 +27,7 @@ const wine = (overrides: Partial<Wine> = {}): Wine => ({
   updated_at: null,
   user_id: 'u-1',
   vintage: 2020,
+  wine_type: 'red',
   winery_id: 'wy-1',
   ...overrides,
 })
@@ -97,6 +98,24 @@ describe('applyWineFilters', () => {
       ]
       const out = applyWineFilters(wines, wineries, filters({ bottleSizes: ['75cl'] }))
       expect(out.map((w) => w.id)).toEqual(['a'])
+    })
+  })
+
+  describe('wine type', () => {
+    it('keeps only wines whose wine_type is in the selected set (OR within filter)', () => {
+      const wines = [
+        wine({ id: 'a', wine_type: 'red' }),
+        wine({ id: 'b', wine_type: 'white' }),
+        wine({ id: 'c', wine_type: 'rose' }),
+        wine({ id: 'd', wine_type: null }),
+      ]
+      const out = applyWineFilters(wines, wineries, filters({ wineTypes: ['red', 'rose'] }))
+      expect(out.map((w) => w.id).sort()).toEqual(['a', 'c'])
+    })
+
+    it('drops wines with no wine_type when a type filter is active', () => {
+      const wines = [wine({ id: 'a', wine_type: null })]
+      expect(applyWineFilters(wines, wineries, filters({ wineTypes: ['red'] }))).toHaveLength(0)
     })
   })
 
@@ -231,6 +250,7 @@ describe('countActiveWineFilters', () => {
           search: 'foo',
           winery: 'wy-1',
           grapes: ['Merlot'],
+          wineTypes: ['red'],
           bottleSizes: ['75cl'],
           vintageMin: 2018,
           vintageMax: 2022,
@@ -240,7 +260,7 @@ describe('countActiveWineFilters', () => {
           dataCompleteness: 'complete',
         }),
       ),
-    ).toBe(8)
+    ).toBe(9)
   })
 
   it('counts vintage as a single group when only min is set', () => {
@@ -294,6 +314,7 @@ describe('wineNeedsEnrichment', () => {
     ['drink window end missing', { drink_window_end: null }],
     ['food pairings missing', { food_pairings: null }],
     ['food pairings whitespace only', { food_pairings: '   ' }],
+    ['wine type missing', { wine_type: null }],
   ])('returns true when %s', (_label, overrides) => {
     expect(wineNeedsEnrichment(wine(overrides as Partial<Wine>))).toBe(true)
   })

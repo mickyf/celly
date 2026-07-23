@@ -31,6 +31,7 @@ export interface ImportRow {
    */
   existingWineId: string | null
   name: string
+  wineType: string | null
   vintage: number | null
   quantity: number
   price: number | null
@@ -157,6 +158,7 @@ export const useBulkImportWines = () => {
             const inserts: WineInsert[] = newWineRows.map((r) => ({
               user_id: user.id,
               name: r.name,
+              wine_type: r.wineType,
               vintage: r.vintage,
               quantity: r.quantity,
               price: r.price,

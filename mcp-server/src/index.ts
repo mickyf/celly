@@ -126,6 +126,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           type: 'object',
           properties: {
             name: { type: 'string', description: 'Name of the wine' },
+            wine_type: {
+              type: 'string',
+              enum: ['red', 'white', 'rose', 'sparkling', 'dessert', 'port'],
+              description: 'Wine type / colour (optional)',
+            },
             vintage: { type: 'number', description: 'Vintage year (optional)' },
             grapes: {
               type: 'array',

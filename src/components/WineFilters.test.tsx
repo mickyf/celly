@@ -41,6 +41,7 @@ const defaultFilters: WineFilterValues = {
   search: '',
   winery: null,
   grapes: [],
+  wineTypes: [],
   bottleSizes: [],
   vintageMin: null,
   vintageMax: null,

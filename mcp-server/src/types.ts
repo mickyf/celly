@@ -5,6 +5,7 @@
 export interface Wine {
   id: string;
   name: string;
+  wine_type?: string;
   vintage?: number;
   grapes?: string[];
   quantity: number;
@@ -39,6 +40,7 @@ export interface TastingNote {
 
 export interface AddWineParams {
   name: string;
+  wine_type?: string;
   vintage?: number;
   grapes?: string[];
   quantity?: number;

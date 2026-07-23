@@ -17,6 +17,7 @@ import {
 import { IconTrash } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { BOTTLE_SIZES } from '../constants/bottleSizes'
+import { getWineTypeOptions } from '../constants/wineTypes'
 import type { ImportRow } from '../hooks/useOrderImport'
 import type { Database } from '../types/database'
 
@@ -176,6 +177,8 @@ export function OrderImportTable({
 
   const wineById = useMemo(() => new Map(wines.map((w) => [w.id, w])), [wines])
 
+  const wineTypeOptions = useMemo(() => getWineTypeOptions(t), [t])
+
   const currentYear = new Date().getFullYear()
 
   return (
@@ -189,6 +192,9 @@ export function OrderImportTable({
             </Table.Th>
             <Table.Th style={{ width: 1, whiteSpace: 'nowrap' }}>
               {t('wines:import.review.columns.vintage')}
+            </Table.Th>
+            <Table.Th style={{ width: 1, whiteSpace: 'nowrap' }}>
+              {t('wines:import.review.columns.type')}
             </Table.Th>
             <Table.Th style={{ width: 1, whiteSpace: 'nowrap' }}>
               {t('wines:import.review.columns.qty')}
@@ -210,6 +216,7 @@ export function OrderImportTable({
             const vintageValue = matchedWine ? matchedWine.vintage : row.vintage
             const priceValue = matchedWine ? matchedWine.price : row.price
             const bottleValue = matchedWine ? matchedWine.bottle_size : row.bottleSize
+            const typeValue = matchedWine ? matchedWine.wine_type : row.wineType
 
             const winerySelectOptions = (() => {
               if (row.winery && !row.winery.existingId && row.winery.newName) {
@@ -289,6 +296,17 @@ export function OrderImportTable({
                     min={1800}
                     max={currentYear + 1}
                     hideControls
+                    disabled={!row.included || isRestock}
+                  />
+                </Table.Td>
+                <Table.Td style={{ width: 1 }}>
+                  <Select
+                    size="sm"
+                    w={110}
+                    data={wineTypeOptions}
+                    value={typeValue ?? null}
+                    onChange={(value) => onRowChange(row.rowId, { wineType: value })}
+                    clearable
                     disabled={!row.included || isRestock}
                   />
                 </Table.Td>

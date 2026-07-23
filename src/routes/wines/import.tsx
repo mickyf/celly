@@ -124,6 +124,7 @@ function ImportWines() {
         included: true,
         existingWineId,
         name: p.name,
+        wineType: p.wineType,
         vintage: p.vintage,
         quantity: p.quantity ?? 1,
         price: p.price,

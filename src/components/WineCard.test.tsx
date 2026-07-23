@@ -17,6 +17,7 @@ const baseWine: Wine = {
   id: 'w-1',
   name: 'Barolo',
   vintage: 2018,
+  wine_type: 'red',
   grapes: ['Nebbiolo'],
   quantity: 3,
   price: 80,
