@@ -8,6 +8,7 @@ export const DEFAULT_WINE_FILTERS: WineFilterValues = {
   search: '',
   winery: null,
   grapes: [],
+  wineTypes: [],
   bottleSizes: [],
   vintageMin: null,
   vintageMax: null,
@@ -38,6 +39,10 @@ export function applyWineFilters(
     if (filters.grapes.length > 0) {
       const hasMatchingGrape = filters.grapes.some((grape) => wine.grapes?.includes(grape))
       if (!hasMatchingGrape) return false
+    }
+
+    if (filters.wineTypes.length > 0) {
+      if (!wine.wine_type || !filters.wineTypes.includes(wine.wine_type)) return false
     }
 
     if (filters.bottleSizes.length > 0) {
@@ -87,6 +92,7 @@ export function countActiveWineFilters(filters: WineFilterValues): number {
   if (filters.search) count++
   if (filters.winery) count++
   if (filters.grapes.length > 0) count++
+  if (filters.wineTypes.length > 0) count++
   if (filters.bottleSizes.length > 0) count++
   if (filters.vintageMin !== null || filters.vintageMax !== null) count++
   if (filters.priceMin !== null || filters.priceMax !== null) count++
@@ -116,5 +122,6 @@ export function wineNeedsEnrichment(wine: Wine): boolean {
   const needsWinery = wine.winery_id === null
   const needsPrice = wine.price === null
   const needsFoodPairings = !wine.food_pairings || wine.food_pairings.trim().length === 0
-  return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings
+  const needsWineType = wine.wine_type === null
+  return needsGrapes || needsVintage || needsDrinkWindow || needsWinery || needsPrice || needsFoodPairings || needsWineType
 }

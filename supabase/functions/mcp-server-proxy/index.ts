@@ -17,6 +17,7 @@ const corsHeaders = {
 
 interface AddWineParams {
   name: string;
+  wine_type?: string;
   vintage?: number;
   grapes?: string[];
   quantity?: number;
@@ -145,6 +146,7 @@ Deno.serve(async (req) => {
 
         const wineData = {
           name: params.wine.name,
+          wine_type: params.wine.wine_type,
           vintage: params.wine.vintage,
           grapes: params.wine.grapes,
           quantity: params.wine.quantity ?? 1,

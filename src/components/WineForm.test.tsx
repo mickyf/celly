@@ -77,6 +77,7 @@ describe('WineForm', () => {
         wine={{
           id: 'w-1',
           name: 'Edit me',
+          wine_type: 'red',
           grapes: ['Merlot'],
           vintage: 2020,
           quantity: 2,

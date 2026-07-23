@@ -21,6 +21,7 @@ import {
 } from '../../lib/wineFilters'
 import { useDisclosure } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
+import { isWineType } from '../../constants/wineTypes'
 
 type WineSearchParams = Partial<WineFilterValues> & { importBatchId?: string }
 
@@ -37,6 +38,9 @@ export const Route = createFileRoute('/wines/')({
     }
     if (Array.isArray(search.grapes) && search.grapes.length > 0) {
       validated.grapes = search.grapes.filter((g): g is string => typeof g === 'string')
+    }
+    if (Array.isArray(search.wineTypes) && search.wineTypes.length > 0) {
+      validated.wineTypes = search.wineTypes.filter(isWineType)
     }
     if (Array.isArray(search.bottleSizes) && search.bottleSizes.length > 0) {
       validated.bottleSizes = search.bottleSizes.filter((s): s is string => typeof s === 'string')
@@ -119,6 +123,7 @@ function WineList() {
     if (newFilters.search) searchParams.search = newFilters.search
     if (newFilters.winery) searchParams.winery = newFilters.winery
     if (newFilters.grapes.length > 0) searchParams.grapes = newFilters.grapes
+    if (newFilters.wineTypes.length > 0) searchParams.wineTypes = newFilters.wineTypes
     if (newFilters.bottleSizes.length > 0) searchParams.bottleSizes = newFilters.bottleSizes
     if (newFilters.vintageMin !== null) searchParams.vintageMin = newFilters.vintageMin
     if (newFilters.vintageMax !== null) searchParams.vintageMax = newFilters.vintageMax

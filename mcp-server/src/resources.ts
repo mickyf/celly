@@ -66,6 +66,10 @@ export async function getWineDetailResource(client: SupabaseClient, id: string):
   let markdown = `# ${wine.name}\n\n`;
   markdown += `**ID:** ${wine.id}\n`;
 
+  if (wine.wine_type) {
+    markdown += `**Type:** ${wine.wine_type}\n`;
+  }
+
   if (wine.vintage) {
     markdown += `**Vintage:** ${wine.vintage}\n`;
   }
@@ -180,6 +184,10 @@ function formatWineList(wines: Wine[]): string {
     }
     markdown += '\n';
     markdown += `- ID: ${wine.id}\n`;
+
+    if (wine.wine_type) {
+      markdown += `- Type: ${wine.wine_type}\n`;
+    }
 
     if (wine.grapes && wine.grapes.length > 0) {
       markdown += `- Grapes: ${wine.grapes.join(', ')}\n`;

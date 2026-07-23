@@ -48,6 +48,7 @@
       "columns": {
         "name": "Name",
         "vintage": "Vintage",
+        "type": "Type",
         "qty": "Qty",
         "price": "Price (CHF)",
         "bottle": "Bottle",
@@ -125,6 +126,7 @@
       "wineName": "Wine Name",
       "winery": "Winery",
       "grapeVarieties": "Grape Varieties",
+      "wineType": "Wine Type",
       "vintage": "Vintage",
       "quantity": "Quantity",
       "pricePerBottle": "Price (per bottle)",
@@ -143,6 +145,7 @@
       "wineName": "e.g., Château Margaux",
       "winery": "Select winery (optional)",
       "grapeVarieties": "Type and press Enter",
+      "wineType": "Select type",
       "vintage": "e.g., 2015",
       "quantity": "Number of bottles",
       "price": "0.00",
@@ -193,6 +196,8 @@
     "winerySelect": "Select winery",
     "grapeVarieties": "Grape Varieties",
     "grapeSelect": "Select grapes",
+    "wineType": "Wine Type",
+    "wineTypeSelect": "Select types",
     "bottleSize": "Bottle Size",
     "bottleSizeSelect": "Select bottle sizes",
     "vintageRange": "Vintage Range",
@@ -428,5 +433,15 @@
     "unplacedHint_one": "{{count}} bottle still to place",
     "unplacedHint_other": "{{count}} bottles still to place",
     "done": "Done"
+  },
+  "wineType": {
+    "options": {
+      "red": "Red",
+      "white": "White",
+      "rose": "Rosé",
+      "sparkling": "Sparkling",
+      "dessert": "Dessert",
+      "port": "Port"
+    }
   }
 }

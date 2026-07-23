@@ -27,6 +27,10 @@ export async function addWineTool(
   response += `- ID: ${wine.id}\n`;
   response += `- Quantity: ${wine.quantity}\n`;
 
+  if (wine.wine_type) {
+    response += `- Type: ${wine.wine_type}\n`;
+  }
+
   if (wine.grapes && wine.grapes.length > 0) {
     response += `- Grapes: ${wine.grapes.join(', ')}\n`;
   }

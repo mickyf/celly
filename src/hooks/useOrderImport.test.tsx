@@ -39,6 +39,7 @@ function row(overrides: Partial<ImportRow> = {}): ImportRow {
     included: true,
     existingWineId: null,
     name: 'Some Wine',
+    wineType: null,
     vintage: 2020,
     quantity: 6,
     price: null,

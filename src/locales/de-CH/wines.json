@@ -48,6 +48,7 @@
       "columns": {
         "name": "Name",
         "vintage": "Jahrgang",
+        "type": "Typ",
         "qty": "Menge",
         "price": "Preis (CHF)",
         "bottle": "Flasche",
@@ -125,6 +126,7 @@
       "wineName": "Weinname",
       "winery": "Weingut",
       "grapeVarieties": "Rebsorten",
+      "wineType": "Weintyp",
       "vintage": "Jahrgang",
       "quantity": "Anzahl",
       "pricePerBottle": "Preis (pro Flasche)",
@@ -143,6 +145,7 @@
       "wineName": "z.B. Château Margaux",
       "winery": "Weingut auswählen (optional)",
       "grapeVarieties": "Tippen und Enter drücken",
+      "wineType": "Typ auswählen",
       "vintage": "z.B. 2015",
       "quantity": "Anzahl Flaschen",
       "price": "0.00",
@@ -193,6 +196,8 @@
     "winerySelect": "Weingut auswählen",
     "grapeVarieties": "Rebsorten",
     "grapeSelect": "Rebsorten auswählen",
+    "wineType": "Weintyp",
+    "wineTypeSelect": "Typen auswählen",
     "bottleSize": "Flaschengrösse",
     "bottleSizeSelect": "Flaschengrössen auswählen",
     "vintageRange": "Jahrgangsbereich",
@@ -428,5 +433,15 @@
     "unplacedHint_one": "Noch {{count}} Flasche zu platzieren",
     "unplacedHint_other": "Noch {{count}} Flaschen zu platzieren",
     "done": "Fertig"
+  },
+  "wineType": {
+    "options": {
+      "red": "Rot",
+      "white": "Weiss",
+      "rose": "Rosé",
+      "sparkling": "Schaumwein",
+      "dessert": "Dessertwein",
+      "port": "Portwein"
+    }
   }
 }

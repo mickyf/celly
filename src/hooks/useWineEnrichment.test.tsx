@@ -38,6 +38,7 @@ const mockClient = getSupabaseMock()
 const fullyPopulatedWine = {
   id: 'w-1',
   name: 'Barolo',
+  wine_type: 'red',
   vintage: 2018,
   grapes: ['Nebbiolo'],
   drink_window_start: 2025,

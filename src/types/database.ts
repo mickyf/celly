@@ -264,6 +264,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           vintage: number | null
+          wine_type: string | null
           winery_id: string | null
         }
         Insert: {
@@ -282,6 +283,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           vintage?: number | null
+          wine_type?: string | null
           winery_id?: string | null
         }
         Update: {
@@ -300,6 +302,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           vintage?: number | null
+          wine_type?: string | null
           winery_id?: string | null
         }
         Relationships: [

@@ -6,6 +6,7 @@ import type { Database } from '../types/database'
 import dayjs from 'dayjs'
 import { useWinePhotoUrl } from '../hooks/useWinePhotoUrl'
 import { getDrinkWindowStatus } from '../lib/wineFilters'
+import { WINE_TYPE_COLORS, getWineTypeLabel, isWineType } from '../constants/wineTypes'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
@@ -98,6 +99,12 @@ export function WineCard({
           {isReadyToDrink && (
             <Badge color="green" variant="light" mr={BADGE_GAP}>
               {t('wines:card.ready')}
+            </Badge>
+          )}
+
+          {isWineType(wine.wine_type) && (
+            <Badge color={WINE_TYPE_COLORS[wine.wine_type]} variant="filled" mr={BADGE_GAP}>
+              {getWineTypeLabel(t, wine.wine_type)}
             </Badge>
           )}
 

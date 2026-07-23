@@ -44,6 +44,7 @@ function enrichmentDataToFormValues(data: WineEnrichmentData): Partial<WineFormV
   return {
     name: data.name,
     grapes: data.grapes,
+    wine_type: data.wineType,
     vintage: data.vintage,
     winery_id: data.winery?.matchedExistingId,
     drink_window_start: data.drinkingWindow?.start,

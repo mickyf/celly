@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react'
 import type { Database } from '../types/database'
+import type { WineType } from '../constants/wineTypes'
 import { supabase } from './supabase'
 
 type Wine = Database['public']['Tables']['wines']['Row']
@@ -21,6 +22,7 @@ export interface PairingResponse {
 export interface WineEnrichmentData {
   name?: string
   grapes?: string[]
+  wineType?: WineType
   vintage?: number
   drinkingWindow?: {
     start: number
@@ -107,6 +109,7 @@ interface OrderParseRequest {
 
 export interface ParsedWine {
   name: string
+  wineType: WineType | null
   vintage: number | null
   quantity: number | null
   price: number | null
