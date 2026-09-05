@@ -50,10 +50,29 @@ cd mcp-server && npm run dev                   # Watch mode for development
 A Husky pre-push hook (`.husky/pre-push`) runs the full gate before every push:
 
 ```bash
-npm run lint && npm --prefix mcp-server run lint && npx tsgo -b && npm test
+npm run lint && npm --prefix mcp-server run lint && npx tsc -b && npm test
 ```
 
-Type-checking uses `@typescript/native-preview` — the Go-based TypeScript 7 preview — for speed; the stable `typescript` package remains for IDE language services and the eslint pipeline. Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional.
+Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional.
+
+## TypeScript 7 (side-by-side layout)
+
+Both projects run **TypeScript 7 stable** (the Go-based native compiler) for type-checking and builds, with the TypeScript 6 API kept alongside. `package.json` aliases both, per the [TS 7.0 release notes](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0):
+
+```json
+"@typescript/native": "npm:typescript@^7.0.2",
+"typescript": "npm:@typescript/typescript6@^6.0.2"
+```
+
+- `tsc` → TypeScript 7. This is what `npm run build`, `npx tsc -b` and the pre-push hook use.
+- `tsc6` → TypeScript 6, and more importantly `require('typescript')` resolves to the **TS 6 API**.
+
+The alias is not cosmetic. **typescript-eslint throws outright on TS 7** — `Error: typescript-eslint does not support TS 7.0` — so if `typescript` resolved to 7.x, `npm run lint` would fail to start in both projects. No published typescript-eslint supports TS 7 (the canary still declares `typescript >=4.8.4 <6.1.0`); support is tracked in [typescript-eslint#10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940).
+
+Consequences worth knowing:
+- Don't "simplify" `typescript` back to a plain `^7` range — that breaks lint, not type-checking.
+- The eslint pipeline type-checks against TS 6 semantics while `tsc` uses TS 7. In practice they agree, but a TS7-only feature would pass `tsc -b` and confuse the linter.
+- This alias can be dropped once typescript-eslint supports TS 7, or if the planned move to Oxlint happens first — Oxlint doesn't use the TypeScript compiler at all.
 
 ## Testing rule (always consider tests)
 
