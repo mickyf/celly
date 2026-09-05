@@ -9,14 +9,15 @@ Celly is a wine cellar management application that enables users to track their 
 ## Development Commands
 
 ```bash
-# Start development server (Vite + Supabase local)
+# Start development server (Vite; talks to the linked cloud Supabase project)
 npm run dev
 
 # Build for production (TypeScript + Vite)
 npm run build
 
 # Lint codebase
-npm run lint
+npm run lint                      # app
+npm --prefix mcp-server run lint  # MCP server (also run by the pre-push hook)
 
 # Run tests (Vitest + happy-dom + React Testing Library)
 npm test           # single run
@@ -35,6 +36,8 @@ npm run gen-icons
 npx supabase migration new <name>          # Scaffold a new migration file
 npx supabase db push                       # Apply pending migrations to the linked cloud project
 npx supabase functions deploy claude-proxy --no-verify-jwt
+npx supabase functions deploy sentry-proxy --no-verify-jwt
+npx supabase functions deploy mcp-server-proxy --no-verify-jwt
 npx supabase secrets set CLAUDE_API_KEY=<key>
 
 # MCP Server commands
@@ -44,7 +47,13 @@ cd mcp-server && npm run dev                   # Watch mode for development
 
 ## Git hooks
 
-A Husky pre-push hook (`.husky/pre-push`) runs `tsgo -b && npm test` before every push. (Type-checking uses `@typescript/native-preview` — the Go-based TypeScript 7 preview — for speed; the stable `typescript` package remains for IDE language services and the eslint pipeline.) Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional. Lint is intentionally not in the hook yet (existing errors block all pushes); re-add once those are cleared.
+A Husky pre-push hook (`.husky/pre-push`) runs the full gate before every push:
+
+```bash
+npm run lint && npm --prefix mcp-server run lint && npx tsgo -b && npm test
+```
+
+Type-checking uses `@typescript/native-preview` — the Go-based TypeScript 7 preview — for speed; the stable `typescript` package remains for IDE language services and the eslint pipeline. Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional.
 
 ## Testing rule (always consider tests)
 
@@ -60,6 +69,7 @@ Conventions:
 - Co-locate tests next to source: `foo.ts` → `foo.test.ts` (or `.test.tsx`).
 - Use `vitest` with explicit imports (`import { describe, it, expect } from 'vitest'`) — no globals.
 - Prefer pure logic tests over heavy mocking. Only mock Supabase / Claude / network when there is no smaller seam.
+- Shared harness in `src/test/`: `renderWithProviders` / `renderHookWithProviders` (Mantine + QueryClient + i18n) and `supabaseMock.ts` (chainable query-builder stub). `setup.tsx` stubs `<Link>` as a plain anchor so component tests need no Router context, and shims `ResizeObserver` / `document.fonts` for happy-dom.
 - Tests must pass before pushing — the pre-push hook will block otherwise.
 
 ## Architecture
@@ -68,9 +78,9 @@ Conventions:
 - **Frontend**: React 19 + TypeScript + Vite
 - **Routing**: TanStack Router (file-based routing in `src/routes/`)
 - **State Management**: TanStack Query for server state
-- **UI Framework**: Mantine UI v8 with custom grape theme
+- **UI Framework**: Mantine UI v9 with custom grape theme
 - **Backend**: Supabase (PostgreSQL + Auth + Storage)
-- **AI Integration**: Anthropic Claude Sonnet 4.5 API
+- **AI Integration**: Anthropic Claude Sonnet 5 (`claude-sonnet-5`) via the `claude-proxy` Edge Function
 - **Internationalization**: react-i18next with English and German (Swiss) translations
 - **Error Tracking**: Sentry for error monitoring and performance tracking
 - **PWA Support**: Installable app with offline capabilities via Vite PWA plugin
@@ -82,9 +92,10 @@ Conventions:
 - Uses `react-i18next` with `i18next-browser-languagedetector`
 - Supports English (`en`) and Swiss German (`de-CH`)
 - Translation files organized by namespace in `src/locales/{lang}/{namespace}.json`
-- Namespaces: `common`, `dashboard`, `wines`, `pairing`, `auth`
-- Language detection with localStorage persistence
-- Fallback language: English
+- Namespaces: `common`, `dashboard`, `wines`, `wineries`, `pairing`, `auth`, `settings`
+- Language detection order: `localStorage` → `navigator`, persisted to `localStorage` (`i18nextLng`)
+- `convertDetectedLanguage` maps any `de*` locale to `de-CH`; everything else falls to `en`
+- Fallback language: English; `supportedLngs` is `['en', 'de-CH']`
 
 **Usage Pattern**:
 ```typescript
@@ -108,10 +119,14 @@ t('common:buttons.cancel')
 ### Data Flow Architecture
 
 **TanStack Query Pattern:**
-All server state is managed through custom hooks in `src/hooks/`:
-- `useWines()` - Fetch all wines with auto-caching
+All server state is managed through custom hooks in `src/hooks/`, one file per entity:
+- `useWines()` / `useWine(id)` - Fetch all wines (optionally scoped to a winery) or one
 - `useAddWine()`, `useUpdateWine()`, `useDeleteWine()` - Mutations with automatic cache invalidation
-- `useTastingNotes()`, `useDashboardStats()`, `useFoodPairing()` - Similar patterns
+- `useMergeWines()` - Fold one wine into another (see **Merging Duplicate Records**)
+- `useUploadWinePhoto()`, `useDeleteWinePhoto()`, `useWinePhotoUrl()` - Photo storage + signed URLs
+- `useWineries()`, `useCellars()`, `useWineLocations()`, `useStockMovements()`, `useTastingNotes()`,
+  `useUserSettings()`, `useDashboardStats()`, `useFoodPairing()`, `useOrderImport()` - Same pattern per entity
+- `useOnlineStatus()` - Local (non-query) hook wrapping the browser `online`/`offline` events
 
 **Key Pattern**: Mutations automatically call `queryClient.invalidateQueries()` to refresh data after changes.
 
@@ -123,22 +138,24 @@ All server state is managed through custom hooks in `src/hooks/`:
 
 **Database Schema** (see `supabase/migrations/`):
 - `wineries` table: Winery information (name, country_code) with RLS policies
-- `wines` table: Core wine data with optional `winery_id` foreign key (ON DELETE RESTRICT), includes grapes[], vintage, quantity, price, drinking window, bottle_size, food_pairings, optional `import_batch_id`
+- `wines` table: Core wine data with optional `winery_id` foreign key (ON DELETE RESTRICT), includes grapes[], vintage, quantity, price, drinking window, bottle_size, `wine_type` (CHECK-constrained colour/category), food_pairings, optional `import_batch_id`
 - `tasting_notes` table: Rating (1-5 stars) + notes + date, cascades on wine deletion
 - `stock_movements` table: Track wine additions/removals with automatic quantity updates via database triggers; carries `import_batch_id` so order-document imports can be retrieved as a unit
 - `cellars` table: Physical cellar locations (name) for organizing wine storage
 - `wine_locations` table: Maps wines to cellars with coordinates (shelf, row, column) and quantity per location. Supports multiple locations per wine (e.g., same wine in different cellars)
 - `user_settings` table: Generic key-value store for user preferences (key TEXT, value JSONB)
 - Row Level Security (RLS): All tables filtered by `auth.uid() = user_id`
-- Storage bucket: `wine-images` with user-scoped folders
-- Indexes on user_id, drink_window, vintage for query performance
+- Storage bucket: `wine-images` — **private** since `20260503110000`; user-scoped folders, read via signed URLs
+- Indexes on user_id, drink_window, vintage, winery_id, wine_type for query performance
 - Automatic `updated_at` triggers on wineries, wines, cellars, wine_locations tables
 - Automatic quantity update trigger on stock_movements table
 
 **Photo Upload Pattern**:
-1. Upload to `wine-images/{user_id}/{wineId}.{ext}` via `useUploadWinePhoto()`
-2. Get public URL from Supabase Storage
-3. Update wine record with `photo_url`
+1. Client-side downscale via `resizeImage()` (`src/lib/imageResize.ts`) — max 1280px, JPEG q0.8, skipped under 200 KB
+2. Upload to `wine-images/{user_id}/{wineId}.{ext}` via `useUploadWinePhoto()`
+3. Store the path on the wine record as `photo_url`
+4. Read it back through `useWinePhotoUrl()`, which issues a 1-hour signed URL (the bucket is private).
+   `extractPhotoPath()` (`src/lib/winePhoto.ts`) normalises legacy public URLs down to a bare storage path.
 
 **Camera Capture** (`src/components/CameraCapture.tsx`):
 - Modal-based camera interface using browser MediaDevices API
@@ -154,6 +171,8 @@ File-based routes in `src/routes/`:
 - `__root.tsx` - App shell with AppShell layout and auth check
 - `index.tsx` - Dashboard with statistics
 - `login.tsx` - Auth page (login/signup tabs)
+- `forgot-password.tsx` - Request a password-reset email (`supabase.auth.resetPasswordForEmail`)
+- `reset-password.tsx` - Set a new password from the emailed recovery link
 - `wines/index.tsx` - Wine list with search/filter; supports `?importBatchId=…` to filter by an import batch (union of newly-created wines and wines restocked in the same batch)
 - `wines/add.tsx` - Add wine form (chooser: photo / free-text / manual)
 - `wines/import.tsx` - Bulk import from a wine merchant's order document (PDF or image) — review table with editable rows and per-row include checkbox
@@ -164,8 +183,11 @@ File-based routes in `src/routes/`:
 - `wineries/add.tsx` - Add winery form
 - `wineries/$id/index.tsx` - Winery detail with associated wines
 - `wineries/$id/edit.tsx` - Edit winery form
-- `cellars/index.tsx` - Cellar list and management
-- `pairing.tsx` - AI food pairing interface
+- `cellars/index.tsx` - Cellar list, shelf/slot management, and the `CellarVisualizer` grid
+- `pairing.tsx` - AI food pairing interface with cached results and a history list
+- `settings.tsx` - Per-user Claude API key, password change, and app version
+
+`__root.tsx` also treats `/login`, `/forgot-password` and `/reset-password` as public (`PUBLIC_ROUTE_PREFIXES`); an unintentional `SIGNED_OUT` (e.g. a failed token refresh) on any other route shows a "session expired" toast and redirects to `/login`.
 
 **Route Tree**: Auto-generated by `@tanstack/router-plugin` in `vite.config.ts`. Do not manually edit `src/routeTree.gen.ts`.
 
@@ -181,7 +203,7 @@ File-based routes in `src/routes/`:
 **Reusable Components** (`src/components/`):
 - `WineForm.tsx` - Complex form with photo dropzone/camera capture, grape tags, vintage/price inputs, drinking window ranges, bottle size selection, food pairings textarea
 - `WineCard.tsx` - Display wine in grid with "Ready to Drink" badge calculation
-- `WineFilters.tsx` - Collapsible search/filter panel with multi-select grapes, vintage/price ranges, drinking window status, bottle size, data completeness filter
+- `WineFilters.tsx` - Collapsible search/filter panel with multi-select grapes, wine types, vintage/price ranges, drinking window status, bottle size, data completeness, and wine state (available/drunken). Filter *logic* lives in `src/lib/wineFilters.ts`, not in the component.
 - `TastingNoteForm.tsx` - Rating widget + date picker + textarea using `@mantine/form`
 - `TastingNoteCard.tsx` - Display note with rating stars and formatted date
 - `StockMovementForm.tsx` - Form for adding stock movements (in/out) with quantity, date, and notes
@@ -192,6 +214,15 @@ File-based routes in `src/routes/`:
 - `Breadcrumb.tsx` - Breadcrumb navigation with search param preservation for cross-resource navigation
 - `PageHeader.tsx` - Reusable page header with back button, breadcrumbs, title, and action buttons
 - `LanguageSelector.tsx` - Language switcher dropdown (English/Swiss German) in app header
+- `OrderImportTable.tsx` - Editable review table for the bulk order-document import
+- `CellarVisualizer.tsx` - Seat-booking-style shelf/row/column slot grid; supports add/edit shelf, slot click, and a `placeMode` variant used by `wines/$id/place.tsx`
+- `ConsumptionChart.tsx` - Mantine `LineChart` of monthly bottle count on the dashboard
+- `ErrorBoundary.tsx` - `AppErrorBoundary` wrapping the whole shell; reports to Sentry and shows the stack in dev only
+- `RouteError.tsx` - Per-route error component with a reset action
+- `OfflineBanner.tsx` - Full-width alert driven by `useOnlineStatus()`, rendered above the `<Outlet />`
+- `EmptyState.tsx` - Shared "nothing here yet" panel (icon + title + description + action)
+- `skeletons.tsx` - `WineCardSkeleton`, `WineGridSkeleton`, `StatCardSkeleton`, `DashboardStatsSkeleton` loading placeholders
+- `AuthSplash.tsx` - Placeholder shown while the initial session check resolves
 
 **Forms**: Use `@mantine/form` (not react-hook-form). Form validation in `validate` object, no external schema libraries.
 
@@ -207,40 +238,50 @@ All user-facing text uses translation keys. Components import `useTranslation` a
 - Edge Function validates user session and forwards requests to Claude API
 
 **Edge Function** (`supabase/functions/claude-proxy/index.ts`):
-- Handles two request types: `food-pairing` and `wine-enrichment`
-- Validates user authentication via Supabase auth token
-- Reads `CLAUDE_API_KEY` from server environment (set via Supabase secrets)
-- Returns structured JSON responses to frontend
+- Model: `claude-sonnet-5` for every request type. Extended thinking is `adaptive` for food pairing and `disabled` elsewhere.
+- Dispatches on `body.type`; five types are handled — `food-pairing`, `wine-enrichment`, `wine-enrichment-from-image`, `winery-enrichment`, `parse-order-document`. Anything else returns `400 Invalid request type`.
+- Validates user authentication via the Supabase auth token
+- API key resolution (`resolveApiKey.ts`): the caller's own `user_settings.claude_api_key` wins; the global `CLAUDE_API_KEY` secret is the fallback. Blank/whitespace values are treated as absent.
+- CORS is an explicit origin allowlist (`https://celly.pages.dev`, `http://localhost:5173`) with `Vary: Origin`
+- Prompt-injection defence: user-supplied text is wrapped in `<user_input>` tags, the delimiter is stripped from the input (`sandbox()`), and the system prompt states that tag contents are data, never instructions
+- `extractJsonBlock()` recovers JSON from fenced code blocks or brace-balanced prose when Claude wraps its answer in commentary
 - All Claude API logic (prompts, parsing, validation) runs server-side
 
 **AI Food Pairing Flow** (`src/lib/claude.ts` - `getFoodPairing` function):
 1. Frontend collects available wines and menu/dish
 2. Sends request to Edge Function with wine data and language preference
-3. Edge Function formats wine list and sends prompt to Claude Sonnet 4.5
+3. Edge Function formats wine list and sends prompt to Claude Sonnet 5 (with adaptive thinking)
 4. Claude returns JSON with pairing recommendations
 5. Edge Function maps `wineIndex` back to actual wine IDs
 6. Frontend displays ranked results with explanations and pairing scores
 
 **AI Wine Enrichment** (`src/lib/claude.ts` - `enrichWineData` function):
 - Frontend sends wine name and existing data to Edge Function
-- Edge Function uses Claude Sonnet 4.5 to automatically fill missing wine data fields
-- Can enrich: grapes, vintage, drinking window, winery (with intelligent matching), price, and food pairings
+- Edge Function uses Claude Sonnet 5 to automatically fill missing wine data fields
+- Can enrich: grapes, vintage, wine type, drinking window, winery (with intelligent matching), price, and food pairings
 - Returns confidence levels: high, medium, low for each enriched field
-- Edge Function validates all returned data (vintage ranges 1800-current year, country codes ISO 3166-1 alpha-2, price ranges 0-10000)
+- Edge Function validates all returned data (vintage ranges 1800-current year, wine type against the enum, country codes ISO 3166-1 alpha-2, price ranges 0-10000)
 - Winery matching: Handles spelling variations (e.g., "Château" vs "Chateau") to avoid duplicates
 - Food pairings generated in Swiss Standard German (Schweizer Hochdeutsch)
 - Pre-flight validation ensures only wines with missing fields are enriched
 
+**AI Winery Enrichment** (`src/lib/claude.ts` - `enrichWineryData` function):
+- The sparkle button on `WineryForm.tsx` sends a winery name and gets back a country code, which prefills the country `Select`
+- `handleWineryEnrichment` in the proxy prompts for the country only; `validateWineryEnrichment()` (`supabase/functions/claude-proxy/wineryEnrichment.ts`) then rejects anything outside `WINE_COUNTRIES`
+- Returning `enrichmentData: null` means "nothing usable" — the form falls back to its own translated `wineries:enrichment.noData` message rather than showing an English error from the server. Keep it that way when extending the handler.
+
 **Enrichment Hooks** (`src/hooks/useWineEnrichment.ts`):
 - `useEnrichWine()` - Single wine enrichment with automatic winery creation if needed
+- `useIdentifyWineByName()` - Free-text entry point on `/wines/add`: turns a typed name into a prefilled form
+- `useEnrichWineFromImage()` - Bottle-photo entry point; sends the (resized) image as a base64 content block
 - `useBulkEnrichWines()` - Bulk enrichment with progress tracking and rate limiting (1 second delay between requests)
-- Both hooks automatically invalidate wine and winery caches after enrichment
+- These hooks automatically invalidate wine and winery caches after enrichment
 - Progress tracking pattern: `onProgress` callback with current/total counts for real-time UI updates
 
 **API Configuration**:
 - Uses Supabase's built-in `supabase.functions.invoke('claude-proxy', { body })` method
 - Automatically handles authentication and edge function URL resolution
-- Claude API key: Set `CLAUDE_API_KEY` in Supabase project secrets (production) or `supabase/.env` (local)
+- Claude API key: Set `CLAUDE_API_KEY` in Supabase project secrets; individual users can override it from `/settings`
 - Error handling shows notifications with detailed error messages
 
 ### Error Tracking with Sentry
@@ -430,8 +471,11 @@ npx supabase db push
 **Migration history**: see `supabase/migrations/` directly. Recent additions worth knowing:
 - `20260115203000_redesign_wine_locations.sql` — slot-based `wine_locations` (replaced inline location fields on `wines`)
 - `20260503110000_make_wine_images_private.sql` — bucket flipped to private; consumers use `useWinePhotoUrl` (signed URLs)
+- `20260503160000_add_wines_winery_id_index.sql` — index on `wines.winery_id`
 - `20260503180000_wine_locations_as_slots.sql` — each row is a slot, `wine_id` nullable
 - `20260510120000_add_import_batch_id.sql` — `import_batch_id` on `wines` and `stock_movements` for the order-document import feature
+- `20260723120000_add_wine_type.sql` — `wine_type` column + CHECK constraint + index
+- `20260723130000_add_port_wine_type.sql` — widened that CHECK to include `port`
 
 ## Common Patterns
 
@@ -451,6 +495,26 @@ CREATE TRIGGER update_wine_quantity AFTER INSERT OR UPDATE OR DELETE ON stock_mo
 - `useDeleteStockMovement()` - Delete movement, quantity auto-reverted via trigger
 
 **Integration**: Stock movements displayed in wine detail pages with automatic quantity sync.
+
+### Wine Types
+
+**Source of truth** (`src/constants/wineTypes.ts`): `WINE_TYPES = ['red', 'white', 'rose', 'sparkling', 'dessert', 'port']`, with `isWineType()`, `WINE_TYPE_COLORS` (Mantine badge colours), `getWineTypeLabel(t, type)` and `getWineTypeOptions(t)`.
+
+The same list is duplicated in three other places that cannot import it — keep them in sync when adding a type:
+1. The `wines_wine_type_check` DB constraint (needs a new migration)
+2. `WINE_TYPES` in `supabase/functions/claude-proxy/index.ts` (Deno, validates enrichment + import output)
+3. The `add_wine` tool schema `enum` in `mcp-server/src/index.ts` (the `mcp-server-proxy` Edge Function passes `wine_type` straight through and relies on the DB constraint)
+
+Labels live under `wines:wineType.options.*` in both locales. The column is nullable — an unset type counts as incomplete for `wineNeedsEnrichment()`.
+
+### Merging Duplicate Records
+
+Both wines and wineries can be merged, and both follow the same shape: re-point children, fold the parent, delete the source.
+
+- `useMergeWines({ sourceId, targetId })` (`src/hooks/useWines.ts`) — re-points `tasting_notes`, `stock_movements` and `wine_locations` to the target, sums quantities, adopts the source photo if the target has none, then deletes the source. Refuses `sourceId === targetId`. Invalidates all four query keys. UI lives in a modal on `wines/$id/index.tsx`.
+- `useMergeWineries()` (`src/hooks/useWineries.ts`) — same idea for wineries; UI on `wineries/index.tsx`.
+
+These are multi-step client-side operations, not transactions — a mid-way failure leaves children already moved. Worth knowing before extending them.
 
 ### Wineries as First-Class Resource
 
@@ -478,7 +542,7 @@ CREATE TRIGGER update_wine_quantity AFTER INSERT OR UPDATE OR DELETE ON stock_mo
 The user uploads a wine merchant's PDF or image; Claude extracts a list of wines that the user reviews in an editable table before persisting. Restocks of existing wines and creation of new ones happen in the same operation, grouped by a client-generated batch UUID.
 
 **Edge Function** (`supabase/functions/claude-proxy/index.ts`):
-A `parse-order-document` request type sends the file as either a `document` (PDFs) or `image` content block to Claude Sonnet 4.5 with a strict JSON-output prompt and an explicit injection-defense preamble. Server-side validates type + size (5 MB cap), runs every parsed row through whitelist checks (vintage range, bottle-size enum, ISO country code), and drops invalid rows.
+A `parse-order-document` request type sends the file as either a `document` (PDFs) or `image` content block to Claude Sonnet 5 with a strict JSON-output prompt and an explicit injection-defense preamble. Server-side validates type + size (5 MB cap), runs every parsed row through whitelist checks (vintage range, wine-type enum, bottle-size enum, ISO country code), and drops invalid rows.
 
 **Frontend** (`src/lib/claude.ts`, `src/hooks/useOrderImport.ts`):
 - `parseOrderDocument(file)` — base64-encodes the file and invokes the proxy. Rejects unsupported MIME types client-side before the call.
@@ -494,6 +558,15 @@ A `parse-order-document` request type sends the file as either a `document` (PDF
 - `OrderImportTable` — checkbox per row toggles `included`; the Name column is a Mantine `Combobox` that lets the user either pick an existing wine (then row becomes a restock — vintage/price/bottle/winery editors disable since they're pinned) or type a new name (creates a new wine). Action shape is derived from `(included, existingWineId)`, not a separate radio.
 - After save, navigates to `/wines?importBatchId=…`. The wines list applies a union post-filter — `wines.import_batch_id === batchId OR a stock_movement.import_batch_id === batchId for that wine` — so newly-created wines and restocked wines both show up under the batch chip. Reuses the `useStockMovements()` query already loaded by the wines list, no extra fetch.
 
+### Food Pairing Cache & History
+
+`src/lib/pairingHistory.ts` is pure localStorage logic (key `celly:pairing-history`, max 20 entries):
+- `pairingCacheKey({ menu, wineIds, language })` — normalises the menu (trim/lowercase/collapse whitespace) and sorts the wine ids, so re-asking the same question in the same cellar state hits the cache
+- `findCachedPairing(history, input, now, ttlMs)` — returns a hit within `PAIRING_CACHE_TTL_MS` (5 minutes), otherwise `null`
+- `loadPairingHistory()` / `savePairingHistory()` / `addPairingEntry()` / `clearPairingHistory()` — every read validates entry shape and every write swallows quota errors, so a corrupt or disabled store degrades to "no history" rather than throwing
+
+`pairing.tsx` checks the cache before calling the Edge Function and renders past queries as a re-runnable list.
+
 ### Physical Location Tracking
 
 **Architecture**:
@@ -508,15 +581,16 @@ A `parse-order-document` request type sends the file as either a `document` (PDF
 - `useDeleteCellar()` - Delete cellar (cascades to wine_locations via ON DELETE CASCADE)
 
 **Wine Location Management** (`src/hooks/useWineLocations.ts`):
-- `useWineLocations(wineId?)` - Query locations for a wine or all locations
-- `useAddWineLocation()` - Add wine to a cellar location with coordinates (shelf, row, column) and quantity
-- `useUpdateWineLocation()` - Update location details or quantity
-- `useDeleteWineLocation()` - Remove wine from location
+Since `20260503180000_wine_locations_as_slots.sql` a row is a *slot*, not a placement — `wine_id` is nullable and an empty slot is a real row. The hooks are therefore shaped around shelves and slots, not around "add a location":
+- `useWineLocations(wineId?, cellarId?)` - Query slots, optionally scoped to a wine or a cellar. Returns `SlotWithWine`.
+- `useCreateShelf()` / `useDeleteShelf()` - Create or remove a whole shelf (a rows × columns block of slots)
+- `useAddSlots()` / `useDeleteSlots()` - Add or remove individual slots within a shelf
+- `usePlaceWine()` / `useUnplaceWine()` - Set or clear the `wine_id` on a slot
 
 **Location Pattern**:
-- One wine can exist in multiple cellars simultaneously (e.g., 3 bottles in cellar A, 2 bottles in cellar B)
-- Each `wine_location` record has its own quantity independent of wine.quantity
-- Coordinates (shelf, row, column) are optional integers for flexible organization
+- One wine can occupy slots in multiple cellars simultaneously (e.g., 3 bottles in cellar A, 2 in cellar B)
+- Slot quantity is independent of `wines.quantity` — the two are not reconciled automatically
+- Coordinates (shelf, row, column) are integers; `CellarVisualizer` renders them as a grid
 - Foreign keys: `wine_id` → wines, `cellar_id` → cellars (both CASCADE on delete)
 
 **Routes**:
@@ -540,11 +614,10 @@ const updateSetting = useUpdateUserSetting()
 await updateSetting.mutateAsync({ key: 'theme', value: { mode: 'dark' } })
 ```
 
-**Use Cases**:
-- UI preferences (theme, language overrides)
-- Feature flags per user
-- Dashboard customization
-- Any user-scoped configuration
+**Keys in use**:
+- `claude_api_key` — the user's own Anthropic key, set from `/settings`. Read server-side by `claude-proxy` (`resolveApiKey.ts`), which prefers it over the global `CLAUDE_API_KEY` secret.
+
+Otherwise available for UI preferences, per-user feature flags, or any user-scoped configuration.
 
 ### Navigation with Breadcrumbs
 
@@ -588,6 +661,17 @@ const countryOptions = getCountryOptions(t) // Returns translated countries with
 
 Translation keys: `common:countries.FR`, `common:countries.IT`, etc.
 
+### Error Handling, Loading & Offline States
+
+- **Mutation errors**: `showMutationError(t, error, { title?, hook? })` (`src/lib/mutationError.ts`) is the shared `onError` for mutation hooks — it captures to Sentry with a `source: 'mutation-error-handler'` tag and shows a red 8-second toast. Use it instead of hand-rolling `notifications.show` in a new hook.
+- **Render errors**: `AppErrorBoundary` wraps the whole `AppShell` in `__root.tsx`; `RouteError` is the per-route error component. Stack details render in development only.
+- **Loading**: prefer the shared skeletons (`WineGridSkeleton`, `DashboardStatsSkeleton`, …) over ad-hoc spinners; use `EmptyState` for the zero-results case.
+- **Offline**: `OfflineBanner` sits above the `<Outlet />` and is driven by `useOnlineStatus()`. The service worker serves Supabase reads NetworkFirst from `supabase-cache-v2` for 24 hours.
+
+### Password Policy
+
+`validatePasswordComplexity()` (`src/lib/passwordPolicy.ts`) is the single rule set — min 8 chars plus an uppercase letter, a digit, and a symbol. It returns a translation key (`validation.passwordTooShort`, …) in the `auth` namespace rather than a message, so callers translate it themselves. Used by both `reset-password.tsx` and the password form in `settings.tsx`; any new password field should use it too.
+
 ### Adding a New Data Entity
 
 1. Create migration in `supabase/migrations/` with table definition and RLS policies
@@ -601,13 +685,16 @@ Translation keys: `common:countries.FR`, `common:countries.IT`, etc.
 
 ### Search/Filter Implementation
 
-Filter logic uses `useMemo` for performance (see `src/routes/wines/index.tsx`):
+Filter logic lives in `src/lib/wineFilters.ts` as pure functions — `applyWineFilters()`, `countActiveWineFilters()`, `getDrinkWindowStatus()`, `wineNeedsEnrichment()`, and `DEFAULT_WINE_FILTERS`. The route calls them inside a `useMemo`; add new filters there (and to `WineFilterValues`) rather than in the component, so they stay unit-testable.
+
+Semantics (see `src/routes/wines/index.tsx`):
 - Combine filters with AND logic (all filters must match)
 - Text search: case-insensitive `includes()`
 - Arrays (grapes, bottle sizes): `some()` for OR logic within filter
 - Ranges: check both min and max boundaries
 - Drinking window: calculate `isReady`, `isFuture`, `isPast` based on current year
-- Data completeness: 'complete' wines have winery, grapes, vintage, and drinking window; 'incomplete' wines missing at least one field (useful for identifying wines needing AI enrichment)
+- Data completeness: 'complete' wines have winery, grapes, vintage, drinking window, and price; 'incomplete' wines are missing at least one (useful for identifying wines needing AI enrichment). Note `wineNeedsEnrichment()` uses a *wider* set — it also counts missing food pairings and wine type.
+- Wine state: defaults to `available`; `drunken` means `quantity === 0`. This default is why the filter count treats `wineState !== 'available'` as active.
 
 **URL Search Params Pattern**:
 ```typescript
@@ -642,11 +729,14 @@ onClick={() => router.history.back()}
 
 **Traditional Upload**:
 ```typescript
-// 1. Upload file
+// 1. Upload file (the hook downscales it via resizeImage first)
 const photoUrl = await uploadPhoto.mutateAsync({ file, wineId })
 
-// 2. Update record with URL
+// 2. Update record with the storage path
 await updateWine.mutateAsync({ id: wineId, photo_url: photoUrl })
+
+// 3. Display it — the bucket is private, so never render photo_url directly
+const { data: signedUrl } = useWinePhotoUrl(wine.photo_url)
 ```
 
 **Camera Capture Integration**:
@@ -677,6 +767,10 @@ The Model Context Protocol (MCP) server enables AI assistants like Claude Deskto
 - Communicates with Supabase REST API using authenticated user tokens
 - Runs as stdio transport for Claude Desktop integration
 - TypeScript source in `src/`, compiled to `dist/`
+- Has its own eslint config; `npm --prefix mcp-server run lint` is part of the pre-push hook
+
+**Edge Function** (`supabase/functions/mcp-server-proxy/index.ts`):
+An HTTP counterpart to the stdio server, for MCP clients that cannot spawn a local process. It validates the `Authorization` header, then dispatches on `body.action` — `list_wines`, `get_wine`, `add_wine`, `list_wineries`, `get_winery`, `add_winery` — against the user's own RLS-scoped rows. Deploy it with `--no-verify-jwt` (it does its own auth check).
 
 **Setup**:
 ```bash
@@ -716,7 +810,7 @@ Add to `claude_desktop_config.json`:
 - `celly://wineries/{id}` - Winery details with associated wines
 
 **Tools**:
-- `list_wines` / `get_wine` / `add_wine` - Wine management (add takes name, vintage, grapes, quantity, drink_window_start, drink_window_end, price, bottle_size as text e.g. "75cl", food_pairings, winery_id)
+- `list_wines` / `get_wine` / `add_wine` - Wine management (add takes name, wine_type, vintage, grapes, quantity, drink_window_start, drink_window_end, price, bottle_size as text e.g. "75cl", food_pairings, winery_id)
 - `list_wineries` / `get_winery` / `add_winery` - Winery management (add takes name and ISO 3166-1 alpha-2 country_code)
 
 **Security**:
@@ -740,6 +834,8 @@ See [mcp-server/README.md](mcp-server/README.md) for detailed documentation.
 - **Cloud-Only Workflow**: We work directly against the linked cloud Supabase project — no local Docker / `supabase start` / `db reset`. Migrations land via `npx supabase db push`; types are regenerated from the cloud via `npm run gen-types` (already `--linked`).
 - **AI Rate Limiting**: Bulk enrichment uses a 1 second delay between requests to avoid API rate limits
 - **Food Pairing Language**: Food pairings must be in Swiss Standard German (Schweizer Hochdeutsch)
+- **Merges are not transactional**: `useMergeWines` / `useMergeWineries` run several sequential writes from the client; a failure part-way leaves children already re-pointed
+- **Wine type enum is duplicated** across the DB constraint, `src/constants/wineTypes.ts`, `claude-proxy`, and the MCP tool schema — see **Wine Types**
 
 ## Deployment Considerations
 
@@ -770,6 +866,9 @@ npx supabase functions deploy sentry-proxy --no-verify-jwt
 # Deploy the Claude proxy function
 npx supabase functions deploy claude-proxy --no-verify-jwt
 
+# Deploy the MCP HTTP proxy function
+npx supabase functions deploy mcp-server-proxy --no-verify-jwt
+
 # Set Claude API key as a secret
 npx supabase secrets set CLAUDE_API_KEY=sk-ant-your-key-here
 ```
@@ -782,7 +881,7 @@ Alternatively, set secrets via Dashboard:
 Create the `wine-images` bucket:
 1. Go to Storage in Supabase Dashboard
 2. Create bucket named `wine-images`
-3. Set as public bucket with user-scoped RLS policies (already defined in migrations)
+3. Leave it **private** with user-scoped RLS policies (already defined in migrations). Reads go through signed URLs (`useWinePhotoUrl`); `20260503110000_make_wine_images_private.sql` flipped this bucket from public.
 
 ### 5. Update Frontend Environment
 Update `.env.production` or deployment platform (Vercel/Netlify/Cloudflare Pages):

@@ -5,6 +5,9 @@ import { supabase } from './supabase'
 
 type Wine = Database['public']['Tables']['wines']['Row']
 
+// Telemetry label only — the real model is chosen server-side in the claude-proxy Edge Function.
+const CLAUDE_MODEL = 'claude-sonnet-5'
+
 export interface PairingRecommendation {
   wineId: string
   wineName: string
@@ -154,7 +157,7 @@ export async function getFoodPairing(
       name: 'claude.getFoodPairing',
       op: 'ai.request',
       attributes: {
-        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.model': CLAUDE_MODEL,
         'ai.request.wines_count': availableWines.length,
         'ai.request.language': language,
         'ai.request.menu_length': menu.length,
@@ -234,7 +237,7 @@ export async function enrichWineData(
       name: 'claude.enrichWineData',
       op: 'ai.request',
       attributes: {
-        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.model': CLAUDE_MODEL,
         'ai.request.wine_name': wineName,
         'ai.request.has_vintage': !!existingVintage,
       },
@@ -306,7 +309,7 @@ export async function enrichWineFromImage(
       name: 'claude.enrichWineFromImage',
       op: 'ai.request',
       attributes: {
-        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.model': CLAUDE_MODEL,
         'ai.request.file_size': file.size,
         'ai.request.file_type': file.type,
       },
@@ -365,7 +368,7 @@ export async function enrichWineryData(
       name: 'claude.enrichWineryData',
       op: 'ai.request',
       attributes: {
-        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.model': CLAUDE_MODEL,
         'ai.request.winery_name': wineryName,
       },
     },
@@ -423,7 +426,7 @@ export async function parseOrderDocument(file: File): Promise<OrderParseResponse
       name: 'claude.parseOrderDocument',
       op: 'ai.request',
       attributes: {
-        'ai.model': 'claude-sonnet-4-5-20250929',
+        'ai.model': CLAUDE_MODEL,
         'ai.request.file_size': file.size,
         'ai.request.file_type': file.type,
       },

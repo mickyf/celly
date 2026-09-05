@@ -13,7 +13,7 @@ The app is currently hosted under: https://celly.pages.dev/
 - **Bottle Size Tracking**: Record bottle sizes (37.5cl through 600cl/Imperial) for each wine
 - **Photo Storage**: Upload wine bottle photos or capture them directly with your device camera
 - **Tasting Notes**: Add ratings (1-5 stars), notes, and dates for each wine
-- **AI Data Enrichment**: Automatically fill in missing wine information (grapes, price, drinking window, food pairings, winery) using Claude Sonnet 4.5; works from a wine name, free-text input, or a bottle photo. Bulk enrichment for the whole cellar.
+- **AI Data Enrichment**: Automatically fill in missing wine information (grapes, price, drinking window, food pairings, winery) using Claude Sonnet 5; works from a wine name, free-text input, or a bottle photo. Bulk enrichment for the whole cellar.
 - **AI Food Pairing**: Get intelligent food pairing recommendations for meals based on wines in your collection, with a 5-minute pairing cache and history list
 - **Bulk Import from Order Documents**: Upload a wine merchant's PDF or image and Claude extracts the wines into a review table; rows match against existing wines so re-orders become stock-in movements while new wines get created in one batch
 - **Smart Filtering**: Search and filter by name, winery, grapes, vintage range, price range, and drinking window status with URL-based filter persistence
@@ -31,7 +31,7 @@ The app is currently hosted under: https://celly.pages.dev/
 - **State Management**: TanStack Query for server state
 - **UI Framework**: Mantine UI v8 with custom grape theme
 - **Backend**: Supabase (PostgreSQL + Auth + Storage)
-- **AI Integration**: Anthropic Claude Sonnet 4.5 API
+- **AI Integration**: Anthropic Claude Sonnet 5 API
 - **Internationalization**: react-i18next with English and German (Swiss) translations
 
 ## Prerequisites
@@ -166,7 +166,7 @@ The app supports English and Swiss German:
 
 ## AI Food Pairing
 
-The food pairing feature uses Claude Sonnet 4.5 to analyze wines in your collection that are currently in their drinking window and recommend optimal pairings for your desired meal or ingredients.
+The food pairing feature uses Claude Sonnet 5 to analyze wines in your collection that are currently in their drinking window and recommend optimal pairings for your desired meal or ingredients.
 
 ## MCP Server Integration
 
