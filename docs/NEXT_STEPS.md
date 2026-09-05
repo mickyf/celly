@@ -16,5 +16,5 @@
 
 ## security/technical
 - ~~upgrade to TypeScript 7 Beta~~
-- upgrade/update depedencies
+- ~~upgrade/update depedencies~~
 - ~~change from ESLint to Oxlint~~
