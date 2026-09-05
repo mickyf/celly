@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, Navigate, useNavigate } from '@tanstack/react-router'
 import { AuthSplash } from '../components/AuthSplash'
 import type { User } from '@supabase/supabase-js'
 import {
@@ -28,7 +28,21 @@ import { useTranslation } from 'react-i18next'
 import { DashboardStatsSkeleton } from '../components/skeletons'
 import { ConsumptionChart } from '../components/ConsumptionChart'
 
-const clickableCardSx = { cursor: 'pointer' } as const
+// Stat cards navigate, so they are real links rather than divs with
+// role="link": that buys keyboard activation on Enter *and* Space, middle-click
+// and "open in new tab", and proper screen-reader link semantics.
+// The router's own <Link> is used directly — Mantine's polymorphic
+// `component={Link}` loses the typing of `search`, and createLink() in turn
+// loses Mantine's own props.
+const cardLinkSx = {
+  textDecoration: 'none',
+  color: 'inherit',
+  display: 'block',
+  flex: 1,
+  minWidth: 0,
+} as const
+
+const badgeLinkSx = { textDecoration: 'none', cursor: 'pointer' } as const
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
@@ -74,10 +88,10 @@ function Dashboard() {
     ? Math.round((stats.readyToDrink / stats.totalWines) * 100)
     : 0
 
-  const goToAdd = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation()
-    navigate({ to: '/wines/add' })
-  }
+  // No stopPropagation needed: the button is a sibling of the card's link, not
+  // nested inside a click handler. ActionIcon is a real <button>, so Enter and
+  // Space activate it natively — no onKeyDown of our own.
+  const goToAdd = () => navigate({ to: '/wines/add' })
 
   return (
     <Container size="lg">
@@ -108,98 +122,74 @@ function Dashboard() {
 
         {/* Stats Grid */}
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-          <Paper
-            shadow="sm"
-            p="xl"
-            radius="md"
-            withBorder
-            style={clickableCardSx}
-            onClick={() => navigate({ to: '/wines', search: {} })}
-            role="link"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
-          >
+          <Paper shadow="sm" p="xl" radius="md" withBorder>
             <Group justify="space-between" align="flex-start" wrap="nowrap">
-              <Group wrap="nowrap">
-                <IconBottle size={32} stroke={1.5} />
-                <div>
-                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                    {t('dashboard:stats.totalBottles')}
-                  </Text>
-                  <Text size="xl" fw={700}>
-                    {stats.totalBottles}
-                  </Text>
-                </div>
-              </Group>
+              {/* The add button is a sibling of the link, never a child: a
+                  <button> inside an <a> is invalid and traps keyboard users. */}
+              <Link to="/wines" search={{}} style={cardLinkSx}>
+                <Group wrap="nowrap">
+                  <IconBottle size={32} stroke={1.5} />
+                  <div>
+                    <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                      {t('dashboard:stats.totalBottles')}
+                    </Text>
+                    <Text size="xl" fw={700}>
+                      {stats.totalBottles}
+                    </Text>
+                  </div>
+                </Group>
+              </Link>
               <ActionIcon
                 variant="subtle"
                 size="lg"
                 aria-label={t('common:actions.addWine')}
                 onClick={goToAdd}
-                onKeyDown={(e) => { if (e.key === 'Enter') goToAdd(e) }}
               >
                 <IconPlus size={20} />
               </ActionIcon>
             </Group>
           </Paper>
 
-          <Paper
-            shadow="sm"
-            p="xl"
-            radius="md"
-            withBorder
-            style={clickableCardSx}
-            onClick={() => navigate({ to: '/wines', search: {} })}
-            role="link"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
-          >
+          <Paper shadow="sm" p="xl" radius="md" withBorder>
             <Group justify="space-between" align="flex-start" wrap="nowrap">
-              <Group wrap="nowrap">
-                <IconBottle size={32} stroke={1.5} />
-                <div>
-                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                    {t('dashboard:stats.uniqueWines')}
-                  </Text>
-                  <Text size="xl" fw={700}>
-                    {stats.totalWines}
-                  </Text>
-                </div>
-              </Group>
+              <Link to="/wines" search={{}} style={cardLinkSx}>
+                <Group wrap="nowrap">
+                  <IconBottle size={32} stroke={1.5} />
+                  <div>
+                    <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                      {t('dashboard:stats.uniqueWines')}
+                    </Text>
+                    <Text size="xl" fw={700}>
+                      {stats.totalWines}
+                    </Text>
+                  </div>
+                </Group>
+              </Link>
               <ActionIcon
                 variant="subtle"
                 size="lg"
                 aria-label={t('common:actions.addWine')}
                 onClick={goToAdd}
-                onKeyDown={(e) => { if (e.key === 'Enter') goToAdd(e) }}
               >
                 <IconPlus size={20} />
               </ActionIcon>
             </Group>
           </Paper>
 
-          <Paper
-            shadow="sm"
-            p="xl"
-            radius="md"
-            withBorder
-            style={clickableCardSx}
-            onClick={() => navigate({ to: '/wines', search: {} })}
-            role="link"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter') navigate({ to: '/wines', search: {} }) }}
-          >
-            <Group>
-              <IconCurrencyDollar size={32} stroke={1.5} />
-              <div>
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  {t('dashboard:stats.totalValue')}
-                </Text>
-                <Text size="xl" fw={700}>
-                  CHF {stats.totalValue.toFixed(2)}
-                </Text>
-              </div>
-            </Group>
+          <Paper shadow="sm" p="xl" radius="md" withBorder>
+            <Link to="/wines" search={{}} style={cardLinkSx}>
+              <Group>
+                <IconCurrencyDollar size={32} stroke={1.5} />
+                <div>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                    {t('dashboard:stats.totalValue')}
+                  </Text>
+                  <Text size="xl" fw={700}>
+                    CHF {stats.totalValue.toFixed(2)}
+                  </Text>
+                </div>
+              </Group>
+            </Link>
           </Paper>
         </SimpleGrid>
 
@@ -250,12 +240,14 @@ function Dashboard() {
               </Text>
               {stats.topGrapes.length > 0 ? (
                 <Group gap="xs">
-                  {stats.topGrapes.map((item) => {
-                    const goToGrape = () =>
-                      navigate({ to: '/wines', search: { grapes: [item.grape] } })
-                    return (
+                  {stats.topGrapes.map((item) => (
+                    <Link
+                      key={item.grape}
+                      to="/wines"
+                      search={{ grapes: [item.grape] }}
+                      style={badgeLinkSx}
+                    >
                       <Badge
-                        key={item.grape}
                         variant="light"
                         size="lg"
                         rightSection={
@@ -263,16 +255,12 @@ function Dashboard() {
                             {item.count}
                           </Text>
                         }
-                        style={clickableCardSx}
-                        role="link"
-                        tabIndex={0}
-                        onClick={goToGrape}
-                        onKeyDown={(e) => { if (e.key === 'Enter') goToGrape() }}
+                        style={{ cursor: 'pointer' }}
                       >
                         {item.grape}
                       </Badge>
-                    )
-                  })}
+                    </Link>
+                  ))}
                 </Group>
               ) : (
                 <Text size="sm" c="dimmed">
