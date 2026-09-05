@@ -152,20 +152,32 @@ export const useBulkImportWines = () => {
           }
 
           // Step 3 — bulk-insert "create new" wines.
+          //
+          // Ids are generated client-side so the opening movements in step 4 can be
+          // tied to their rows without relying on the order INSERT ... RETURNING
+          // happens to give back. Quantity starts at 0: the opening movement carries
+          // the bottles, and the quantity trigger applies it. Writing both would
+          // double-count.
           const newWineRows = rows.filter((r) => r.included && r.existingWineId === null)
+          const newWineIds = new Map<string, string>() // rowId -> generated wine id
           let createdCount = 0
           if (newWineRows.length > 0) {
-            const inserts: WineInsert[] = newWineRows.map((r) => ({
-              user_id: user.id,
-              name: r.name,
-              wine_type: r.wineType,
-              vintage: r.vintage,
-              quantity: r.quantity,
-              price: r.price,
-              bottle_size: r.bottleSize,
-              winery_id: resolveWineryId(r),
-              import_batch_id: batchId,
-            }))
+            const inserts: WineInsert[] = newWineRows.map((r) => {
+              const id = crypto.randomUUID()
+              newWineIds.set(r.rowId, id)
+              return {
+                id,
+                user_id: user.id,
+                name: r.name,
+                wine_type: r.wineType,
+                vintage: r.vintage,
+                quantity: 0,
+                price: r.price,
+                bottle_size: r.bottleSize,
+                winery_id: resolveWineryId(r),
+                import_batch_id: batchId,
+              }
+            })
             const { data: createdWines, error: winesErr } = await supabase
               .from('wines')
               .insert(inserts)
@@ -177,25 +189,43 @@ export const useBulkImportWines = () => {
               for (const r of newWineRows) {
                 failures.push({ name: r.name, error: winesErr.message })
               }
+              newWineIds.clear() // nothing was created; don't book movements for it
             } else {
               createdCount = createdWines?.length ?? 0
             }
           }
 
-          // Step 4 — bulk-insert restock movements.
+          // Step 4 — bulk-insert movements: opening stock for the wines just created,
+          // and restocks for rows matched to an existing wine. Both kinds carry the
+          // batch id, so the whole order stays retrievable as a unit.
           const restockRows = rows.filter((r) => r.included && r.existingWineId !== null)
+          // quantity > 0 is a CHECK constraint on stock_movements; a zero-bottle
+          // row still creates the wine, just with no opening movement.
+          const openingRows = newWineRows.filter(
+            (r) => newWineIds.has(r.rowId) && r.quantity > 0,
+          )
           let restockedCount = 0
-          if (restockRows.length > 0) {
+          if (restockRows.length > 0 || openingRows.length > 0) {
             const stockNote = t('wines:import.stockNote')
-            const inserts: StockMovementInsert[] = restockRows.map((r) => ({
-              user_id: user.id,
-              wine_id: r.existingWineId!,
-              movement_type: 'in',
-              quantity: r.quantity,
-              notes: stockNote,
-              import_batch_id: batchId,
-            }))
-            const { data: createdMoves, error: stockErr } = await supabase
+            const inserts: StockMovementInsert[] = [
+              ...openingRows.map((r) => ({
+                user_id: user.id,
+                wine_id: newWineIds.get(r.rowId)!,
+                movement_type: 'in' as const,
+                quantity: r.quantity,
+                notes: stockNote,
+                import_batch_id: batchId,
+              })),
+              ...restockRows.map((r) => ({
+                user_id: user.id,
+                wine_id: r.existingWineId!,
+                movement_type: 'in' as const,
+                quantity: r.quantity,
+                notes: stockNote,
+                import_batch_id: batchId,
+              })),
+            ]
+            const { error: stockErr } = await supabase
               .from('stock_movements')
               .insert(inserts)
               .select('id')
@@ -203,11 +233,11 @@ export const useBulkImportWines = () => {
               Sentry.captureException(stockErr, {
                 tags: { source: 'useBulkImportWines', op: 'stock_movements.insert' },
               })
-              for (const r of restockRows) {
+              for (const r of [...openingRows, ...restockRows]) {
                 failures.push({ name: r.name, error: stockErr.message })
               }
             } else {
-              restockedCount = createdMoves?.length ?? 0
+              restockedCount = restockRows.length
             }
           }
 

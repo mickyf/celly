@@ -107,9 +107,15 @@ export const useAddWine = () => {
         throw error
       }
 
+      // The opening bottles are recorded as an `in` movement rather than written
+      // straight to wines.quantity, so the wine's history (and the dashboard
+      // chart, which is built from movements) shows the purchase. The quantity
+      // trigger applies the movement — inserting both would double-count.
+      const openingQuantity = wine.quantity ?? 0
+
       const { data, error } = await supabase
         .from('wines')
-        .insert({ ...wine, user_id: user.id })
+        .insert({ ...wine, quantity: 0, user_id: user.id })
         .select()
         .single()
 
@@ -137,10 +143,40 @@ export const useAddWine = () => {
         throw error
       }
 
-      return data
+      if (openingQuantity <= 0) return data
+
+      const { error: movementError } = await supabase.from('stock_movements').insert({
+        wine_id: data.id,
+        user_id: user.id,
+        movement_type: 'in',
+        quantity: openingQuantity,
+      })
+
+      if (movementError) {
+        Sentry.captureException(movementError, {
+          tags: {
+            errorType: 'supabase_mutation',
+            table: 'stock_movements',
+            operation: 'insert',
+          },
+          contexts: {
+            supabase: {
+              table: 'stock_movements',
+              operation: 'insert',
+              error_code: movementError.code,
+              error_hint: movementError.hint,
+            },
+          },
+        })
+        throw movementError
+      }
+
+      // The trigger has set the real quantity; reflect it without a refetch.
+      return { ...data, quantity: openingQuantity }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wines'] })
+      queryClient.invalidateQueries({ queryKey: ['stock_movements'] })
 
       Sentry.addBreadcrumb({
         category: 'data.mutation',

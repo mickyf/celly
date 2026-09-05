@@ -94,6 +94,57 @@ describe('useAddWine (mutation with auth)', () => {
     expect(mockClient.authGetUser).toHaveBeenCalled()
   })
 
+  it('records the opening bottles as an in-movement instead of on the wine row', async () => {
+    // Regression: the wine row used to carry quantity directly and no movement was
+    // written, so a purchase never appeared in the wine's history or on the
+    // dashboard chart (which is built from stock_movements).
+    const winesBuilder = makeQueryBuilder({
+      data: { id: 'new-id', name: 'Test', user_id: 'test-user-id', quantity: 0 },
+      error: null,
+    })
+    const stockBuilder = makeQueryBuilder({ data: null, error: null })
+    mockClient.setTable('wines', winesBuilder)
+    mockClient.setTable('stock_movements', stockBuilder)
+
+    const { result } = renderHookWithProviders(() => useAddWine())
+    const out = await result.current.mutateAsync({ name: 'Test', user_id: '', quantity: 6 })
+
+    // The insert must not carry the bottles — the trigger applies the movement.
+    const wineInsert = winesBuilder.insert.mock.calls[0][0] as { quantity: number }
+    expect(wineInsert.quantity).toBe(0)
+
+    const movement = stockBuilder.insert.mock.calls[0][0] as {
+      wine_id: string
+      movement_type: string
+      quantity: number
+      user_id: string
+    }
+    expect(movement).toMatchObject({
+      wine_id: 'new-id',
+      movement_type: 'in',
+      quantity: 6,
+      user_id: 'test-user-id',
+    })
+
+    // Callers see the real quantity, not the 0 that was written.
+    expect(out.quantity).toBe(6)
+  })
+
+  it('writes no movement when the wine is added with no bottles', async () => {
+    const winesBuilder = makeQueryBuilder({
+      data: { id: 'new-id', name: 'Test', user_id: 'test-user-id', quantity: 0 },
+      error: null,
+    })
+    const stockBuilder = makeQueryBuilder({ data: null, error: null })
+    mockClient.setTable('wines', winesBuilder)
+    mockClient.setTable('stock_movements', stockBuilder)
+
+    const { result } = renderHookWithProviders(() => useAddWine())
+    await result.current.mutateAsync({ name: 'Test', user_id: '', quantity: 0 })
+
+    expect(stockBuilder.insert).not.toHaveBeenCalled()
+  })
+
   it('throws "Not authenticated" when there is no user', async () => {
     mockClient.authGetUser.mockResolvedValueOnce({
       data: { user: null },

@@ -97,22 +97,120 @@ describe('useBulkImportWines', () => {
     expect(summary.batchId).toMatch(/^[0-9a-f-]{36}$/i)
 
     const wineInsertArg = winesBuilder.insert.mock.calls[0][0] as Array<{
+      id: string
+      quantity: number
       import_batch_id: string
       winery_id: string | null
     }>
     expect(wineInsertArg).toHaveLength(1)
     expect(wineInsertArg[0].import_batch_id).toBe(summary.batchId)
     expect(wineInsertArg[0].winery_id).toBe('wy-1')
+    // Bottles arrive via the opening movement; writing them here too would double-count.
+    expect(wineInsertArg[0].quantity).toBe(0)
 
     const stockInsertArg = stockBuilder.insert.mock.calls[0][0] as Array<{
       import_batch_id: string
       wine_id: string
       movement_type: string
+      quantity: number
     }>
-    expect(stockInsertArg).toHaveLength(1)
-    expect(stockInsertArg[0].import_batch_id).toBe(summary.batchId)
-    expect(stockInsertArg[0].wine_id).toBe('existing-wine-id')
-    expect(stockInsertArg[0].movement_type).toBe('in')
+    // One opening movement for the created wine, one restock for the matched wine.
+    expect(stockInsertArg).toHaveLength(2)
+    expect(stockInsertArg.every((m) => m.import_batch_id === summary.batchId)).toBe(true)
+    expect(stockInsertArg.every((m) => m.movement_type === 'in')).toBe(true)
+
+    const opening = stockInsertArg.find((m) => m.wine_id === wineInsertArg[0].id)
+    expect(opening?.quantity).toBe(6)
+
+    const restock = stockInsertArg.find((m) => m.wine_id === 'existing-wine-id')
+    expect(restock?.quantity).toBe(6)
+  })
+
+  it('books an opening movement for each created wine so purchases show on the chart', async () => {
+    // Regression: new wines used to get wines.quantity written directly and no
+    // movement at all, so the dashboard chart — which is built from movements —
+    // had no event to step up on and folded the bottles into its baseline.
+    const winesBuilder = makeQueryBuilder<{ id: string; name: string }[]>({
+      data: [
+        { id: 'ignored-1', name: 'Wine 1' },
+        { id: 'ignored-2', name: 'Wine 2' },
+      ],
+      error: null,
+    })
+    const stockBuilder = makeQueryBuilder<{ id: string }[]>({ data: [], error: null })
+    mockClient.setTable('wines', winesBuilder)
+    mockClient.setTable('stock_movements', stockBuilder)
+
+    const { result } = renderHookWithProviders(() => useBulkImportWines())
+
+    const summary = await result.current.mutateAsync({
+      rows: [
+        row({ name: 'Wine 1', quantity: 6 }),
+        row({ name: 'Wine 2', quantity: 12 }),
+      ],
+      existingWineries: [],
+    })
+
+    const wineInserts = winesBuilder.insert.mock.calls[0][0] as Array<{
+      id: string
+      quantity: number
+    }>
+    const movements = stockBuilder.insert.mock.calls[0][0] as Array<{
+      wine_id: string
+      quantity: number
+      movement_type: string
+      import_batch_id: string
+    }>
+
+    expect(movements).toHaveLength(2)
+    // Each movement points at the id generated for its wine, not a returned row order.
+    expect(movements.map((m) => m.wine_id).sort()).toEqual(
+      wineInserts.map((w) => w.id).sort(),
+    )
+    expect(movements.map((m) => m.quantity).sort((a, b) => a - b)).toEqual([6, 12])
+    expect(movements.every((m) => m.import_batch_id === summary.batchId)).toBe(true)
+    // Restock count only counts genuine restocks, not the openings.
+    expect(summary.restocked).toBe(0)
+    expect(summary.created).toBe(2)
+  })
+
+  it('skips the opening movement when a row has zero bottles', async () => {
+    const winesBuilder = makeQueryBuilder<{ id: string; name: string }[]>({
+      data: [{ id: 'w-1', name: 'No Qty' }],
+      error: null,
+    })
+    const stockBuilder = makeQueryBuilder<{ id: string }[]>({ data: [], error: null })
+    mockClient.setTable('wines', winesBuilder)
+    mockClient.setTable('stock_movements', stockBuilder)
+
+    const { result } = renderHookWithProviders(() => useBulkImportWines())
+    await result.current.mutateAsync({
+      rows: [row({ name: 'No Qty', quantity: 0 })],
+      existingWineries: [],
+    })
+
+    // quantity > 0 is a CHECK constraint on stock_movements.
+    expect(stockBuilder.insert).not.toHaveBeenCalled()
+  })
+
+  it('books no opening movements when the wine insert fails', async () => {
+    const winesBuilder = makeQueryBuilder({
+      data: null,
+      error: { message: 'wines exploded' },
+    })
+    const stockBuilder = makeQueryBuilder<{ id: string }[]>({ data: [], error: null })
+    mockClient.setTable('wines', winesBuilder)
+    mockClient.setTable('stock_movements', stockBuilder)
+
+    const { result } = renderHookWithProviders(() => useBulkImportWines())
+    const summary = await result.current.mutateAsync({
+      rows: [row({ name: 'Doomed', quantity: 6 })],
+      existingWineries: [],
+    })
+
+    expect(summary.created).toBe(0)
+    expect(summary.failures).toHaveLength(1)
+    expect(stockBuilder.insert).not.toHaveBeenCalled()
   })
 
   it('creates each new winery only once even when multiple rows reference it', async () => {
