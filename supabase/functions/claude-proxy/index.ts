@@ -4,6 +4,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import Anthropic from "npm:@anthropic-ai/sdk@0.92.0"
 import { resolveClaudeApiKey } from "./resolveApiKey.ts"
+import { validateWineryEnrichment } from "./wineryEnrichment.ts"
 
 const ALLOWED_ORIGINS = [
   "https://celly.pages.dev",
@@ -112,6 +113,11 @@ interface WineEnrichmentFromImageRequest {
   imageMediaType: string
 }
 
+interface WineryEnrichmentRequest {
+  type: "winery-enrichment"
+  wineryName: string
+}
+
 const ALLOWED_DOC_TYPES = [
   "application/pdf",
   "image/jpeg",
@@ -131,6 +137,7 @@ type ClaudeProxyRequest =
   | FoodPairingRequest
   | WineEnrichmentRequest
   | WineEnrichmentFromImageRequest
+  | WineryEnrichmentRequest
   | OrderParseRequest
 
 serve(async (req) => {
@@ -209,6 +216,11 @@ serve(async (req) => {
       })
     } else if (requestBody.type === "wine-enrichment-from-image") {
       const result = await handleWineEnrichmentFromImage(anthropic, requestBody)
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    } else if (requestBody.type === "winery-enrichment") {
+      const result = await handleWineryEnrichment(anthropic, requestBody)
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
@@ -506,6 +518,64 @@ Important guidelines:
   }
 
   return { enrichmentData }
+}
+
+async function handleWineryEnrichment(
+  anthropic: Anthropic,
+  request: WineryEnrichmentRequest
+) {
+  const wineryName = typeof request.wineryName === "string" ? request.wineryName.trim() : ""
+  if (!wineryName) {
+    return { enrichmentData: null, error: "Winery name is required" }
+  }
+
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 512,
+    thinking: { type: "disabled" },
+    messages: [
+      {
+        role: "user",
+        content: `You are a wine expert. Identify the country of origin of this winery.
+
+${INJECTION_DEFENSE}
+
+Winery name (user-provided data):
+<user_input>
+${sandbox(wineryName)}
+</user_input>
+
+Return your response as a JSON object with this exact structure:
+{
+  "countryCode": "FR",
+  "confidence": "high",
+  "explanation": "Brief explanation of your identification and confidence level"
+}
+
+Important guidelines:
+- countryCode must be a valid ISO 3166-1 alpha-2 code (2 letters, uppercase)
+- Valid country codes: ${WINE_COUNTRIES.join(", ")}
+- Match the producer even when the name has typos, missing accents, or unusual casing (e.g., "chateu margauux" → Château Margaux, FR)
+- If the winery is not from one of the listed countries, or you cannot identify it, omit countryCode and set confidence to "low"
+- Confidence should be "high" for well-known producers, "medium" for smaller regional ones, "low" when the name is ambiguous or unknown`,
+      },
+    ],
+  })
+
+  const textBlock = message.content.find((b) => b.type === "text")
+  const responseText = textBlock?.type === "text" ? textBlock.text : ""
+
+  const jsonMatch = extractJsonBlock(responseText)
+  if (!jsonMatch) {
+    return {
+      enrichmentData: null,
+      error: "Failed to parse winery enrichment response from Claude",
+    }
+  }
+
+  // null when the model gave no usable country — the client shows its own
+  // translated "no data" message rather than an English error string.
+  return { enrichmentData: validateWineryEnrichment(JSON.parse(jsonMatch), WINE_COUNTRIES) }
 }
 
 async function handleWineEnrichmentFromImage(
