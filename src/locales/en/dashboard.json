@@ -37,6 +37,8 @@
   "consumption": {
     "noData": "No consumption data available",
     "count": "Bottle Count",
+    "added": "Added",
+    "removed": "Removed",
     "month": "Month",
     "description": "Shows wine bottle count over time"
   }

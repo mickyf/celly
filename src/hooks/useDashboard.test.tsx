@@ -142,4 +142,38 @@ describe('useDashboardStats', () => {
     // Net delta is 4 - 2 + 3 = 5; initial count 5 - 5 = 0; running 0+4=4, 4-2=2, 2+3=5.
     expect(series.map((p) => p.count)).toEqual([4, 2, 5])
   })
+
+  it('reports per-month additions and removals alongside the closing count', async () => {
+    mockClient.setTable(
+      'wines',
+      makeQueryBuilder({
+        data: [{ id: 'a', quantity: 9, price: 0, grapes: [] }],
+        error: null,
+      }),
+    )
+    mockClient.setTable(
+      'stock_movements',
+      makeQueryBuilder({
+        data: [
+          // A month that both gains and loses bottles, to prove the two are
+          // tracked separately rather than netted into one delta.
+          { movement_date: '2026-01-05', movement_type: 'in', quantity: 6 },
+          { movement_date: '2026-01-20', movement_type: 'in', quantity: 4 },
+          { movement_date: '2026-01-28', movement_type: 'out', quantity: 3 },
+          { movement_date: '2026-02-10', movement_type: 'out', quantity: 2 },
+          { movement_date: '2026-03-01', movement_type: 'in', quantity: 4 },
+        ],
+        error: null,
+      }),
+    )
+
+    const { result } = renderHookWithProviders(() => useDashboardStats())
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data!.consumptionData).toEqual([
+      { date: '2026-01', count: 7, added: 10, removed: 3 },
+      { date: '2026-02', count: 5, added: 0, removed: 2 },
+      { date: '2026-03', count: 9, added: 4, removed: 0 },
+    ])
+  })
 })

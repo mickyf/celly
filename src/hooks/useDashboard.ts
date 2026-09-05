@@ -10,7 +10,12 @@ export interface DashboardStats {
   topGrapes: { grape: string; count: number }[]
   consumptionData: {
     date: string
+    /** Bottles on hand at the end of the month. */
     count: number
+    /** Bottles added during the month (sum of `in` movements), always >= 0. */
+    added: number
+    /** Bottles removed during the month (sum of `out` movements), always >= 0. */
+    removed: number
   }[]
 }
 
@@ -122,18 +127,30 @@ export const useDashboardStats = () => {
       const monthKey = (date: Date) =>
         `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 
-      const monthlyCount: Record<string, number> = {}
+      // Each month keeps its closing count plus what moved in and out during it,
+      // so the chart can annotate every point with its own +/- deltas.
+      const monthly: Record<string, { count: number; added: number; removed: number }> = {}
       let count = totalBottles - netDelta
 
       for (const movement of sortedMovements) {
         const qty = movement.quantity || 0
-        if (movement.movement_type === 'in') count += qty
-        else if (movement.movement_type === 'out') count -= qty
-        monthlyCount[monthKey(new Date(movement.movement_date))] = count
+        const key = monthKey(new Date(movement.movement_date))
+        const month = monthly[key] ?? { count, added: 0, removed: 0 }
+
+        if (movement.movement_type === 'in') {
+          count += qty
+          month.added += qty
+        } else if (movement.movement_type === 'out') {
+          count -= qty
+          month.removed += qty
+        }
+
+        month.count = count
+        monthly[key] = month
       }
 
-      const consumptionData = Object.entries(monthlyCount)
-        .map(([date, count]) => ({ date, count }))
+      const consumptionData = Object.entries(monthly)
+        .map(([date, m]) => ({ date, count: m.count, added: m.added, removed: m.removed }))
         .sort((a, b) => a.date.localeCompare(b.date))
 
       const stats: DashboardStats = {

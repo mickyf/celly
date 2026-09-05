@@ -37,6 +37,8 @@
   "consumption": {
     "noData": "Keine Verbrauchsdaten verfügbar",
     "count": "Flaschenanzahl",
+    "added": "Zugang",
+    "removed": "Abgang",
     "month": "Monat",
     "description": "Zeigt die Anzahl Weinflaschen über die Zeit an"
   }
