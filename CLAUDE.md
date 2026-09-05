@@ -216,7 +216,7 @@ File-based routes in `src/routes/`:
 - `LanguageSelector.tsx` - Language switcher dropdown (English/Swiss German) in app header
 - `OrderImportTable.tsx` - Editable review table for the bulk order-document import
 - `CellarVisualizer.tsx` - Seat-booking-style shelf/row/column slot grid; supports add/edit shelf, slot click, and a `placeMode` variant used by `wines/$id/place.tsx`
-- `ConsumptionChart.tsx` - Mantine `LineChart` of monthly bottle count on the dashboard
+- `ConsumptionChart.tsx` - Monthly bottle-count line chart on the dashboard (uses `recharts` directly, not `@mantine/charts`). Each point is annotated with that month's `+added` above and `-removed` below, and `DeltaTooltip` lists both plus the running total. Two gotchas are commented in the file: recharts gates label rendering on `!isAnimating` (hence `isAnimationActive={false}`), and `Line` doesn't clip labels to the plot area (hence the `YAxis` padding)
 - `ErrorBoundary.tsx` - `AppErrorBoundary` wrapping the whole shell; reports to Sentry and shows the stack in dev only
 - `RouteError.tsx` - Per-route error component with a reset action
 - `OfflineBanner.tsx` - Full-width alert driven by `useOnlineStatus()`, rendered above the `<Outlet />`
@@ -476,6 +476,7 @@ npx supabase db push
 - `20260510120000_add_import_batch_id.sql` — `import_batch_id` on `wines` and `stock_movements` for the order-document import feature
 - `20260723120000_add_wine_type.sql` — `wine_type` column + CHECK constraint + index
 - `20260723130000_add_port_wine_type.sql` — widened that CHECK to include `port`
+- `20260905075803_backfill_opening_stock_movements.sql` — opening `in` movement for wines created before creation wrote one; runs with the quantity trigger disabled so current quantities are untouched
 
 ## Common Patterns
 
@@ -485,8 +486,20 @@ npx supabase db push
 Stock movements use database-level triggers for automatic wine quantity updates, ensuring data consistency:
 ```sql
 CREATE FUNCTION update_wine_quantity_on_movement()
-CREATE TRIGGER update_wine_quantity AFTER INSERT OR UPDATE OR DELETE ON stock_movements
+CREATE TRIGGER update_wine_quantity_trigger AFTER INSERT OR UPDATE OR DELETE ON stock_movements
 ```
+
+**Invariant: `wines.quantity` is the sum of that wine's movements.** Never write
+bottles to `wines.quantity` directly — insert a movement and let the trigger apply
+it, or you double-count. This includes wine *creation*: `useAddWine()` and the
+"create new" path of `useBulkImportWines()` insert the wine with `quantity: 0` and
+then record an opening `in` movement.
+
+That matters because the dashboard chart is built entirely from `stock_movements`.
+Wines created without one had no event to step up on, so `useDashboardStats()`
+folded their bottles into its derived baseline instead — retroactively, across all
+history — and the line only ever descended. `20260905075803_backfill_opening_stock_movements.sql`
+backfilled an opening movement for wines created before this rule existed.
 
 **Stock Movement Hooks** (`src/hooks/useStockMovements.ts`):
 - `useStockMovements(wineId?)` - Query stock movements for a wine or all wines
