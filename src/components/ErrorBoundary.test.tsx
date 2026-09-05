@@ -5,36 +5,13 @@ import { AppErrorBoundary } from './ErrorBoundary'
 
 import type { ComponentType } from 'react'
 
-interface FallbackProps {
-  error: unknown
-  componentStack: string
-  eventId: string
-  resetError: () => void
-}
-
+// Passthrough stub. It deliberately does NOT simulate the fallback path: a
+// try/catch around JSX cannot catch a render error (React renders later), so
+// the previous version of this mock only looked like it tested error handling.
+// Exercising the fallback needs a real error boundary, which Sentry provides in
+// production and this suite doesn't currently cover.
 vi.mock('@sentry/react', () => ({
-  withErrorBoundary:
-    <P extends object>(
-      Component: ComponentType<P>,
-      opts: { fallback: ComponentType<FallbackProps> },
-    ) => {
-      const Boundary = (props: P) => {
-        try {
-          return <Component {...props} />
-        } catch (error) {
-          const Fallback = opts.fallback
-          return (
-            <Fallback
-              error={error}
-              componentStack=""
-              eventId=""
-              resetError={() => {}}
-            />
-          )
-        }
-      }
-      return Boundary
-    },
+  withErrorBoundary: <P extends object>(Component: ComponentType<P>) => Component,
 }))
 
 describe('AppErrorBoundary', () => {

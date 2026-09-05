@@ -92,7 +92,8 @@ npm run build:sentry        # Build with the current commit hash as the Sentry r
 npm run preview             # Preview production build
 
 # Code Quality
-npm run lint                # Run ESLint
+npm run lint                # Run Oxlint
+npm run typecheck           # Type-check with TypeScript 7
 npm test                    # Vitest single run
 npm run test:watch          # Vitest watch mode
 

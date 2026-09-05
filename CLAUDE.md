@@ -15,9 +15,11 @@ npm run dev
 # Build for production (TypeScript + Vite)
 npm run build
 
-# Lint codebase
-npm run lint                      # app
-npm --prefix mcp-server run lint  # MCP server (also run by the pre-push hook)
+# Lint codebase (Oxlint — one pass covers src/, supabase/functions/ and mcp-server/)
+npm run lint
+
+# Type-check without emitting (app project refs + the MCP server)
+npm run typecheck
 
 # Run tests (Vitest + happy-dom + React Testing Library)
 npm test           # single run
@@ -50,29 +52,28 @@ cd mcp-server && npm run dev                   # Watch mode for development
 A Husky pre-push hook (`.husky/pre-push`) runs the full gate before every push:
 
 ```bash
-npm run lint && npm --prefix mcp-server run lint && npx tsc -b && npm test
+npm run lint && npm run typecheck && npm test
 ```
 
 Cloudflare Pages auto-deploys on master push, so this is the safety net before code reaches production. Bypass with `git push --no-verify` only when intentional.
 
-## TypeScript 7 (side-by-side layout)
+## Linting (Oxlint) and TypeScript 7
 
-Both projects run **TypeScript 7 stable** (the Go-based native compiler) for type-checking and builds, with the TypeScript 6 API kept alongside. `package.json` aliases both, per the [TS 7.0 release notes](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0):
+**Linting** is [Oxlint](https://oxc.rs), configured in `.oxlintrc.json`. One pass at the repo root covers `src/`, `supabase/functions/` and `mcp-server/` — there is no separate MCP lint step and no per-project eslint config.
 
-```json
-"@typescript/native": "npm:typescript@^7.0.2",
-"typescript": "npm:@typescript/typescript6@^6.0.2"
+- The config was produced by `npx @oxlint/migrate` from the old flat eslint config and is a rule-for-rule translation, so the rules that were enforced before still are. Namespaces changed: `@typescript-eslint/*` → `typescript/*`, and both `react-hooks/*` and `react-refresh/*` → `react/*`.
+- Existing `// eslint-disable-next-line <original-rule-name>` comments still work — Oxlint understands the ESLint names. Don't churn them.
+- `react/only-export-components` takes `customHOCs` where the ESLint plugin took `extraHOCs`; `src/routes/**` still turns it off, since TanStack Router files must export `Route` beside their component.
+
+**Type-checking** is TypeScript 7 stable — the Go-based native compiler — via `npm run typecheck`:
+
+```bash
+tsc -b && tsc -p mcp-server --noEmit
 ```
 
-- `tsc` → TypeScript 7. This is what `npm run build`, `npx tsc -b` and the pre-push hook use.
-- `tsc6` → TypeScript 6, and more importantly `require('typescript')` resolves to the **TS 6 API**.
+The second half matters. Oxlint is type-unaware by design, and `mcp-server/tsconfig.json` is not a project reference of the root `tsconfig.json`, so without that explicit pass nothing in the gate would type-check the MCP server.
 
-The alias is not cosmetic. **typescript-eslint throws outright on TS 7** — `Error: typescript-eslint does not support TS 7.0` — so if `typescript` resolved to 7.x, `npm run lint` would fail to start in both projects. No published typescript-eslint supports TS 7 (the canary still declares `typescript >=4.8.4 <6.1.0`); support is tracked in [typescript-eslint#10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940).
-
-Consequences worth knowing:
-- Don't "simplify" `typescript` back to a plain `^7` range — that breaks lint, not type-checking.
-- The eslint pipeline type-checks against TS 6 semantics while `tsc` uses TS 7. In practice they agree, but a TS7-only feature would pass `tsc -b` and confuse the linter.
-- This alias can be dropped once typescript-eslint supports TS 7, or if the planned move to Oxlint happens first — Oxlint doesn't use the TypeScript compiler at all.
+`typescript` is a plain `^7.0.2` in both projects — no aliases, no `tsc6`, no `@typescript/native-preview`. It got that way *because* ESLint is gone: typescript-eslint throws outright on the TS 7 API (`Error: typescript-eslint does not support TS 7.0`) and no published release supports it, so while ESLint was in the picture the TS 6 API had to be kept alongside under an alias. Reintroducing an ESLint-based tool would bring that constraint back.
 
 ## Testing rule (always consider tests)
 
@@ -799,7 +800,7 @@ The Model Context Protocol (MCP) server enables AI assistants like Claude Deskto
 - Communicates with Supabase REST API using authenticated user tokens
 - Runs as stdio transport for Claude Desktop integration
 - TypeScript source in `src/`, compiled to `dist/`
-- Has its own eslint config; `npm --prefix mcp-server run lint` is part of the pre-push hook
+- Linted and type-checked from the repo root (`npm run lint`, `npm run typecheck`) — it has no lint config or lint script of its own
 
 **Edge Function** (`supabase/functions/mcp-server-proxy/index.ts`):
 An HTTP counterpart to the stdio server, for MCP clients that cannot spawn a local process. It validates the `Authorization` header, then dispatches on `body.action` — `list_wines`, `get_wine`, `add_wine`, `list_wineries`, `get_winery`, `add_winery` — against the user's own RLS-scoped rows. Deploy it with `--no-verify-jwt` (it does its own auth check).
